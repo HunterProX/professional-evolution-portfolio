@@ -17,7 +17,7 @@ const cleanRepoUrl = (value) => typeof value === "string" ? value.replace(/\/$/,
 const objectKinds = { pull_requests: "pull", commits: "commit", releases: "releases/tag", deployments: "deployments" };
 const objectUrl = (value) => typeof value === "string" && /^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/(pull|commit|releases\/tag|deployments)\/[^\s]+$/.test(value);
 
-if (raw !== JSON.stringify(doc, null, 2) + "\n") fail("snapshot must use deterministic two-space JSON formatting");
+if (raw.replace(/\r\n/g, "\n") !== JSON.stringify(doc, null, 2) + "\n") fail("snapshot must use deterministic two-space JSON formatting");
 hasOnly(doc, ["schema_version", "snapshot_id", "captured_at", "status", "source", "allowed_repositories", "repositories"], "snapshot");
 required(doc, ["schema_version", "snapshot_id", "captured_at", "status", "source", "allowed_repositories", "repositories"], "snapshot");
 if (doc.schema_version !== "1.0.0") fail("unsupported schema_version");
