@@ -1,0 +1,78 @@
+name: Deploy static portfolio
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: static-portfolio-production
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Validate portfolio
+        run: npm run check
+
+  github-pages:
+    needs: validate
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Build GitHub Pages artifact
+        env:
+          SITE_ORIGIN: https://hunterprox.github.io
+          SITE_BASE_PATH: /professional-evolution-portfolio
+        run: npm run build:release
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  cloudflare-pages:
+    needs: validate
+    runs-on: ubuntu-latest
+    environment:
+      name: cloudflare-pages
+      url: https://${{ vars.CLOUDFLARE_PROJECT_NAME }}.pages.dev
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Build Cloudflare artifact
+        env:
+          SITE_ORIGIN: https://${{ vars.CLOUDFLARE_PROJECT_NAME }}.pages.dev
+          SITE_BASE_PATH: /
+        run: npm run build:release
+      - name: Deploy to Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx --yes wrangler@4.147.0 pages deploy dist --project-name "${{ vars.CLOUDFLARE_PROJECT_NAME }}"
