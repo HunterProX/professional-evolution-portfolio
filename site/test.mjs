@@ -44,7 +44,7 @@ test("activity validator enforces malformed records, ownership, and stale policy
 test("activity validator reports null repositories and records without uncaught TypeError", async () => {
   const validator = resolve(root, "github-activity/validate.mjs"); const fixtures = resolve(root, "github-activity/fixtures"); const directory = await mkdtemp(resolve(tmpdir(), "github-activity-test-"));
   try {
-    const cases = [{ name: "null-repository", source: "non-empty.json", mutate: (doc) => { doc.repositories = [null]; } }, { name: "null-activity", source: "non-empty.json", mutate: (doc) => { doc.repositories[0].pull_requests = [null]; } }];
+    const cases = [{ name: "null-repository", source: "non-empty.json", mutate: (doc) => { doc.repositories = [null]; } }, { name: "null-repository-url-with-valid-activity", source: "non-empty.json", mutate: (doc) => { doc.repositories[0].url = null; } }, { name: "non-string-repository-url-with-valid-activity", source: "non-empty.json", mutate: (doc) => { doc.repositories[0].url = 42; } }, { name: "null-activity", source: "non-empty.json", mutate: (doc) => { doc.repositories[0].pull_requests = [null]; } }];
     for (const item of cases) {
       const doc = JSON.parse(await readFile(resolve(fixtures, item.source), "utf8")); item.mutate(doc); const file = resolve(directory, `${item.name}.json`); await writeFile(file, `${JSON.stringify(doc, null, 2)}\n`);
       await assert.rejects(run(process.execPath, [validator, file]), (error) => { assert.doesNotMatch(error.stderr, /TypeError|Cannot read properties/); assert.match(error.stderr, /repository|object|invalid/i); return true; });

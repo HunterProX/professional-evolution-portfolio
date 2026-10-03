@@ -13,7 +13,7 @@ const hasOnly = (value, keys, label) => { if (!value || typeof value !== "object
 const required = (value, keys, label) => { if (!value || typeof value !== "object" || Array.isArray(value)) return; keys.forEach((key) => { if (!(key in value)) fail(`${label} missing required field: ${key}`); }); };
 const iso = (value) => typeof value === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(value) && !Number.isNaN(Date.parse(value));
 const repoUrl = (value) => typeof value === "string" && /^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/?$/.test(value);
-const cleanRepoUrl = (value) => value.replace(/\/$/, "");
+const cleanRepoUrl = (value) => typeof value === "string" ? value.replace(/\/$/, "") : null;
 const objectKinds = { pull_requests: "pull", commits: "commit", releases: "releases/tag", deployments: "deployments" };
 const objectUrl = (value) => typeof value === "string" && /^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/(pull|commit|releases\/tag|deployments)\/[^\s]+$/.test(value);
 
@@ -47,7 +47,7 @@ for (const repository of doc.repositories || []) {
     if (repositoryIds.has(repository.id)) fail(`duplicate repository id: ${repository.id}`); repositoryIds.add(repository.id);
   }
   if (!repository || typeof repository !== "object" || Array.isArray(repository)) continue;
-  for (const [kind, path] of Object.entries(objectKinds)) { if (!Array.isArray(repository[kind])) { fail(`${kind} must be an array`); continue; } for (const item of repository[kind]) { hasOnly(item, ["id", "url", "captured_at", "title"], `${kind} object`); required(item, ["id", "url", "captured_at", "title"], `${kind} object`); if (!item || typeof item.id !== "string" || !/^[A-Za-z0-9._-]{2,}$/.test(item.id) || objectIds.has(item.id) || !objectUrl(item.url) || !iso(item.captured_at) || typeof item.title !== "string" || item.title.length < 2 || item.title.length > 200) fail(`invalid ${kind} object`); if (item && objectUrl(item.url) && !item.url.startsWith(`${cleanRepoUrl(repository.url)}/${path}/`)) fail(`${kind} object URL is outside parent repository`); objectIds.add(item?.id); } }
+ for (const [kind, path] of Object.entries(objectKinds)) { if (!Array.isArray(repository[kind])) { fail(`${kind} must be an array`); continue; } for (const item of repository[kind]) { hasOnly(item, ["id", "url", "captured_at", "title"], `${kind} object`); required(item, ["id", "url", "captured_at", "title"], `${kind} object`); if (!item || typeof item.id !== "string" || !/^[A-Za-z0-9._-]{2,}$/.test(item.id) || objectIds.has(item.id) || !objectUrl(item.url) || !iso(item.captured_at) || typeof item.title !== "string" || item.title.length < 2 || item.title.length > 200) fail(`invalid ${kind} object`); if (item && objectUrl(item.url) && repoUrl(repository.url) && !item.url.startsWith(`${cleanRepoUrl(repository.url)}/${path}/`)) fail(`${kind} object URL is outside parent repository`); objectIds.add(item?.id); } }
 }
 if (/(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{20,}|-----BEGIN .*PRIVATE KEY-----|(?:personal|private)\s+repository/i.test(raw)) fail("snapshot contains credential or private-data marker");
 if (errors.length) { console.error(errors.join("\n")); process.exit(1); }
