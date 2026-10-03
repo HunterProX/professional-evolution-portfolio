@@ -38,11 +38,33 @@ be generated with an invented domain.
 [ ] Privacy and secret scans pass.
 [ ] AI provider remains disabled unless separately approved.
 [ ] Rollback instructions are ready.
-[ ] Human deployment approval recorded.
+[ ] Required reviewers/protection rules are configured externally for both the
+    `github-pages` and `cloudflare-worker` environments, and approval is recorded.
+[ ] Cloudflare Workers Builds Git integration is disabled/disconnected.
+[ ] Cloudflare Deploy Hooks for this repository are disabled/disconnected.
+[ ] `cloudflare-worker` has its required secrets and production URL variable.
 ```
+
+## After deployment
+
+The expected result is one GitHub Actions run with both `github-pages` and
+`cloudflare-worker` successful. Check `release-manifest.json` at both public
+destinations. Their `source_commit` and `snapshot_id` must be identical; the
+destination fields (`deployment_id`, `site_origin`, and `base_path`) may differ.
+
+If parity fails, preserve both manifests and the run URL, investigate duplicate
+Cloudflare triggers or a bad source snapshot, and redeploy through GitHub
+Actions after correction. Do not use a dashboard-only Cloudflare deployment.
 
 ## Rollback
 
-Rollback means redeploying the previous reviewed public `main` commit. Do not
-rewrite public history or force-push. Preserve the failed deployment evidence
-and open a corrective PR.
+Preferred rollback is a reviewed revert PR to `main`; after it is merged, the
+normal push trigger runs the single GitHub Actions orchestrator so Pages and the
+Worker roll back together. Do not rewrite public history, force-push, or reset.
+Preserve the failed deployment evidence and open the corrective PR.
+
+For an emergency/manual rollback, use GitHub Actions `workflow_dispatch` and
+select the `main` ref only after confirming it points to the reviewed commit to
+restore. After the run, fetch both public `release-manifest.json` files and
+confirm matching `source_commit` and `snapshot_id`. Never use an out-of-band
+Cloudflare deploy as the rollback mechanism.

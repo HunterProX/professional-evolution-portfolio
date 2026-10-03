@@ -32,6 +32,20 @@ verification flow.
 - [Quickstart](docs/quickstart.md)
 - [Evidence boundary](docs/evidence-boundary.md)
 - [Troubleshooting](docs/troubleshooting.md)
+- [Dual-host deployment](docs/dual-deployment.md)
+- [Release checklist](docs/release-checklist.md)
+
+## Deployment architecture
+
+GitHub Actions is the single deployment orchestrator. One run publishes the
+reviewed commit to both destinations: GitHub Pages is the canonical site, while
+the Cloudflare Worker is the root-path mirror/fallback whose `indexable: false`
+entry is a registry/SEO policy. That registry flag is not technical noindex
+enforcement; no technical noindex behavior should be claimed unless separately
+implemented and verified. Cloudflare Workers Builds Git integration and Deploy
+Hooks must be disabled or disconnected for this repository so they cannot create
+duplicate Worker deployments. See [dual-host deployment](docs/dual-deployment.md)
+for environment, parity, troubleshooting, and rollback procedures.
 
 ## Public boundary
 
