@@ -1,0 +1,1 @@
+.language-switcher{display:flex;gap:8px;padding-left:12px;border-left:1px solid var(--line);font-size:.72rem;font-weight:750}.language-switcher a{padding:5px 7px;border-radius:6px;text-decoration:none}.language-switcher a[aria-current="page"]{background:var(--ink);color:var(--white)}
