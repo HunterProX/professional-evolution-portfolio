@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
+const basePath = process.env.SITE_BASE_PATH || "";
 const source = await readFile(resolve(root, "index.html"), "utf8");
 const locales = ["en", "es"];
 const catalogs = Object.fromEntries(await Promise.all(locales.map(async (locale) => [locale, JSON.parse(await readFile(resolve(root, `site/i18n/${locale}.json`), "utf8"))])));
@@ -17,8 +18,8 @@ for (const locale of locales) {
     .replace('href="site/styles.css"', 'href="../site/styles.css"')
     .replace('href="site/i18n.css"', 'href="../site/i18n.css"')
     .replace('src="site/app.js"', 'src="../site/app.js"')
-    .replace('href="/en/"', 'href="../en/"')
-    .replace('href="/es/"', 'href="../es/"')
+    .replace('href="en/"', 'href="../en/"')
+    .replace('href="es/"', 'href="../es/"')
     .replace('<script type="module" src="../site/app.js"></script>', '<script type="module" src="../site/app.js"></script>');
   const target = resolve(root, locale, "index.html");
   await mkdir(dirname(target), { recursive: true });
@@ -27,3 +28,4 @@ for (const locale of locales) {
 await writeFile(resolve(root, "en", "index.html"), (await readFile(resolve(root, "en", "index.html"), "utf8")).replace('public-snapshot/snapshot.json', '../public-snapshot/snapshot.json'), "utf8");
 await writeFile(resolve(root, "es", "index.html"), (await readFile(resolve(root, "es", "index.html"), "utf8")).replace('public-snapshot/snapshot.json', '../public-snapshot/snapshot.json'), "utf8");
 console.log(`Built locales: ${locales.join(", ")}`);
+console.log(`Target base path: ${basePath || "/"}`);
