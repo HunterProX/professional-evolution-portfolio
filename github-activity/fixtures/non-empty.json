@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0.0",
+  "snapshot_id": "public-github-activity-nonempty",
+  "captured_at": "2026-10-03T00:00:00Z",
+  "status": {
+    "availability": "available",
+    "stale": false,
+    "message": "Verified public activity records captured for rendering tests."
+  },
+  "source": {
+    "provider": "github",
+    "mode": "checked_in_fixture",
+    "url": "https://github.com/"
+  },
+  "allowed_repositories": [
+    "https://github.com/HunterProX/professional-evolution-portfolio",
+    "https://github.com/HunterProX/cloud-dashboard",
+    "https://github.com/HunterProX/ai-chat-app",
+    "https://github.com/HunterProX/ai-automation-workflow-lab"
+  ],
+  "repositories": [
+    {
+      "id": "HunterProX/professional-evolution-portfolio",
+      "url": "https://github.com/HunterProX/professional-evolution-portfolio",
+      "visibility": "public",
+      "pull_requests": [
+        {
+          "id": "pr-1",
+          "url": "https://github.com/HunterProX/professional-evolution-portfolio/pull/1",
+          "captured_at": "2026-10-03T00:00:00Z",
+          "title": "Add public activity snapshot"
+        }
+      ],
+      "commits": [
+        {
+          "id": "commit-1",
+          "url": "https://github.com/HunterProX/professional-evolution-portfolio/commit/abcdef1",
+          "captured_at": "2026-10-03T00:00:00Z",
+          "title": "Harden activity contract"
+        }
+      ],
+      "releases": [
+        {
+          "id": "release-1",
+          "url": "https://github.com/HunterProX/professional-evolution-portfolio/releases/tag/v1.0.0",
+          "captured_at": "2026-10-03T00:00:00Z",
+          "title": "Public snapshot release"
+        }
+      ],
+      "deployments": [
+        {
+          "id": "deployment-1",
+          "url": "https://github.com/HunterProX/professional-evolution-portfolio/deployments/1",
+          "captured_at": "2026-10-03T00:00:00Z",
+          "title": "Static preview deployment"
+        }
+      ]
+    }
+  ]
+}

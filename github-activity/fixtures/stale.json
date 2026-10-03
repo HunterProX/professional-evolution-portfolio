@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0.0",
+  "snapshot_id": "public-github-activity-stale",
+  "captured_at": "2020-01-01T00:00:00Z",
+  "status": {
+    "availability": "empty",
+    "stale": true,
+    "stale_reason": "Reviewed fixture retained to exercise stale rendering.",
+    "message": "No verified records were available in the reviewed stale fixture."
+  },
+  "source": {
+    "provider": "github",
+    "mode": "checked_in_fixture",
+    "url": "https://github.com/"
+  },
+  "allowed_repositories": [
+    "https://github.com/HunterProX/professional-evolution-portfolio",
+    "https://github.com/HunterProX/cloud-dashboard",
+    "https://github.com/HunterProX/ai-chat-app",
+    "https://github.com/HunterProX/ai-automation-workflow-lab"
+  ],
+  "repositories": []
+}
