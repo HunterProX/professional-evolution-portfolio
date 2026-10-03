@@ -11,6 +11,9 @@ Run the normal checks:
 npm run check
 ```
 
+Node.js 22 or newer is required for deployment because the workflow uses
+Wrangler 4.147.0.
+
 Run the release-specific check only when an approved origin exists:
 
 ```powershell
