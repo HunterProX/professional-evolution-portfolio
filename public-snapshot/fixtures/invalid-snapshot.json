@@ -1,0 +1,176 @@
+{
+  "$schema": "./schema.json",
+  "schema_version": "1.0.0",
+  "snapshot_id": "INVALID-FIXTURE",
+  "generated_at": "2026-10-03T00:00:00Z",
+  "snapshot_status": "published",
+  "requires_human_review": false,
+  "purpose": "Negative fixture. Every rule below is deliberately violated so the validator can be proven to reject an over-claiming snapshot. This file must never pass validation.",
+  "exclusions": [],
+  "identity": {
+    "professional_name": "Cristian Cardona",
+    "positioning": "Senior AI Engineer with 7+ years building production agentic systems",
+    "positioning_status": "proven",
+    "positioning_notes": "Includes a fabricated location, a fabricated language level and a contact address.",
+    "public_urls": [
+      "http://cristian.example.com/portfolio",
+      "https://localhost:3000/portfolio",
+      "https://192.168.1.20/internal/ai-chat-app",
+      "C:\\Users\\Cristian\\Desktop\\projects\\ai-chat-app",
+      "mailto:cristian.cardona@gmail.com"
+    ],
+    "location": "Colombia (Remote)",
+    "english_level": "Professional Working Proficiency",
+    "email": "cristian.cardona@gmail.com",
+    "phone": "+34 600 123 456",
+    "employer": "Talan",
+    "clients": ["Globex", "Initech"]
+  },
+  "claim_status_semantics": {
+    "demonstrated": "Shipped and in production for enterprise customers.",
+    "developing": "In progress.",
+    "aspirational": "Planned.",
+    "insufficient_evidence": "Unknown."
+  },
+  "claims": [
+    {
+      "id": "CLAIM-Agent-Systems-Production",
+      "text": "Production agentic systems with retrieval augmented generation, shipped to enterprise clients.",
+      "category": "milestone",
+      "status": "proven",
+      "evidence_refs": [],
+      "notes": "Over-claims status, uses an id outside the id grammar, has no evidence, and asserts an unsupported category."
+    },
+    {
+      "id": "claim-production-rag",
+      "text": "A production RAG pipeline is demonstrated and reduces support resolution time by 40%.",
+      "category": "capability",
+      "status": "demonstrated",
+      "evidence_refs": [
+        "ev-missing-repo",
+        "ev-dangling-ref"
+      ],
+      "notes": "Demonstrated with no resolvable evidence, and references evidence ids that do not exist."
+    },
+    {
+      "id": "claim-dup-id",
+      "text": "Cloud cost reduced by 30 percent through Kubernetes optimisation work.",
+      "category": "capability",
+      "status": "developing",
+      "evidence_refs": [],
+      "notes": "Shares its id with another claim, which breaks referential integrity."
+    },
+    {
+      "id": "claim-dup-id",
+      "text": "Duplicate id entry repeated to prove the uniqueness check fires.",
+      "category": "capability",
+      "status": "insufficient_evidence",
+      "evidence_refs": [],
+      "notes": "Same id as the previous entry."
+    },
+    {
+      "id": "claim-snapshot-id-collision",
+      "text": "Deliberately reuses snapshot_id value to also trip the top-level id pattern check.",
+      "category": "negative",
+      "status": "insufficient_evidence",
+      "evidence_refs": [],
+      "notes": "Present so the duplicate-id pair has a third sibling and unknown-key rejection is exercised."
+    }
+  ],
+  "evidence": [
+    {
+      "id": "ev-github-stats",
+      "type": "code_repository",
+      "title": "GitHub profile",
+      "url": "https://github.com/tuuser",
+      "public": true,
+      "verification_status": "verified_by_vibes",
+      "supports_claims": [
+        "claim-does-not-exist"
+      ],
+      "notes": "Placeholder handle, invented verification status, and a claim id that does not exist. Also inlines a credential below.",
+      "api_key": "REDACTED_FAKE_VALUE_FOR_VALIDATION"
+    },
+    {
+      "id": "ev-second-entry",
+      "type": "publication",
+      "title": "Blog post",
+      "url": "https://myblog.example.org/post",
+      "public": false,
+      "verification_status": "verified_independent",
+      "supports_claims": [],
+      "notes": "Private evidence is not admissible, and the host uses a reserved non-public TLD."
+    }
+  ],
+  "projects": [
+    {
+      "id": "proj-ai-chat",
+      "name": "AI Chat API",
+      "status": "shipped",
+      "maturity": "released",
+      "public": false,
+      "public_urls": [
+        "https://ai-chat.example.dev"
+      ],
+      "evidence_level": "demonstrated",
+      "claim_refs": [
+        "claim-also-missing"
+      ],
+      "capabilities_demonstrated": ["Chat with RAG"],
+      "capabilities_not_demonstrated": [],
+      "notes": "Prototype-level work dressed up as released, with an unknown claim ref and a URL that contradicts public:false."
+    },
+    {
+      "id": "proj-saas",
+      "name": "SaaS MVP",
+      "status": "planned",
+      "maturity": "not_started",
+      "public": false,
+      "public_urls": [],
+      "evidence_level": "demonstrated",
+      "claim_refs": [
+        "claim-production-rag"
+      ],
+      "capabilities_demonstrated": [],
+      "capabilities_not_demonstrated": [],
+      "notes": "Planned project claiming demonstrated evidence and listing no gaps."
+    }
+  ],
+  "goals": {
+    "short": {
+      "horizon": "long",
+      "status": "approved",
+      "requires_human_review": false,
+      "statement": "Ship 3 production AI projects by 2027-03-31, reaching 95% uptime and cutting costs 40% for our enterprise clients.",
+      "success_criteria": ["All done"],
+      "target_date": "2027-03-31",
+      "metrics": { "uptime": "99.9%" },
+      "notes": "Invented dates, metrics, counts and clients."
+    },
+    "medium": {
+      "horizon": "medium",
+      "status": "draft",
+      "requires_human_review": true,
+      "statement": "Reach 50% cost reduction within 6 months.",
+      "success_criteria": [],
+      "open_questions": []
+    },
+    "long": {
+      "horizon": "long",
+      "status": "requires_human_review",
+      "requires_human_review": true,
+      "statement": "Become a recognised expert in agentic systems without inventing targets.",
+      "success_criteria": [],
+      "open_questions": []
+    }
+  },
+  "disclaimers": [
+    "This is a negative fixture and must always fail validation.",
+    "It demonstrates what the validator rejects rather than what a good snapshot looks like.",
+    "Contact the author at cristian.cardona@gmail.com if anything here looks plausible.",
+    "Deadline q1 and sign-off by end of year are both stated here on purpose.",
+    "Card 4111 1111 1111 1111 is embedded here to trip the long-number PII check.",
+    "IBAN ES91 2100 0418 4502 0005 1332 is embedded here to trip the IBAN PII check."
+  ],
+  "unknown_extra_field": "Top-level unknown fields must be rejected too."
+}
