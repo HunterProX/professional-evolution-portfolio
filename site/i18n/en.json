@@ -57,6 +57,7 @@
     "agentic_note": "Intended focus · aspirational"
   },
   "claims": {
+    "claim-ai-automation-workflow-reproduction": { "text": "The AI Automation Workflow Lab publicly reproduces a bounded workflow with human approval, deterministic actions, idempotency, and audit events.", "notes": "Synthetic workflow reproduction, not autonomous production automation or private-system integration." },
     "claim-fullstack-cloud-foundation": { "text": "Full stack web development with a cloud engineering component is the existing base of this portfolio.", "notes": "Public evidence is a self-reported profile page. It points to publicly described work but does not independently verify depth or scale." },
     "claim-cloud-engineering-practice": { "text": "Hands-on cloud engineering practice is part of the existing base, focused on containerised and managed-runtime environments.", "notes": "Scoped to what the public profile describes. No architecture, cost or reliability outcome is asserted here." },
     "claim-ai-engineering-transition": { "text": "Transition toward AI Engineering is in progress rather than complete.", "notes": "Recorded as direction of travel. No public artifact demonstrates applied AI engineering delivery yet." },
