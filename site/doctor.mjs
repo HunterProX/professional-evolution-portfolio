@@ -1,9 +1,11 @@
 import { readFile } from "node:fs/promises";
+import { loadRegistry, validateRegistry } from "./url-registry.mjs";
 
 const snapshot = JSON.parse(await readFile("public-snapshot/snapshot.json", "utf8"));
 const en = JSON.parse(await readFile("site/i18n/en.json", "utf8"));
 const es = JSON.parse(await readFile("site/i18n/es.json", "utf8"));
 const failures = [];
+failures.push(...validateRegistry(await loadRegistry()));
 for (const id of snapshot.claims.map((claim) => claim.id)) {
   if (!en.claims[id]?.text || !es.claims[id]?.text) failures.push(`Missing claim translation: ${id}`);
 }
