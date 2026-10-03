@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "snapshot_id": "public-github-activity-unavailable",
+  "captured_at": "2026-10-03T00:00:00Z",
+  "status": {
+    "availability": "unavailable",
+    "stale": false,
+    "message": "The checked-in activity source was unavailable during capture."
+  },
+  "source": {
+    "provider": "github",
+    "mode": "checked_in_fixture",
+    "url": "https://github.com/"
+  },
+  "allowed_repositories": [
+    "https://github.com/HunterProX/professional-evolution-portfolio",
+    "https://github.com/HunterProX/cloud-dashboard",
+    "https://github.com/HunterProX/ai-chat-app",
+    "https://github.com/HunterProX/ai-automation-workflow-lab"
+  ],
+  "repositories": []
+}

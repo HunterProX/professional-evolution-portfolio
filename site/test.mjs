@@ -2,6 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+const run = promisify(execFile);
 const root = resolve(import.meta.dirname, "..");
 const activity = JSON.parse(await readFile(resolve(root, "github-activity/snapshot.json"), "utf8"));
 const activitySchema = JSON.parse(await readFile(resolve(root, "github-activity/schema.json"), "utf8"));
@@ -23,3 +26,20 @@ test("release build script exists and emits a manifest contract", async () => { 
 
 test("GitHub activity contract is public, allowlisted, and empty without inventing activity", () => { assert.equal(activitySchema.properties.schema_version.const, "1.0.0"); assert.equal(activity.source.mode, "checked_in_fixture"); assert.equal(activity.status.availability, "empty"); assert.equal(activity.repositories.length, 0); assert.ok(activity.allowed_repositories.every((url) => /^https:\/\/github\.com\/[^/]+\/[^/]+$/.test(url))); assert.match(app, /github-activity\/snapshot\.json/); assert.doesNotMatch(JSON.stringify(activity), /private|token|localhost|Users[\\/]/i); });
 test("GitHub activity rendering is offline and bilingual", () => { assert.match(app, /renderGithubActivity/); assert.match(app, /github_activity_empty/); assert.match(enPage, /github-activity/); assert.match(esPage, /github-activity/); });
+test("rendered navigation uses stable keys and complete English/Spanish labels", async () => {
+  for (const page of [html, enPage, esPage]) for (const key of ["evidence", "projects", "github_activity_label", "trajectory", "goals"]) assert.match(page, new RegExp(`data-nav-key="${key}"`));
+  const en = JSON.parse(await readFile(resolve(root, "site/i18n/en.json"), "utf8")); const es = JSON.parse(await readFile(resolve(root, "site/i18n/es.json"), "utf8"));
+  assert.deepEqual([en.ui.evidence, en.ui.projects, en.ui.github_activity_label, en.ui.trajectory, en.ui.goals], ["Evidence", "Projects", "GitHub", "Trajectory", "Goals"]);
+  assert.deepEqual([es.ui.evidence, es.ui.projects, es.ui.github_activity_label, es.ui.trajectory, es.ui.goals], ["Evidencia", "Proyectos", "GitHub", "Trayectoria", "Objetivos"]);
+  assert.match(app, /data-nav-key=\\"github_activity_label\\"/); assert.doesNotMatch(app, /primary-nav a:nth-child/);
+});
+test("activity validator enforces malformed records, ownership, and stale policy", async () => {
+  const validator = resolve(root, "github-activity/validate.mjs"); const fixtures = resolve(root, "github-activity/fixtures");
+  await assert.rejects(run(process.execPath, [validator, resolve(fixtures, "malformed.json")]));
+  for (const name of ["non-empty.json", "stale.json", "unavailable.json"]) await run(process.execPath, [validator, resolve(fixtures, name)]);
+  assert.match(await readFile(resolve(fixtures, "non-empty.json"), "utf8"), /pull\/1/); assert.match(await readFile(resolve(fixtures, "stale.json"), "utf8"), /stale_reason/);
+});
+test("activity rendering contract exposes inspectability and generated base paths", () => {
+  assert.match(app, /github_activity_captured/); assert.match(app, /github_activity_message/); assert.match(app, /github_activity_source/); assert.match(app, /state\.activity = null/);
+  assert.match(app, /github-activity\/snapshot\.json/); assert.match(enPage, /\.\.\/site\/app\.js/); assert.match(esPage, /\.\.\/site\/app\.js/);
+});

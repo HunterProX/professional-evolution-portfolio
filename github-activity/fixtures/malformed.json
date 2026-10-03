@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0.0",
+  "snapshot_id": "public-github-activity-malformed",
+  "captured_at": "2026-10-03T00:00:00Z",
+  "status": {
+    "availability": "empty",
+    "stale": false,
+    "message": "No verified public GitHub activity records were available for this deterministic first snapshot."
+  },
+  "source": {
+    "provider": "github",
+    "mode": "checked_in_fixture",
+    "url": "https://github.com/"
+  },
+  "allowed_repositories": [
+    "https://github.com/HunterProX/professional-evolution-portfolio",
+    "https://github.com/HunterProX/cloud-dashboard",
+    "https://github.com/HunterProX/ai-chat-app",
+    "https://github.com/HunterProX/ai-automation-workflow-lab"
+  ],
+  "repositories": [
+    {
+      "id": "HunterProX/professional-evolution-portfolio",
+      "url": "https://github.com/HunterProX/professional-evolution-portfolio",
+      "visibility": "public",
+      "pull_requests": [
+        {
+          "id": "bad",
+          "url": "https://github.com/other/repo/pull/1",
+          "captured_at": "2026-10-03T00:00:00Z",
+          "title": "Cross repository"
+        }
+      ]
+    }
+  ],
+  "extra": "not allowed"
+}
