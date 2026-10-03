@@ -57,6 +57,7 @@
     "agentic_note": "Área de enfoque prevista · aspiracional"
   },
   "claims": {
+    "claim-ai-automation-workflow-reproduction": { "text": "AI Automation Workflow Lab reproduce públicamente un flujo acotado con aprobación humana, acciones deterministas, idempotencia y eventos de auditoría.", "notes": "Reproducción de workflow sintético, no automatización autónoma en producción ni integración con sistemas privados." },
     "claim-fullstack-cloud-foundation": { "text": "El desarrollo web full stack con un componente de ingeniería cloud es la base existente de este portfolio.", "notes": "La evidencia pública es una página de perfil auto reportada. Apunta a trabajo descrito públicamente, pero no verifica de forma independiente profundidad ni escala." },
     "claim-cloud-engineering-practice": { "text": "La práctica de ingeniería cloud forma parte de la base existente, centrada en entornos contenerizados y runtimes gestionados.", "notes": "Limitado a lo que describe el perfil público. No se afirma ningún resultado de arquitectura, coste o fiabilidad." },
     "claim-ai-engineering-transition": { "text": "La transición hacia AI Engineering está en progreso, no completada.", "notes": "Se registra como dirección de desarrollo. Todavía no hay un artefacto público que demuestre entrega aplicada de AI engineering." },

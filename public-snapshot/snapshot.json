@@ -120,6 +120,14 @@
       "status": "demonstrated",
       "evidence_refs": ["ev-cloud-dashboard-repository"],
       "notes": "This entry is limited to the Cloud Dashboard repository and does not validate the other project placeholders from historical drafts."
+    },
+    {
+      "id": "claim-ai-automation-workflow-reproduction",
+      "text": "The AI Automation Workflow Lab publicly reproduces a bounded workflow with human approval, deterministic actions, idempotency, and audit events.",
+      "category": "project",
+      "status": "demonstrated",
+      "evidence_refs": ["ev-ai-automation-workflow-repository"],
+      "notes": "This demonstrates a synthetic workflow reproduction, not autonomous production automation or integration with private systems."
     }
   ],
   "evidence": [
@@ -160,6 +168,16 @@
         "claim-ai-chat-prototype-exists"
       ],
       "notes": "Publicly inspectable deterministic API prototype with bounded citations and fail-closed insufficient-evidence responses. It does not demonstrate production RAG or provider operation."
+    },
+    {
+      "id": "ev-ai-automation-workflow-repository",
+      "type": "code_repository",
+      "title": "AI Automation Workflow Lab repository",
+      "url": "https://github.com/HunterProX/ai-automation-workflow-lab",
+      "public": true,
+      "verification_status": "verified_self_reported",
+      "supports_claims": ["claim-ai-automation-workflow-reproduction"],
+      "notes": "Public bounded workflow reproduction with synthetic inputs, human approval, deterministic actions, idempotency, and audit events."
     }
   ],
   "projects": [
@@ -236,6 +254,19 @@
         "Admin dashboard"
       ],
       "notes": "Planned work. Not built, not deployed, not public. Must not be listed as a delivered product."
+    },
+    {
+      "id": "proj-ai-automation-workflow-lab",
+      "name": "AI Automation Workflow Lab",
+      "status": "in_progress_prototype",
+      "maturity": "prototype",
+      "public": true,
+      "public_urls": ["https://github.com/HunterProX/ai-automation-workflow-lab"],
+      "evidence_level": "developing",
+      "claim_refs": ["claim-ai-automation-workflow-reproduction"],
+      "capabilities_demonstrated": ["Approval-gated workflow state machine", "Deterministic actions", "Idempotency and audit events", "Invalid-input and rejection handling"],
+      "capabilities_not_demonstrated": ["Autonomous production execution", "External service integrations", "Private system writes", "n8n or OpenClaw operation"],
+      "notes": "Public synthetic reproduction. It does not perform autonomous production actions or access private systems."
     }
   ],
   "goals": {
