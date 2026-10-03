@@ -1,0 +1,248 @@
+{
+  "$schema": "./schema.json",
+  "schema_version": "1.0.0",
+  "snapshot_id": "portfolio-public-snapshot-draft-01",
+  "generated_at": "2026-10-03T00:00:00Z",
+  "snapshot_status": "draft",
+  "requires_human_review": true,
+  "purpose": "Machine-readable, deliberately conservative public snapshot. Every statement carries an explicit evidence status, and where a public artifact does not exist the gap is recorded instead of being filled in.",
+  "exclusions": [
+    "No location, employer, client, compensation, language-proficiency or contact details are asserted.",
+    "No years-of-experience figure is asserted.",
+    "No target dates, deadlines or numeric success metrics are asserted for any goal.",
+    "No production-readiness, reliability, scale or retrieval-augmented-generation claim is made for any project.",
+    "Private filesystem paths are never used as evidence; only public https URLs are allowed."
+  ],
+  "identity": {
+    "professional_name": "Cristian Cardona",
+    "positioning": "Full Stack + Cloud foundation transitioning toward AI Engineering / AI Automation / Agentic Systems",
+    "positioning_status": "aspirational",
+    "positioning_notes": "This describes direction of travel from an existing full stack and cloud base. It is not a job title, not a current role, and not a seniority statement.",
+    "public_urls": [
+      "https://www.linkedin.com/in/cristian-cardona-dev/"
+    ]
+  },
+  "claim_status_semantics": {
+    "demonstrated": "Supported by at least one public, checkable artifact that a third party can open.",
+    "developing": "Partially built or prototype-level. No public artifact yet, or the available public artifact does not cover the full claim.",
+    "aspirational": "Stated direction or intent. Not started, or started but not verifiable.",
+    "insufficient_evidence": "No public artifact exists today that could support the claim."
+  },
+  "claims": [
+    {
+      "id": "claim-fullstack-cloud-foundation",
+      "text": "Full stack web development with a cloud engineering component is the existing base of this portfolio.",
+      "category": "capability",
+      "status": "developing",
+      "evidence_refs": [
+        "ev-linkedin-profile"
+      ],
+      "notes": "Public evidence is a self-reported profile page. It points to publicly described work but does not independently verify depth or scale."
+    },
+    {
+      "id": "claim-cloud-engineering-practice",
+      "text": "Hands-on cloud engineering practice is part of the existing base, focused on containerised and managed-runtime environments.",
+      "category": "capability",
+      "status": "developing",
+      "evidence_refs": [
+        "ev-linkedin-profile"
+      ],
+      "notes": "Scoped to what the public profile describes. No architecture, cost or reliability outcome is asserted here."
+    },
+    {
+      "id": "claim-ai-engineering-transition",
+      "text": "Transition toward AI Engineering is in progress rather than complete.",
+      "category": "direction",
+      "status": "aspirational",
+      "evidence_refs": [],
+      "notes": "Recorded as direction of travel. No public artifact demonstrates applied AI engineering delivery yet."
+    },
+    {
+      "id": "claim-ai-automation",
+      "text": "AI Automation is an intended area of focus going forward.",
+      "category": "direction",
+      "status": "aspirational",
+      "evidence_refs": [],
+      "notes": "Intent only. Not demonstrated and not verifiable from any public source."
+    },
+    {
+      "id": "claim-agentic-systems",
+      "text": "Agentic Systems is an intended area of focus going forward.",
+      "category": "direction",
+      "status": "aspirational",
+      "evidence_refs": [],
+      "notes": "Intent only. No agent, tool-use or orchestration artifact is public."
+    },
+    {
+      "id": "claim-ai-chat-prototype-exists",
+      "text": "An AI chat API prototype exists at prototype level: a thin request/response path against a model provider API, exercised locally.",
+      "category": "project",
+      "status": "developing",
+      "evidence_refs": [],
+      "notes": "Prototype-level only. The work is not public, so it cannot be independently reviewed. No public URL exists for it yet."
+    },
+    {
+      "id": "claim-no-production-rag",
+      "text": "A production retrieval-augmented-generation (RAG) capability is NOT demonstrated. The prototype does not implement a retrieval pipeline, an evaluation harness, or production operation.",
+      "category": "negative",
+      "status": "insufficient_evidence",
+      "evidence_refs": [],
+      "notes": "Deliberate negative claim. Any public copy that implies production RAG is contradicted by this entry."
+    },
+    {
+      "id": "claim-cloud-dashboard-planned",
+      "text": "Cloud Dashboard is planned work. It is not built, not deployed, and has no public artifact.",
+      "category": "project",
+      "status": "insufficient_evidence",
+      "evidence_refs": [],
+      "notes": "Planned/not-yet-public. Must not be presented as a demonstrated project."
+    },
+    {
+      "id": "claim-saas-mvp-planned",
+      "text": "SaaS MVP is planned work. It is not built, not deployed, and has no public artifact.",
+      "category": "project",
+      "status": "insufficient_evidence",
+      "evidence_refs": [],
+      "notes": "Planned/not-yet-public. Must not be presented as a demonstrated project."
+    },
+    {
+      "id": "claim-years-of-experience-unverified",
+      "text": "No years-of-experience figure is asserted. Any such number appearing in historical marketing copy is unverified and must not be reused.",
+      "category": "negative",
+      "status": "insufficient_evidence",
+      "evidence_refs": [],
+      "notes": "Deliberate negative claim. Guards against copying inflated figures out of unreviewed drafts."
+    },
+    {
+      "id": "claim-public-code-artifact-missing",
+      "text": "There is no verified public code repository URL for any project in this snapshot.",
+      "category": "negative",
+      "status": "insufficient_evidence",
+      "evidence_refs": [],
+      "notes": "Placeholder handles in unreviewed drafts are not evidence and are deliberately not carried over."
+    }
+  ],
+  "evidence": [
+    {
+      "id": "ev-linkedin-profile",
+      "type": "professional_profile",
+      "title": "Public LinkedIn profile",
+      "url": "https://www.linkedin.com/in/cristian-cardona-dev/",
+      "public": true,
+      "verification_status": "unverified_self_reported",
+      "supports_claims": [
+        "claim-fullstack-cloud-foundation",
+        "claim-cloud-engineering-practice"
+      ],
+      "notes": "Self-reported and manually synchronised. It is a pointer to public material, not independent verification of any capability claim."
+    }
+  ],
+  "projects": [
+    {
+      "id": "proj-ai-chat-api-prototype",
+      "name": "AI Chat API Prototype",
+      "status": "in_progress_prototype",
+      "maturity": "prototype",
+      "public": false,
+      "public_urls": [],
+      "evidence_level": "insufficient_evidence",
+      "claim_refs": [
+        "claim-ai-chat-prototype-exists",
+        "claim-no-production-rag"
+      ],
+      "capabilities_demonstrated": [
+        "Local request/response wiring against a model provider API"
+      ],
+      "capabilities_not_demonstrated": [
+        "Production retrieval-augmented generation",
+        "Retrieval or indexing pipeline",
+        "Evaluation harness or quality measurement",
+        "Production deployment",
+        "Reliability, latency or cost measurements",
+        "Authentication, rate limiting or observability"
+      ],
+      "notes": "Prototype-level only. There is nothing here that supports a production-readiness claim, and specifically no production RAG claim."
+    },
+    {
+      "id": "proj-cloud-dashboard",
+      "name": "Cloud Dashboard",
+      "status": "planned",
+      "maturity": "not_started",
+      "public": false,
+      "public_urls": [],
+      "evidence_level": "insufficient_evidence",
+      "claim_refs": [
+        "claim-cloud-dashboard-planned"
+      ],
+      "capabilities_demonstrated": [],
+      "capabilities_not_demonstrated": [
+        "Infrastructure monitoring dashboard",
+        "Infrastructure as code",
+        "Real-time metrics collection",
+        "Cost reporting"
+      ],
+      "notes": "Planned work. Not built, not deployed, not public. Must not be listed as a delivered project."
+    },
+    {
+      "id": "proj-saas-mvp",
+      "name": "SaaS MVP",
+      "status": "planned",
+      "maturity": "not_started",
+      "public": false,
+      "public_urls": [],
+      "evidence_level": "insufficient_evidence",
+      "claim_refs": [
+        "claim-saas-mvp-planned"
+      ],
+      "capabilities_demonstrated": [],
+      "capabilities_not_demonstrated": [
+        "Billing or subscription handling",
+        "Authentication and authorization",
+        "Multi-tenant data model",
+        "Admin dashboard"
+      ],
+      "notes": "Planned work. Not built, not deployed, not public. Must not be listed as a delivered product."
+    }
+  ],
+  "goals": {
+    "short": {
+      "horizon": "short",
+      "status": "draft",
+      "requires_human_review": true,
+      "statement": "Turn the AI chat prototype into a small set of publicly inspectable AI engineering artifacts that a reviewer can open and judge without trusting a description.",
+      "success_criteria": [],
+      "open_questions": [
+        "Which artifacts are worth publishing, and under which public identity?",
+        "What level of documentation is acceptable as public evidence?"
+      ]
+    },
+    "medium": {
+      "horizon": "medium",
+      "status": "draft",
+      "requires_human_review": true,
+      "statement": "Build and publish the planned projects so that the AI engineering and automation direction is backed by demonstrable work rather than by stated intent.",
+      "success_criteria": [],
+      "open_questions": [
+        "Which planned project carries the most signal for the intended direction?",
+        "What scope is small enough to finish and still be honest about?"
+      ]
+    },
+    "long": {
+      "horizon": "long",
+      "status": "draft",
+      "requires_human_review": true,
+      "statement": "Establish a defensible position in agentic systems, grounded in published artifacts and in work that was actually delivered rather than planned.",
+      "success_criteria": [],
+      "open_questions": [
+        "What does defensible mean concretely for this portfolio?",
+        "Which parts of the intended direction are still aspiration?"
+      ]
+    }
+  },
+  "disclaimers": [
+    "This snapshot is a draft and requires human review before any external use.",
+    "Statuses describe evidence availability, not personal worth or seniority.",
+    "Absence of a claim is not a claim of absence of capability.",
+    "When this snapshot and any other document disagree, this snapshot wins until it has been reviewed."
+  ]
+}
