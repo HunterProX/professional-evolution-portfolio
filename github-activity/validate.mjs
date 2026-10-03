@@ -10,7 +10,7 @@ try { doc = JSON.parse(raw); } catch (error) { console.error(`invalid JSON: ${er
 const errors = [];
 const fail = (message) => errors.push(message);
 const hasOnly = (value, keys, label) => { if (!value || typeof value !== "object" || Array.isArray(value)) { fail(`${label} must be an object`); return false; } for (const key of Object.keys(value)) if (!keys.includes(key)) fail(`${label} has additional property: ${key}`); return true; };
-const required = (value, keys, label) => keys.forEach((key) => { if (!(key in (value || {}))) fail(`${label} missing required field: ${key}`); });
+const required = (value, keys, label) => { if (!value || typeof value !== "object" || Array.isArray(value)) return; keys.forEach((key) => { if (!(key in value)) fail(`${label} missing required field: ${key}`); }); };
 const iso = (value) => typeof value === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(value) && !Number.isNaN(Date.parse(value));
 const repoUrl = (value) => typeof value === "string" && /^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/?$/.test(value);
 const cleanRepoUrl = (value) => value.replace(/\/$/, "");
@@ -39,9 +39,14 @@ const allowed = new Set((doc.allowed_repositories || []).map(cleanRepoUrl)); con
 for (const repository of doc.repositories || []) {
   hasOnly(repository, ["id", "url", "visibility", ...Object.keys(objectKinds)], "repository"); required(repository, ["id", "url", "visibility", ...Object.keys(objectKinds)], "repository");
   if (!repository || typeof repository.id !== "string" || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repository.id) || !repoUrl(repository.url) || repository.visibility !== "public" || !allowed.has(cleanRepoUrl(repository.url))) fail("repository is not public, valid, and allowlisted");
-  const expectedId = cleanRepoUrl(repository.url).slice("https://github.com/".length);
-  if (repository.id !== expectedId) fail("repository id must match its URL");
-  if (repositoryIds.has(repository.id)) fail(`duplicate repository id: ${repository.id}`); repositoryIds.add(repository.id);
+  if (repository && typeof repository === "object" && repoUrl(repository.url)) {
+    const expectedId = cleanRepoUrl(repository.url).slice("https://github.com/".length);
+    if (repository.id !== expectedId) fail("repository id must match its URL");
+  }
+  if (repository && typeof repository === "object" && typeof repository.id === "string") {
+    if (repositoryIds.has(repository.id)) fail(`duplicate repository id: ${repository.id}`); repositoryIds.add(repository.id);
+  }
+  if (!repository || typeof repository !== "object" || Array.isArray(repository)) continue;
   for (const [kind, path] of Object.entries(objectKinds)) { if (!Array.isArray(repository[kind])) { fail(`${kind} must be an array`); continue; } for (const item of repository[kind]) { hasOnly(item, ["id", "url", "captured_at", "title"], `${kind} object`); required(item, ["id", "url", "captured_at", "title"], `${kind} object`); if (!item || typeof item.id !== "string" || !/^[A-Za-z0-9._-]{2,}$/.test(item.id) || objectIds.has(item.id) || !objectUrl(item.url) || !iso(item.captured_at) || typeof item.title !== "string" || item.title.length < 2 || item.title.length > 200) fail(`invalid ${kind} object`); if (item && objectUrl(item.url) && !item.url.startsWith(`${cleanRepoUrl(repository.url)}/${path}/`)) fail(`${kind} object URL is outside parent repository`); objectIds.add(item?.id); } }
 }
 if (/(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{20,}|-----BEGIN .*PRIVATE KEY-----|(?:personal|private)\s+repository/i.test(raw)) fail("snapshot contains credential or private-data marker");
