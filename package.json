@@ -3,6 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "description": "Evidence-backed professional evolution portfolio for Cristian Cardona",
-  "scripts": { "validate": "node public-snapshot/validate.mjs", "test": "node --test site/test.mjs", "check": "npm run validate && npm test" },
+  "scripts": { "build": "node site/build.mjs", "validate": "node public-snapshot/validate.mjs", "test": "node --test site/test.mjs", "doctor": "node site/doctor.mjs", "check": "npm run build && npm run validate && npm test && npm run doctor" },
   "engines": { "node": ">=20" }
 }
