@@ -32,7 +32,7 @@ await writeFile(resolve(outputRoot, "index.html"), rootPage, "utf8");
 for (const locale of locales) {
   const target = resolve(outputRoot, locale, "index.html");
   const page = await readFile(target, "utf8");
-  await writeFile(target, page.replace('public-snapshot/snapshot.json', '../public-snapshot/snapshot.json'), "utf8");
+  await writeFile(target, page.replace('public-snapshot/snapshot.json', '../public-snapshot/snapshot.json').replace('github-activity/snapshot.json', '../github-activity/snapshot.json'), "utf8");
 }
 console.log(`Built locales: ${locales.join(", ")}`);
 console.log(`Target base path: ${basePath || "/"}`);
