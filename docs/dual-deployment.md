@@ -3,7 +3,7 @@
 The repository now contains a deployment workflow for two static hosts:
 
 - GitHub Pages: canonical project site.
-- Cloudflare Pages: root-path mirror/fallback.
+- Cloudflare Worker: root-path mirror/fallback.
 
 The workflow is intentionally fail-closed until the required environment
 configuration exists.
@@ -13,10 +13,9 @@ configuration exists.
 Enable GitHub Pages with the Actions source in repository settings. No custom
 secret is required for the GitHub Pages deployment job.
 
-## Cloudflare Pages environment
+## Cloudflare Worker environment
 
-Create a Pages project named `cristian-cardona` (or an approved alternative).
-Create a protected repository environment named `cloudflare-pages` with:
+Create a protected repository environment named `cloudflare-worker` with:
 
 Secrets:
 
@@ -28,10 +27,10 @@ CLOUDFLARE_ACCOUNT_ID
 Variables:
 
 ```text
-CLOUDFLARE_PROJECT_NAME=cristian-cardona
+CLOUDFLARE_PRODUCTION_URL=https://professional-evolution-portfolio.crisss198.workers.dev
 ```
 
-The token must be scoped to Cloudflare Pages write/edit access only. Never put it
+The token must be scoped to Cloudflare Workers/Assets deployment only. Never put it
 in the repository, a build artifact, a pull request, or this documentation.
 
 ## Security note
@@ -47,8 +46,8 @@ In that mode, the dashboard may not show a build output directory field.
 `wrangler.jsonc` is the source of truth and points Worker assets to `./dist`.
 
 ```text
-Build command: npm run build:release
-Deploy command: npx wrangler deploy
+Build command: RELEASE_TARGET=cloudflare-worker npm run build:release
+Deploy command: npx --yes wrangler@4.147.0 deploy
 Assets directory: ./dist
 ```
 
