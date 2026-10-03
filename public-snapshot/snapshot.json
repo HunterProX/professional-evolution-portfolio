@@ -91,11 +91,11 @@
     },
     {
       "id": "claim-cloud-dashboard-planned",
-      "text": "Cloud Dashboard is planned work. It is not built, not deployed, and has no public artifact.",
+      "text": "Cloud Dashboard now exists as a public reproduction of a cloud observability interface using deterministic synthetic telemetry, tests, and documented limitations.",
       "category": "project",
-      "status": "insufficient_evidence",
-      "evidence_refs": [],
-      "notes": "Planned/not-yet-public. Must not be presented as a demonstrated project."
+      "status": "demonstrated",
+      "evidence_refs": ["ev-cloud-dashboard-repository"],
+      "notes": "This demonstrates a public reproduction, not live cloud operations, client infrastructure, or historical work performed for an employer."
     },
     {
       "id": "claim-saas-mvp-planned",
@@ -115,11 +115,11 @@
     },
     {
       "id": "claim-public-code-artifact-missing",
-      "text": "There is no verified public code repository URL for any project in this snapshot.",
+      "text": "The Cloud Dashboard public reproduction has a verified public code repository; the other projects in this snapshot do not.",
       "category": "negative",
-      "status": "insufficient_evidence",
-      "evidence_refs": [],
-      "notes": "Placeholder handles in unreviewed drafts are not evidence and are deliberately not carried over."
+      "status": "demonstrated",
+      "evidence_refs": ["ev-cloud-dashboard-repository"],
+      "notes": "This entry is limited to the Cloud Dashboard repository and does not validate the other project placeholders from historical drafts."
     }
   ],
   "evidence": [
@@ -135,6 +135,19 @@
         "claim-cloud-engineering-practice"
       ],
       "notes": "Self-reported and manually synchronised. It is a pointer to public material, not independent verification of any capability claim."
+    },
+    {
+      "id": "ev-cloud-dashboard-repository",
+      "type": "code_repository",
+      "title": "Cloud Dashboard public reproduction repository",
+      "url": "https://github.com/HunterProX/cloud-dashboard",
+      "public": true,
+      "verification_status": "verified_self_reported",
+      "supports_claims": [
+        "claim-cloud-dashboard-planned",
+        "claim-public-code-artifact-missing"
+      ],
+      "notes": "Publicly inspectable reproduction using deterministic synthetic telemetry. It is not client code, live infrastructure, or evidence of historical employer work."
     }
   ],
   "projects": [
@@ -166,22 +179,27 @@
     {
       "id": "proj-cloud-dashboard",
       "name": "Cloud Dashboard",
-      "status": "planned",
-      "maturity": "not_started",
-      "public": false,
-      "public_urls": [],
-      "evidence_level": "insufficient_evidence",
+      "status": "in_progress_prototype",
+      "maturity": "prototype",
+      "public": true,
+      "public_urls": ["https://github.com/HunterProX/cloud-dashboard"],
+      "evidence_level": "developing",
       "claim_refs": [
         "claim-cloud-dashboard-planned"
       ],
-      "capabilities_demonstrated": [],
+      "capabilities_demonstrated": [
+        "Responsive observability dashboard UI",
+        "Deterministic synthetic telemetry and chart series",
+        "Configurable CPU and memory thresholds",
+        "Unit tests, browser-flow tests, typecheck, build, and privacy scan"
+      ],
       "capabilities_not_demonstrated": [
         "Infrastructure monitoring dashboard",
         "Infrastructure as code",
         "Real-time metrics collection",
         "Cost reporting"
       ],
-      "notes": "Planned work. Not built, not deployed, not public. Must not be listed as a delivered project."
+      "notes": "Public reproduction using synthetic data. It does not demonstrate live cloud telemetry, real cloud costs, production authentication, or client infrastructure."
     },
     {
       "id": "proj-saas-mvp",
