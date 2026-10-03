@@ -5,7 +5,8 @@ toward AI Engineering, AI Automation, and Agentic Systems.
 
 ## Quickstart
 
-Requirements: Node.js 20+ and Python 3.
+Requirements: Node.js 22+ and Python 3. Wrangler 4.147.0 requires Node.js 22
+or newer for deployment.
 
 ```powershell
 git clone https://github.com/HunterProX/professional-evolution-portfolio.git

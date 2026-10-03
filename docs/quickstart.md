@@ -3,7 +3,7 @@
 ## Prerequisites
 
 - Git
-- Node.js 20 or newer
+- Node.js 22 or newer (required by Wrangler 4.147.0 for deployment)
 - Python 3 for the static preview server
 
 ## Validate and build

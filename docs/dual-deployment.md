@@ -8,6 +8,8 @@ The repository now contains a deployment workflow for two static hosts:
 The workflow is intentionally fail-closed until the required environment
 configuration exists.
 
+Node.js 22 or newer is required for the workflow and for Wrangler 4.147.0.
+
 ## GitHub Pages environment
 
 Enable GitHub Pages with the Actions source in repository settings. No custom
