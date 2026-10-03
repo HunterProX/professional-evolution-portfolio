@@ -39,3 +39,18 @@ in the repository, a build artifact, a pull request, or this documentation.
 The workflow currently uses versioned action/CLI references. Before the first
 production deployment, review and pin third-party GitHub Actions to full commit
 SHAs according to the repository security policy.
+
+## If Cloudflare is configured as a Worker
+
+The `workers.dev` URL indicates a Worker deployment rather than a Pages project.
+In that mode, the dashboard may not show a build output directory field.
+`wrangler.jsonc` is the source of truth and points Worker assets to `./dist`.
+
+```text
+Build command: npm run build:release
+Deploy command: npx wrangler deploy
+Assets directory: ./dist
+```
+
+Never deploy the repository root as Worker assets. That can publish development
+files and `node_modules` and causes the 25 MiB asset error.
