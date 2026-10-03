@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0.0",
+  "registry_id": "professional-evolution-portfolio",
+  "status": "active",
+  "canonical_deployment_id": "github-pages",
+  "deployments": [
+    {
+      "id": "github-pages",
+      "platform": "github-pages",
+      "origin": "https://hunterprox.github.io",
+      "base_path": "/professional-evolution-portfolio",
+      "role": "canonical",
+      "enabled": true,
+      "indexable": true
+    },
+    {
+      "id": "cloudflare-worker",
+      "platform": "cloudflare-workers",
+      "origin": "https://professional-evolution-portfolio.crisss198.workers.dev",
+      "base_path": "/",
+      "role": "mirror",
+      "enabled": true,
+      "indexable": false
+    }
+  ],
+  "repositories": {
+    "portfolio": "https://github.com/HunterProX/professional-evolution-portfolio",
+    "cloud_dashboard": "https://github.com/HunterProX/cloud-dashboard",
+    "ai_reliability_lab": "https://github.com/HunterProX/ai-chat-app",
+    "automation_lab": "https://github.com/HunterProX/ai-automation-workflow-lab"
+  },
+  "local": {
+    "portfolio": "http://localhost:4173/",
+    "cloud_dashboard": "http://localhost:3000/",
+    "ai_reliability_lab": "http://localhost:3001/"
+  }
+}

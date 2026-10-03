@@ -7,6 +7,7 @@ const snapshot = JSON.parse(await readFile(resolve(root, "public-snapshot/snapsh
 const html = await readFile(resolve(root, "index.html"), "utf8");
 const css = await readFile(resolve(root, "site/styles.css"), "utf8");
 const app = await readFile(resolve(root, "site/app.js"), "utf8");
+const registry = JSON.parse(await readFile(resolve(root, "site/site-config.json"), "utf8"));
 const enPage = await readFile(resolve(root, "en/index.html"), "utf8").catch(() => "");
 const esPage = await readFile(resolve(root, "es/index.html"), "utf8").catch(() => "");
 test("portfolio UI uses the approved snapshot as its only data source", () => { assert.match(app, /public-snapshot\/snapshot\.json/); assert.doesNotMatch(app, /personal-wt|portfolio-work|Desktop|Users[\\/]/i); assert.doesNotMatch(html, /portfolio-work|Desktop|Users[\\/]/i); });
@@ -15,4 +16,5 @@ test("rendered data remains bounded to snapshot records", () => { assert.equal(s
 test("site does not contain unsupported marketing claims", () => { assert.doesNotMatch(`${app}\n${css}`, /10\+|years of experience|cost reduction|AWS|GCP|Kubernetes|Terraform/i); });
 test("localized pages are generated with correct language routes", () => { assert.match(enPage, /<html lang="en">/); assert.match(esPage, /<html lang="es">/); assert.match(enPage, /src="\.\.\/site\/app\.js"/); assert.match(esPage, /src="\.\.\/site\/app\.js"/); assert.match(html, /href="en\/"/); assert.match(html, /href="es\/"/); assert.match(html, /language-switcher/); });
 test("locale catalogs have complete claim parity", async () => { const en = JSON.parse(await readFile(resolve(root, "site/i18n/en.json"), "utf8")); const es = JSON.parse(await readFile(resolve(root, "site/i18n/es.json"), "utf8")); assert.deepEqual(Object.keys(en.claims).sort(), Object.keys(es.claims).sort()); assert.deepEqual(Object.keys(en.projects).sort(), Object.keys(es.projects).sort()); assert.deepEqual(Object.keys(en.goals).sort(), Object.keys(es.goals).sort()); });
+test("URL registry has one canonical and a distinct mirror", () => { assert.equal(registry.deployments.filter((item) => item.role === "canonical" && item.enabled).length, 1); assert.ok(registry.deployments.some((item) => item.role === "mirror")); assert.match(registry.canonical_deployment_id, /^[a-z0-9-]+$/); });
 test("release build script exists and emits a manifest contract", async () => { const build = await readFile(resolve(root, "site/release-build.mjs"), "utf8"); assert.match(build, /release-manifest\.json/); assert.match(build, /SITE_ORIGIN/); assert.match(build, /SITE_BASE_PATH/); });
