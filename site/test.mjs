@@ -1,0 +1,13 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
+const root = resolve(import.meta.dirname, "..");
+const snapshot = JSON.parse(await readFile(resolve(root, "public-snapshot/snapshot.json"), "utf8"));
+const html = await readFile(resolve(root, "index.html"), "utf8");
+const css = await readFile(resolve(root, "site/styles.css"), "utf8");
+const app = await readFile(resolve(root, "site/app.js"), "utf8");
+test("portfolio UI uses the approved snapshot as its only data source", () => { assert.match(app, /public-snapshot\/snapshot\.json/); assert.doesNotMatch(app, /linkedin|personal-os|private|api\/chat/i); assert.doesNotMatch(html, /portfolio-work|Desktop|Users[\\/]/i); });
+test("portfolio includes required evidence-first sections", () => { for (const section of ["evidence", "projects", "trajectory", "goals", "boundaries"]) assert.match(html, new RegExp(`id="${section}"`)); assert.match(css, /prefers-reduced-motion/); assert.match(css, /:focus-visible/); });
+test("rendered data remains bounded to snapshot records", () => { assert.equal(snapshot.claims.length, 11); assert.equal(snapshot.projects.length, 3); assert.equal(Object.keys(snapshot.goals).length, 3); assert.equal(snapshot.requires_human_review, true); });
+test("site does not contain unsupported marketing claims", () => { assert.doesNotMatch(`${app}\n${css}`, /10\+|years of experience|cost reduction|AWS|GCP|Kubernetes|Terraform/i); });
