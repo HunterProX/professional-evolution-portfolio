@@ -75,11 +75,11 @@
     },
     {
       "id": "claim-ai-chat-prototype-exists",
-      "text": "An AI chat API prototype exists at prototype level: a thin request/response path against a model provider API, exercised locally.",
+      "text": "The AI Engineering Reliability Lab is a public prototype with deterministic representative answers, bounded citations, insufficient-evidence responses, and request-limit tests.",
       "category": "project",
-      "status": "developing",
-      "evidence_refs": [],
-      "notes": "Prototype-level only. The work is not public, so it cannot be independently reviewed. No public URL exists for it yet."
+      "status": "demonstrated",
+      "evidence_refs": ["ev-ai-reliability-lab-repository"],
+      "notes": "Public reproduction of an AI API reliability boundary. It does not use a model provider, implement RAG, or claim production operation."
     },
     {
       "id": "claim-no-production-rag",
@@ -148,6 +148,18 @@
         "claim-public-code-artifact-missing"
       ],
       "notes": "Publicly inspectable reproduction using deterministic synthetic telemetry. It is not client code, live infrastructure, or evidence of historical employer work."
+    },
+    {
+      "id": "ev-ai-reliability-lab-repository",
+      "type": "code_repository",
+      "title": "AI Engineering Reliability Lab repository",
+      "url": "https://github.com/HunterProX/ai-chat-app",
+      "public": true,
+      "verification_status": "verified_self_reported",
+      "supports_claims": [
+        "claim-ai-chat-prototype-exists"
+      ],
+      "notes": "Publicly inspectable deterministic API prototype with bounded citations and fail-closed insufficient-evidence responses. It does not demonstrate production RAG or provider operation."
     }
   ],
   "projects": [
@@ -156,25 +168,29 @@
       "name": "AI Chat API Prototype",
       "status": "in_progress_prototype",
       "maturity": "prototype",
-      "public": false,
-      "public_urls": [],
-      "evidence_level": "insufficient_evidence",
+      "public": true,
+      "public_urls": ["https://github.com/HunterProX/ai-chat-app"],
+      "evidence_level": "developing",
       "claim_refs": [
         "claim-ai-chat-prototype-exists",
         "claim-no-production-rag"
       ],
       "capabilities_demonstrated": [
-        "Local request/response wiring against a model provider API"
+        "Deterministic representative API responses",
+        "Bounded citation IDs and insufficient-evidence responses",
+        "Request-size and conversation-history limits",
+        "Node built-in contract tests"
       ],
       "capabilities_not_demonstrated": [
         "Production retrieval-augmented generation",
+        "Model-provider integration",
         "Retrieval or indexing pipeline",
         "Evaluation harness or quality measurement",
         "Production deployment",
         "Reliability, latency or cost measurements",
         "Authentication, rate limiting or observability"
       ],
-      "notes": "Prototype-level only. There is nothing here that supports a production-readiness claim, and specifically no production RAG claim."
+      "notes": "Public reliability reproduction. There is no model-provider call, retrieval pipeline, or production-readiness claim."
     },
     {
       "id": "proj-cloud-dashboard",
