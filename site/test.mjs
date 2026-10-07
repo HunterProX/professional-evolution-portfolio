@@ -164,21 +164,28 @@ test("activity validator reports null repositories and records without uncaught 
 test("activity source has no visible replacement characters", () => { assert.doesNotMatch(app, /\uFFFD/); });
 
 class TestNode {
-  constructor(tag = "div", text = "") { this.tagName = tag; this.children = []; this._text = text; this.className = ""; this.attributes = {}; }
+  constructor(tag = "div", text = "") { this.tagName = tag; this.children = []; this._text = text; this.className = ""; this.attributes = {}; this.dataset = {}; this.listeners = {}; const classes = new Set(); this.classList = { add: (name) => classes.add(name), contains: (name) => classes.has(name), toggle: (name, force) => { const enabled = force ?? !classes.has(name); if (enabled) classes.add(name); else classes.delete(name); return enabled; } }; }
   set textContent(value) { this.children = []; this._text = String(value); }
   get textContent() { return this._text + this.children.map((child) => child.textContent).join(""); }
   append(...nodes) { this._text = ""; this.children.push(...nodes); }
   replaceChildren(...nodes) { this._text = ""; this.children = [...nodes]; }
   setAttribute(name, value) { this.attributes[name] = value; }
   getAttribute(name) { return this.attributes[name]; }
-  addEventListener() {}
+  removeAttribute(name) { delete this.attributes[name]; }
+  addEventListener(name, listener) { this.listeners[name] = listener; }
   toggleAttribute() {}
 }
-function makeTestDocument() {
+function makeTestDocument(language = "en", pathname = "/") {
   const ids = Object.fromEntries(["claims-grid", "projects-grid", "evidence-grid", "goals-grid", "github-activity-grid", "snapshot-version", "footer-snapshot-id"].map((id) => [id, new TestNode("div")]));
   const description = new TestNode("meta");
-  const nodes = { ".language-switcher a": [], "[data-filter]": [], 'meta[name="description"]': description };
-  return { documentElement: { lang: "en" }, title: "", createElement: (tag) => new TestNode(tag), getElementById: (id) => ids[id], querySelector: (selector) => selector.startsWith("#") ? ids[selector.slice(1)] : nodes[selector] || null, querySelectorAll: (selector) => nodes[selector] || [], ids };
+  const links = [new TestNode("a"), new TestNode("a")];
+  for (const [link, lang, href] of [[links[0], "en", language === "es" ? "../en/" : pathname === "/" ? "en/" : "../en/"], [links[1], "es", language === "es" ? "../es/" : pathname === "/" ? "es/" : "../es/"]]) { link.setAttribute("lang", lang); link.setAttribute("href", href); }
+  const filters = ["all", "demonstrated", "developing", "aspirational", "insufficient_evidence"].map((filter, index) => { const button = new TestNode("button"); button.dataset.filter = filter; if (index === 0) button.classList.add("is-active"); return button; });
+  const ariaLabels = ["language_switcher", "evidence_filters", "professional_direction"].map((key) => { const node = new TestNode(); node.dataset.uiAriaKey = key; return node; });
+  const uiLabels = ["full_stack_cloud", "ai_engineering", "ai_automation_agentic"].map((key) => { const node = new TestNode(); node.dataset.uiKey = key; return node; });
+  const nodes = { ".language-switcher a": links, "[data-filter]": filters, '[data-ui-aria-key]': ariaLabels, '[data-ui-key]': uiLabels, 'meta[name="description"]': description, ".skip-link": new TestNode("a"), ".footer-meta a": new TestNode("a") };
+  for (const button of filters) nodes[`[data-filter=${button.dataset.filter}]`] = button;
+  return { documentElement: { lang: language }, title: "", createElement: (tag) => new TestNode(tag), getElementById: (id) => ids[id], querySelector: (selector) => selector.startsWith("#") ? ids[selector.slice(1)] : nodes[selector] || null, querySelectorAll: (selector) => nodes[selector] || [], ids, links, filters, ariaLabels, uiLabels, pathname };
 }
 test("activity fixtures render cards, stale/empty/unavailable states, and preserve snapshot content", async () => {
   globalThis.__PORTFOLIO_TEST__ = true; globalThis.document = makeTestDocument(); globalThis.window = { location: { pathname: "/" } };
@@ -189,4 +196,107 @@ test("activity fixtures render cards, stale/empty/unavailable states, and preser
 test("activity rendering contract exposes inspectability and generated base paths", () => {
   assert.match(app, /github_activity_captured/); assert.match(app, /github_activity_message/); assert.match(app, /github_activity_source/); assert.match(app, /state\.activity = null/);
   assert.match(app, /github-activity\/snapshot\.json/); assert.match(enPage, /\.\.\/site\/app\.js/); assert.match(esPage, /\.\.\/site\/app\.js/);
+});
+
+test("snapshot-controlled labels and trajectory copy have English and Spanish mappings", async () => {
+  const en = JSON.parse(await readFile(resolve(root, "site/i18n/en.json"), "utf8")); const es = JSON.parse(await readFile(resolve(root, "site/i18n/es.json"), "utf8"));
+  const activityFixture = JSON.parse(await readFile(resolve(root, "github-activity/fixtures/non-empty.json"), "utf8"));
+  for (const catalog of [en, es]) {
+    for (const key of ["category", "project_maturity", "project_status", "evidence_type", "verification_status", "goal_horizon", "activity_availability", "activity_kind", "evidence_support_one", "evidence_support_many", "language_switcher", "evidence_filters", "professional_direction", "github_activity_loading"]) assert.ok(catalog.ui[key], `${catalog.locale} catalog has ui.${key}`);
+    for (const key of ["full_stack_cloud", "ai_engineering", "ai_automation_agentic", "foundation_note", "ai_note", "agentic_note"]) assert.ok(catalog.ui[key], `${catalog.locale} catalog has ui.${key}`);
+    for (const claim of snapshot.claims) {
+      assert.ok(catalog.ui.category[claim.category], `${catalog.locale} maps claim category ${claim.category}`);
+      assert.ok(catalog.status[claim.status], `${catalog.locale} maps claim status ${claim.status}`);
+    }
+    for (const project of snapshot.projects) {
+      assert.ok(catalog.ui.project_maturity[project.maturity], `${catalog.locale} maps project maturity ${project.maturity}`);
+      assert.ok(catalog.ui.project_status[project.status], `${catalog.locale} maps project status ${project.status}`);
+      assert.ok(catalog.status[project.evidence_level], `${catalog.locale} maps project evidence status ${project.evidence_level}`);
+    }
+    for (const evidence of snapshot.evidence) {
+      assert.ok(catalog.ui.evidence_type[evidence.type], `${catalog.locale} maps evidence type ${evidence.type}`);
+      assert.ok(catalog.ui.verification_status[evidence.verification_status], `${catalog.locale} maps verification status ${evidence.verification_status}`);
+      assert.ok(catalog.ui[evidence.supports_claims.length === 1 ? "evidence_support_one" : "evidence_support_many"].includes("{count}"), `${catalog.locale} localizes evidence support count`);
+    }
+    for (const [horizon, goal] of Object.entries(snapshot.goals)) {
+      assert.ok(catalog.ui.goal_horizon[horizon], `${catalog.locale} maps goal horizon ${horizon}`);
+      assert.ok(catalog.status[goal.status], `${catalog.locale} maps goal status ${goal.status}`);
+    }
+    assert.ok(catalog.ui.activity_availability[activityFixture.status.availability], `${catalog.locale} maps activity availability`);
+    for (const kind of ["pull_requests", "commits", "releases", "deployments"]) assert.ok(catalog.ui.activity_kind[kind], `${catalog.locale} maps activity kind ${kind}`);
+  }
+  assert.deepEqual(Object.keys(en.ui.category).sort(), Object.keys(es.ui.category).sort());
+  assert.deepEqual(Object.keys(en.ui.project_maturity).sort(), Object.keys(es.ui.project_maturity).sort());
+  assert.deepEqual(Object.keys(en.ui.project_status).sort(), Object.keys(es.ui.project_status).sort());
+  assert.deepEqual(Object.keys(en.ui.evidence_type).sort(), Object.keys(es.ui.evidence_type).sort());
+  assert.deepEqual(Object.keys(en.ui.verification_status).sort(), Object.keys(es.ui.verification_status).sort());
+  assert.deepEqual(Object.keys(en.ui.goal_horizon).sort(), Object.keys(es.ui.goal_horizon).sort());
+  assert.deepEqual(Object.keys(en.ui.activity_availability).sort(), Object.keys(es.ui.activity_availability).sort());
+  assert.deepEqual(Object.keys(en.ui.activity_kind).sort(), Object.keys(es.ui.activity_kind).sort());
+  assert.match(html, /data-ui-aria-key="professional_direction"/);
+});
+
+test("English and Spanish rendering localizes controlled labels, ARIA state, and loading without translating source content", async () => {
+  globalThis.__PORTFOLIO_TEST__ = true;
+  const activityData = JSON.parse(await readFile(resolve(root, "github-activity/fixtures/non-empty.json"), "utf8"));
+  const evidenceNotes = snapshot.evidence[0].notes; const capabilityText = snapshot.projects[0].capabilities_demonstrated[0];
+  for (const language of ["en", "es"]) {
+    const document = makeTestDocument(language, language === "es" ? "/es/" : "/en/");
+    globalThis.document = document; globalThis.window = { location: { pathname: document.pathname } };
+    const appModule = await import(`${pathToFileURL(resolve(root, "site/app.js"))}?locale-regression-${language}`);
+    const catalog = JSON.parse(await readFile(resolve(root, `site/i18n/${language}.json`), "utf8"));
+    const pending = appModule.boot({ snapshot, catalog, loadActivity: () => new Promise(() => {}) });
+    await Promise.resolve(); await Promise.resolve();
+    assert.equal(document.links[language === "en" ? 0 : 1].getAttribute("aria-current"), "page");
+    assert.equal(document.links[language === "en" ? 1 : 0].getAttribute("aria-current"), undefined);
+    assert.deepEqual(document.filters.map((button) => button.getAttribute("aria-pressed")), ["true", "false", "false", "false", "false"]);
+    assert.deepEqual(document.filters.map((button) => button.classList.contains("is-active")), [true, false, false, false, false]);
+    assert.match(document.ids["github-activity-grid"].textContent, new RegExp(catalog.ui.github_activity_loading, "i"));
+    assert.doesNotMatch(document.ids["github-activity-grid"].textContent, /unavailable/i);
+    assert.ok(document.ids["claims-grid"].textContent.includes(catalog.ui.category.capability));
+    assert.ok(document.ids["projects-grid"].textContent.includes(catalog.ui.project_maturity.prototype));
+    assert.ok(document.ids["projects-grid"].textContent.includes(catalog.ui.project_status.in_progress_prototype));
+    assert.ok(document.ids["projects-grid"].textContent.includes(capabilityText));
+    assert.ok(document.ids["evidence-grid"].textContent.includes(catalog.ui.evidence_type.professional_profile));
+    assert.ok(document.ids["evidence-grid"].textContent.includes(catalog.ui.verification_status.unverified_self_reported));
+    assert.ok(document.ids["evidence-grid"].textContent.includes(evidenceNotes));
+    assert.ok(document.ids["evidence-grid"].textContent.includes(language === "es" ? "afirmaciones respaldadas" : "supported claims"));
+    assert.ok(document.ids["goals-grid"].textContent.includes(catalog.ui.goal_horizon.short));
+    assert.ok(document.ids["goals-grid"].textContent.includes(catalog.status.draft));
+    assert.deepEqual(document.uiLabels.map((node) => node.textContent), [catalog.ui.full_stack_cloud, catalog.ui.ai_engineering, catalog.ui.ai_automation_agentic]);
+    assert.deepEqual(document.ariaLabels.map((node) => node.getAttribute("aria-label")), [catalog.ui.language_switcher, catalog.ui.evidence_filters, catalog.ui.professional_direction]);
+    document.filters[1].listeners.click();
+    assert.deepEqual(document.filters.map((button) => button.getAttribute("aria-pressed")), ["false", "true", "false", "false", "false"]);
+    assert.deepEqual(document.filters.map((button) => button.classList.contains("is-active")), [false, true, false, false, false]);
+    assert.ok(document.ids["claims-grid"].textContent.includes(language === "es" ? "demostrado" : "demonstrated"));
+    assert.doesNotMatch(document.ids["claims-grid"].textContent, /aspirational|aspiracional/);
+    void pending;
+
+    const resolvedDocument = makeTestDocument(language, language === "es" ? "/es/" : "/en/");
+    globalThis.document = resolvedDocument; globalThis.window = { location: { pathname: resolvedDocument.pathname } };
+    const activityModule = await import(`${pathToFileURL(resolve(root, "site/app.js"))}?activity-locale-regression-${language}`);
+    await activityModule.boot({ snapshot, catalog, loadActivity: () => Promise.resolve(activityData) });
+    assert.ok(resolvedDocument.ids["github-activity-grid"].textContent.includes(catalog.ui.activity_availability.available));
+    assert.ok(resolvedDocument.ids["github-activity-grid"].textContent.includes(catalog.ui.activity_kind.pull_requests));
+    assert.ok(resolvedDocument.ids["github-activity-grid"].textContent.includes(activityData.status.message));
+    assert.ok(resolvedDocument.ids["github-activity-grid"].textContent.includes(activityData.repositories[0].pull_requests[0].title));
+
+    const failedDocument = makeTestDocument(language, language === "es" ? "/es/" : "/en/");
+    globalThis.document = failedDocument; globalThis.window = { location: { pathname: failedDocument.pathname } };
+    const failedModule = await import(`${pathToFileURL(resolve(root, "site/app.js"))}?activity-failure-regression-${language}`);
+    await failedModule.boot({ snapshot, catalog, loadActivity: () => Promise.reject(new Error("isolated activity failure")) });
+    assert.ok(failedDocument.ids["github-activity-grid"].textContent.includes(catalog.ui.github_activity_unavailable));
+  }
+});
+
+test("language switcher marks English on root and /en/ and Spanish on /es/", async () => {
+  globalThis.__PORTFOLIO_TEST__ = true;
+  for (const [language, pathname, activeIndex] of [["en", "/", 0], ["en", "/en/", 0], ["es", "/es/", 1]]) {
+    const document = makeTestDocument(language, pathname); globalThis.document = document; globalThis.window = { location: { pathname } };
+    const appModule = await import(`${pathToFileURL(resolve(root, "site/app.js"))}?switcher-regression-${language}-${pathname}`);
+    const catalog = JSON.parse(await readFile(resolve(root, `site/i18n/${language}.json`), "utf8"));
+    await appModule.boot({ snapshot, catalog, loadActivity: () => Promise.resolve(activity) });
+    assert.equal(document.links[activeIndex].getAttribute("aria-current"), "page", `${pathname} selects its current language`);
+    assert.equal(document.links[1 - activeIndex].getAttribute("aria-current"), undefined, `${pathname} does not mark the other language current`);
+  }
 });
