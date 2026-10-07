@@ -29,8 +29,27 @@ function runTheme({ stored = null, language = "en", systemLight = false } = {}) 
   runInNewContext(themeScript, { document: { documentElement: root, querySelector: () => button }, window, localStorage: storage });
   return { root, button, storage, window };
 }
-test("portfolio UI uses the approved snapshot as its only data source", () => { assert.match(app, /public-snapshot\/snapshot\.json/); assert.doesNotMatch(app, /personal-wt|portfolio-work|Desktop|Users[\\/]/i); assert.doesNotMatch(html, /portfolio-work|Desktop|Users[\\/]/i); });
-test("portfolio includes required evidence-first sections", () => { for (const section of ["evidence", "projects", "trajectory", "goals", "boundaries"]) assert.match(html, new RegExp(`id="${section}"`)); assert.match(css, /prefers-reduced-motion/); assert.match(css, /:focus-visible/); });
+test("portfolio UI uses only checked-in static data sources", () => {
+  assert.match(app, /public-snapshot\/snapshot\.json/);
+  assert.match(app, /site\/i18n\/\$\{locale\}\.json/);
+  assert.match(app, /github-activity\/snapshot\.json/);
+  assert.doesNotMatch(app, /fetch\(\s*["'`]https?:|XMLHttpRequest|WebSocket/i);
+  assert.doesNotMatch(app, /personal-wt|portfolio-work|Desktop|Users[\\/]/i);
+  assert.doesNotMatch(html, /portfolio-work|Desktop|Users[\\/]/i);
+});
+test("homepage follows the approved evidence-led hierarchy", () => {
+  const sections = ["id=\"top\"", "class=\"proof-strip\"", "id=\"projects\"", "id=\"commercial-paths\"", "id=\"how-i-work\"", "id=\"boundaries\"", "id=\"next-step\""];
+  const positions = sections.map((section) => html.indexOf(section));
+  assert.ok(positions.every((position) => position >= 0));
+  assert.deepEqual(positions, [...positions].sort((left, right) => left - right));
+  for (const section of ["evidence", "projects", "trajectory", "goals", "boundaries", "github-activity", "evidence-index"]) assert.match(html, new RegExp(`id="${section}"`));
+  assert.match(html, /id="top"[\s\S]*?<h1[^>]*data-ui-key="hero_title"/);
+  assert.match(css, /\.hero\s*\{[^}]*#0d141c/s);
+  assert.match(themeCss, /@media\s*\(max-width:\s*980px\)[\s\S]*?\.primary-nav\s*\{\s*display:\s*flex/s);
+  assert.doesNotMatch(`${css}\n${themeCss}`, /\.primary-nav\s*\{\s*display:\s*none/);
+  assert.match(css, /prefers-reduced-motion/);
+  assert.match(css, /:focus-visible/);
+});
 test("employment and exploratory systems-review paths stay separate and evidence-bounded", async () => {
   for (const page of [html, enPage, esPage]) {
     assert.match(page, /data-nav-key="professional_opportunities"[^>]+href="#professional-opportunities"/);
@@ -46,7 +65,14 @@ test("employment and exploratory systems-review paths stay separate and evidence
   assert.match(app, /renderCommercialText\(\)/);
 });
 test("rendered data remains bounded to snapshot records", () => { assert.equal(snapshot.claims.length, 12); assert.equal(snapshot.projects.length, 4); assert.equal(Object.keys(snapshot.goals).length, 3); assert.equal(snapshot.requires_human_review, true); });
-test("site does not contain unsupported marketing claims", () => { assert.doesNotMatch(`${app}\n${css}`, /10\+|years of experience|cost reduction|AWS|GCP|Kubernetes|Terraform/i); });
+test("site does not contain unsupported marketing claims", async () => {
+  const en = JSON.parse(await readFile(resolve(root, "site/i18n/en.json"), "utf8"));
+  const es = JSON.parse(await readFile(resolve(root, "site/i18n/es.json"), "utf8"));
+  const publicCopy = `${html}\n${app}\n${css}\n${JSON.stringify(en.ui)}\n${JSON.stringify(es.ui)}`;
+  assert.doesNotMatch(publicCopy, /10\+|years of experience|cost reduction|AWS|GCP|Kubernetes|Terraform|guaranteed outcomes|validated service offering|production AI service/i);
+  assert.match(publicCopy, /not a validated or packaged service/i);
+  assert.match(es.ui.systems_path_text, /exploratoria|No es un servicio validado/i);
+});
 test("localized pages are generated with correct language routes", () => { assert.match(enPage, /<html lang="en">/); assert.match(esPage, /<html lang="es">/); assert.match(enPage, /src="\.\.\/site\/app\.js"/); assert.match(esPage, /src="\.\.\/site\/app\.js"/); assert.match(html, /href="en\/"/); assert.match(html, /href="es\/"/); assert.match(html, /language-switcher/); });
 test("theme defaults to dark before styles load regardless of system preference", () => {
   assert.match(html, /src="site\/theme\.js"/);
@@ -104,11 +130,20 @@ test("release artifact includes theme assets referenced by root and localized HT
 test("GitHub activity contract is public, allowlisted, and empty without inventing activity", () => { assert.equal(activitySchema.properties.schema_version.const, "1.0.0"); assert.equal(activity.source.mode, "checked_in_fixture"); assert.equal(activity.status.availability, "empty"); assert.equal(activity.repositories.length, 0); assert.ok(activity.allowed_repositories.every((url) => /^https:\/\/github\.com\/[^/]+\/[^/]+$/.test(url))); assert.match(app, /github-activity\/snapshot\.json/); assert.doesNotMatch(JSON.stringify(activity), /private|token|localhost|Users[\\/]/i); });
 test("GitHub activity rendering is offline and bilingual", () => { assert.match(app, /renderGithubActivity/); assert.match(app, /github_activity_empty/); assert.match(enPage, /github-activity/); assert.match(esPage, /github-activity/); });
 test("rendered navigation uses stable keys and complete English/Spanish labels", async () => {
-  for (const page of [html, enPage, esPage]) for (const key of ["evidence", "projects", "github_activity_label", "trajectory", "goals"]) assert.match(page, new RegExp(`data-nav-key="${key}"`));
+  for (const page of [html, enPage, esPage]) {
+    for (const [key, href] of [["evidence", "#evidence"], ["projects", "#projects"], ["professional_opportunities", "#professional-opportunities"], ["services_review", "#systems-review"]]) {
+      assert.match(page, new RegExp(`data-nav-key="${key}"[^>]+href="${href.replaceAll("#", "\\#")}"`));
+    }
+    assert.match(page, /class="language-switcher"/);
+    assert.match(page, /data-theme-toggle/);
+  }
   const en = JSON.parse(await readFile(resolve(root, "site/i18n/en.json"), "utf8")); const es = JSON.parse(await readFile(resolve(root, "site/i18n/es.json"), "utf8"));
-  assert.deepEqual([en.ui.evidence, en.ui.projects, en.ui.github_activity_label, en.ui.trajectory, en.ui.goals], ["Evidence", "Projects", "GitHub", "Trajectory", "Goals"]);
-  assert.deepEqual([es.ui.evidence, es.ui.projects, es.ui.github_activity_label, es.ui.trajectory, es.ui.goals], ["Evidencia", "Proyectos", "GitHub", "Trayectoria", "Objetivos"]);
-  assert.match(app, /data-nav-key=\\"github_activity_label\\"/); assert.doesNotMatch(app, /primary-nav a:nth-child/);
+  assert.deepEqual([en.ui.evidence, en.ui.nav_work, en.ui.nav_professional, en.ui.nav_services], ["Evidence", "Work / Projects", "Professional", "Services"]);
+  assert.deepEqual([es.ui.evidence, es.ui.nav_work, es.ui.nav_professional, es.ui.nav_services], ["Evidencia", "Trabajo / Proyectos", "Profesional", "Servicios"]);
+  const uiKeys = [...html.matchAll(/data-ui-key="([^"]+)"/g)].map((match) => match[1]);
+  for (const key of uiKeys) { assert.ok(en.ui[key], `English catalog has ${key}`); assert.ok(es.ui[key], `Spanish catalog has ${key}`); }
+  for (const key of ["professional_opportunities", "services_review", "paths_heading", "how_heading", "boundary_heading", "next_step_heading"]) { assert.ok(en.ui[key]); assert.ok(es.ui[key]); }
+  assert.match(app, /data-nav-key="professional_opportunities"/); assert.match(app, /data-nav-key="services_review"/); assert.doesNotMatch(app, /primary-nav a:nth-child/);
 });
 test("activity validator enforces malformed records, ownership, and stale policy", async () => {
   const validator = resolve(root, "github-activity/validate.mjs"); const fixtures = resolve(root, "github-activity/fixtures");

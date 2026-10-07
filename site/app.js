@@ -1,20 +1,201 @@
 const locale = document.documentElement.lang === "es" ? "es" : "en";
 const basePath = window.location.pathname.includes("/en/") || window.location.pathname.includes("/es/") ? "../" : "";
 export const state = { snapshot: null, activity: null, catalog: null, filter: "all" };
-function renderCommercialText() { const keys = { "#commercial-paths .section-heading .eyebrow": "paths_eyebrow", "#paths-heading": "paths_heading", "#commercial-paths .section-intro": "paths_intro", "#professional-opportunities .eyebrow": "professional_path_label", "#professional-path-title": "professional_opportunities", "#professional-opportunities > p:not(.eyebrow)": "professional_path_text", "#professional-opportunities .button": "professional_path_cta", "#systems-review .eyebrow": "systems_path_label", "#systems-path-title": "services_review", "#systems-review > p:not(.eyebrow)": "systems_path_text", "#systems-review .button": "systems_path_cta" }; for (const [selector, key] of Object.entries(keys)) { const node = document.querySelector(selector); if (node) node.textContent = t(key); } for (const key of ["professional_opportunities", "services_review"]) { const node = document.querySelector(`.primary-nav a[data-nav-key="${key}"]`); if (node) node.textContent = t(key); } }
 const $ = (selector) => document.querySelector(selector);
-function element(tag, className, text) { const node = document.createElement(tag); if (className) node.className = className; if (text !== undefined) node.textContent = text; return node; }
-function t(key) { return key.split(".").reduce((value, part) => value?.[part], state.catalog?.ui) || key; }
-function statusPill(status) { return element("span", `status-pill status-${status}`, state.catalog?.status?.[status] || status.replaceAll("_", " ")); }
-function renderClaims() { const grid = $("#claims-grid"); grid.replaceChildren(); const claims = state.snapshot.claims.filter((claim) => state.filter === "all" || claim.status === state.filter); if (!claims.length) { grid.append(element("p", "empty-state", t("no_filter_results"))); return; } for (const claim of claims) { const copy = state.catalog.claims[claim.id] || {}; const card = element("article", "claim-card"); const topline = element("div", "card-topline"); topline.append(element("span", "category-label", claim.category), statusPill(claim.status)); card.append(topline, element("p", "claim-text", copy.text || claim.text)); if (copy.notes || claim.notes) card.append(element("p", "claim-note", copy.notes || claim.notes)); grid.append(card); } }
-function renderProjects() { const grid = $("#projects-grid"); grid.replaceChildren(); for (const project of state.snapshot.projects) { const copy = state.catalog.projects[project.id] || {}; const card = element("article", "project-card"); const topline = element("div", "card-topline"); topline.append(element("span", "category-label", project.maturity.replaceAll("_", " ")), statusPill(project.evidence_level)); card.append(topline, element("h3", null, copy.name || project.name), element("p", "project-meta", `${project.status.replaceAll("_", " ")} · ${project.public ? t("public") : t("not_public")}`)); const list = element("ul", "project-list"); const items = project.capabilities_demonstrated.length ? project.capabilities_demonstrated : project.capabilities_not_demonstrated.slice(0, 3); for (const item of items) list.append(element("li", null, item)); card.append(list); grid.append(card); } }
-function renderEvidence() { const grid = $("#evidence-grid"); grid.replaceChildren(); for (const evidence of state.snapshot.evidence) { const card = element("article", "evidence-card"); card.append(element("span", "category-label", evidence.type.replaceAll("_", " ")), element("h3", null, evidence.title)); const note = element("p", "evidence-meta", `${evidence.verification_status.replaceAll("_", " ")} · ${evidence.supports_claims.length} supported claim(s)`); card.append(note, element("p", "evidence-summary", evidence.notes)); const link = element("a", "evidence-link", t("view_evidence")); link.href = evidence.url; link.target = "_blank"; link.rel = "noreferrer"; card.append(link); grid.append(card); } }
-function renderGoals() { const grid = $("#goals-grid"); grid.replaceChildren(); for (const [horizon, goal] of Object.entries(state.snapshot.goals)) { const copy = state.catalog.goals[horizon] || {}; const card = element("article", "goal-card"); card.append(element("span", "category-label", horizon), element("h3", null, copy.statement || goal.statement), element("p", null, copy.question || goal.open_questions[0] || t("open_review")), statusPill(goal.status)); grid.append(card); } }
 
-export function renderGithubActivity() { const grid = $("#github-activity-grid"); grid.replaceChildren(); if (!state.activity) { grid.append(element("p", "error-state", t("github_activity_unavailable"))); return; } const status = state.activity.status; grid.append(element("p", "activity-status", `${t("github_activity_status")}: ${status.availability}${status.stale ? ` · ${t("github_activity_stale")}${status.stale_reason ? ` · ${status.stale_reason}` : ""}` : ""}`), element("p", "activity-meta", `${t("github_activity_captured")}: ${state.activity.captured_at}`), element("p", "activity-meta", `${t("github_activity_message")}: ${status.message}`)); const source = element("a", "activity-source", `${t("github_activity_source")}: ${state.activity.source.url}`); source.href = state.activity.source.url; source.target = "_blank"; source.rel = "noreferrer"; grid.append(source); const objects = (state.activity.repositories || []).flatMap((repo) => ["pull_requests", "commits", "releases", "deployments"].flatMap((kind) => (repo[kind] || []).map((item) => ({ ...item, kind })))); if (!objects.length) grid.append(element("p", "empty-state", t("github_activity_empty"))); for (const item of objects) { const card = element("article", "activity-card"); card.append(element("span", "category-label", item.kind.replaceAll("_", " ")), element("h3", null, item.title), element("p", "activity-meta", item.captured_at)); const link = element("a", "evidence-link", t("github_activity_open")); link.href = item.url; link.target = "_blank"; link.rel = "noreferrer"; card.append(link); grid.append(card); } const repos = element("div", "activity-repositories"); repos.append(element("strong", null, t("github_activity_allowlist"))); for (const url of state.activity.allowed_repositories || []) { const link = element("a", "evidence-link", url.replace("https://github.com/", "")); link.href = url; link.target = "_blank"; link.rel = "noreferrer"; repos.append(link); } grid.append(repos); }
-function renderStaticText() { const map = { "#snapshot-version": `snapshot ${state.snapshot.schema_version} · ${state.catalog.status[state.snapshot.snapshot_status] || state.snapshot.snapshot_status}`, ".skip-link": t("skip_to_content"), ".primary-nav a[data-nav-key=\"evidence\"]": t("evidence"), ".primary-nav a[data-nav-key=\"projects\"]": t("projects"), ".primary-nav a[data-nav-key=\"github_activity_label\"]": t("github_activity_label"), ".primary-nav a[data-nav-key=\"trajectory\"]": t("trajectory"), ".primary-nav a[data-nav-key=\"goals\"]": t("goals"), ".hero .eyebrow": t("hero_eyebrow"), ".hero-lede": t("hero_lede"), ".button-primary": t("explore_evidence"), ".button-secondary": t("public_profile"), ".note-label": t("principle_label"), ".note-text": t("principle_text"), ".hero-note a": t("read_boundaries"), ".review-inner p": t("review_banner"), "#evidence .eyebrow": `01 · ${t("what_supported")}`, "#evidence h2": t("evidence_heading"), "#evidence .section-intro": t("evidence_intro"), "[data-filter=all]": t("all_claims"), "#projects .eyebrow": `02 · ${t("work_in_view")}`, "#projects h2": t("projects_heading"), "#projects .section-intro": t("projects_intro"), "#github-activity .eyebrow": t("github_activity_section_label"), "#github-activity h2": t("github_activity_heading"), "#github-activity .section-intro": t("github_activity_intro"), "#evidence-index .eyebrow": `03 · ${t("inspectable_proof")}`, "#evidence-index h2": t("evidence_heading_public"), "#evidence-index .section-intro": t("evidence_intro_public"), "#trajectory .eyebrow": `04 · ${t("direction_of_travel")}`, "#trajectory h2": t("trajectory_heading"), "#trajectory .body-copy": t("trajectory_text"), "#trajectory .muted": t("trajectory_note"), "#goals .eyebrow": `05 · ${t("what_next")}`, "#goals h2": t("goals_heading"), "#goals .section-intro": t("goals_intro"), "#boundaries .eyebrow": t("boundary_label"), "#boundaries h2": t("boundary_heading"), ".boundary-list li:nth-child(1)": t("no_rag"), ".boundary-list li:nth-child(2)": t("no_private_details"), ".boundary-list li:nth-child(3)": t("no_metrics"), ".boundary-list li:nth-child(4)": t("historical_context"), ".footer-meta a": t("source_repository") }; for (const [selector, text] of Object.entries(map)) { const node = $(selector); if (node) node.textContent = text; } $("#footer-snapshot-id").textContent = state.snapshot.snapshot_id; document.title = state.catalog.meta.title; document.querySelector('meta[name="description"]').content = state.catalog.meta.description; }
-function showError(message) { for (const id of ["claims-grid", "projects-grid", "goals-grid"]) document.getElementById(id).replaceChildren(element("p", "error-state", message)); $("#snapshot-version").textContent = t("snapshot_unavailable"); }
+function element(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
 
-export async function boot({ snapshot, catalog, loadActivity } = {}) { globalThis.window?.portfolioTheme?.connectToggle?.(); document.querySelectorAll(".language-switcher a").forEach((link) => { if (link.getAttribute("href") === `/${locale}/`) link.setAttribute("aria-current", "page"); }); document.querySelectorAll("[data-filter]").forEach((button) => button.addEventListener("click", () => { state.filter = button.dataset.filter; document.querySelectorAll("[data-filter]").forEach((item) => item.classList.toggle("is-active", item === button)); if (state.snapshot) renderClaims(); })); const loadSnapshot = snapshot ? Promise.resolve(snapshot) : fetch(`${basePath}public-snapshot/snapshot.json`).then((response) => { if (!response.ok) throw new Error("snapshot"); return response.json(); }); const loadCatalog = catalog ? Promise.resolve(catalog) : fetch(`${basePath}site/i18n/${locale}.json`).then((response) => { if (!response.ok) throw new Error("catalog"); return response.json(); }); return Promise.all([loadSnapshot, loadCatalog]).then(([loadedSnapshot, loadedCatalog]) => { state.snapshot = loadedSnapshot; state.catalog = loadedCatalog; renderStaticText(); renderCommercialText(); renderClaims(); renderProjects(); renderEvidence(); renderGoals(); renderGithubActivity(); const activityRequest = loadActivity ? loadActivity() : fetch(`${basePath}github-activity/snapshot.json`).then((response) => { if (!response.ok) throw new Error("activity"); return response.json(); }); return activityRequest.then((activity) => { state.activity = activity; renderGithubActivity(); }).catch(() => { state.activity = null; renderGithubActivity(); }); }).catch(() => { state.catalog = { ui: { snapshot_unavailable: "Snapshot unavailable", no_filter_results: "No claims match this evidence filter." }, status: {} }; showError(t("snapshot_error")); }); }
+function t(key) {
+  return key.split(".").reduce((value, part) => value?.[part], state.catalog?.ui) || key;
+}
+
+function statusPill(status) {
+  return element("span", `status-pill status-${status}`, state.catalog?.status?.[status] || status.replaceAll("_", " "));
+}
+
+function renderClaims() {
+  const grid = $("#claims-grid");
+  grid.replaceChildren();
+  const claims = state.snapshot.claims.filter((claim) => state.filter === "all" || claim.status === state.filter);
+  if (!claims.length) {
+    grid.append(element("p", "empty-state", t("no_filter_results")));
+    return;
+  }
+  for (const claim of claims) {
+    const copy = state.catalog.claims[claim.id] || {};
+    const card = element("article", "claim-card");
+    const topline = element("div", "card-topline");
+    topline.append(element("span", "category-label", claim.category), statusPill(claim.status));
+    card.append(topline, element("p", "claim-text", copy.text || claim.text));
+    if (copy.notes || claim.notes) card.append(element("p", "claim-note", copy.notes || claim.notes));
+    grid.append(card);
+  }
+}
+
+function renderProjects() {
+  const grid = $("#projects-grid");
+  grid.replaceChildren();
+  for (const project of state.snapshot.projects) {
+    const copy = state.catalog.projects[project.id] || {};
+    const card = element("article", "project-card");
+    const topline = element("div", "card-topline");
+    topline.append(element("span", "category-label", project.maturity.replaceAll("_", " ")), statusPill(project.evidence_level));
+    card.append(topline, element("h3", null, copy.name || project.name), element("p", "project-meta", `${project.status.replaceAll("_", " ")} · ${project.public ? t("public") : t("not_public")}`));
+    const list = element("ul", "project-list");
+    const items = project.capabilities_demonstrated.length ? project.capabilities_demonstrated : project.capabilities_not_demonstrated.slice(0, 3);
+    for (const item of items) list.append(element("li", null, item));
+    card.append(list);
+    grid.append(card);
+  }
+}
+
+function renderEvidence() {
+  const grid = $("#evidence-grid");
+  grid.replaceChildren();
+  for (const evidence of state.snapshot.evidence) {
+    const card = element("article", "evidence-card");
+    card.append(element("span", "category-label", evidence.type.replaceAll("_", " ")), element("h3", null, evidence.title));
+    const note = element("p", "evidence-meta", `${evidence.verification_status.replaceAll("_", " ")} · ${evidence.supports_claims.length} supported claim(s)`);
+    card.append(note, element("p", "evidence-summary", evidence.notes));
+    const link = element("a", "evidence-link", t("view_evidence"));
+    link.href = evidence.url;
+    link.target = "_blank";
+    link.rel = "noreferrer";
+    card.append(link);
+    grid.append(card);
+  }
+}
+
+function renderGoals() {
+  const grid = $("#goals-grid");
+  grid.replaceChildren();
+  for (const [horizon, goal] of Object.entries(state.snapshot.goals)) {
+    const copy = state.catalog.goals[horizon] || {};
+    const card = element("article", "goal-card");
+    card.append(element("span", "category-label", horizon), element("h3", null, copy.statement || goal.statement), element("p", null, copy.question || goal.open_questions[0] || t("open_review")), statusPill(goal.status));
+    grid.append(card);
+  }
+}
+
+export function renderGithubActivity() {
+  const grid = $("#github-activity-grid");
+  grid.replaceChildren();
+  if (!state.activity) {
+    grid.append(element("p", "error-state", t("github_activity_unavailable")));
+    return;
+  }
+  const status = state.activity.status;
+  grid.append(element("p", "activity-status", `${t("github_activity_status")}: ${status.availability}${status.stale ? ` · ${t("github_activity_stale")}${status.stale_reason ? ` · ${status.stale_reason}` : ""}` : ""}`), element("p", "activity-meta", `${t("github_activity_captured")}: ${state.activity.captured_at}`), element("p", "activity-meta", `${t("github_activity_message")}: ${status.message}`));
+  const source = element("a", "activity-source", `${t("github_activity_source")}: ${state.activity.source.url}`);
+  source.href = state.activity.source.url;
+  source.target = "_blank";
+  source.rel = "noreferrer";
+  grid.append(source);
+  const objects = (state.activity.repositories || []).flatMap((repo) => ["pull_requests", "commits", "releases", "deployments"].flatMap((kind) => (repo[kind] || []).map((item) => ({ ...item, kind }))));
+  if (!objects.length) grid.append(element("p", "empty-state", t("github_activity_empty")));
+  for (const item of objects) {
+    const card = element("article", "activity-card");
+    card.append(element("span", "category-label", item.kind.replaceAll("_", " ")), element("h3", null, item.title), element("p", "activity-meta", item.captured_at));
+    const link = element("a", "evidence-link", t("github_activity_open"));
+    link.href = item.url;
+    link.target = "_blank";
+    link.rel = "noreferrer";
+    card.append(link);
+    grid.append(card);
+  }
+  const repos = element("div", "activity-repositories");
+  repos.append(element("strong", null, t("github_activity_allowlist")));
+  for (const url of state.activity.allowed_repositories || []) {
+    const link = element("a", "evidence-link", url.replace("https://github.com/", ""));
+    link.href = url;
+    link.target = "_blank";
+    link.rel = "noreferrer";
+    repos.append(link);
+  }
+  grid.append(repos);
+}
+
+function renderCommercialText() {
+  for (const node of document.querySelectorAll("[data-ui-key]")) node.textContent = t(node.dataset.uiKey);
+}
+
+function renderStaticText() {
+  const map = {
+    "#snapshot-version": `snapshot ${state.snapshot.schema_version} · ${state.catalog.status[state.snapshot.snapshot_status] || state.snapshot.snapshot_status}`,
+    ".skip-link": t("skip_to_content"),
+    '.primary-nav a[data-nav-key="evidence"]': t("evidence"),
+    '.primary-nav a[data-nav-key="projects"]': t("nav_work"),
+    '.primary-nav a[data-nav-key="professional_opportunities"]': t("nav_professional"),
+    '.primary-nav a[data-nav-key="services_review"]': t("nav_services"),
+    "[data-filter=all]": t("all_claims"),
+    "[data-filter=demonstrated]": t("filter_demonstrated"),
+    "[data-filter=developing]": t("filter_developing"),
+    "[data-filter=aspirational]": t("filter_aspirational"),
+    "[data-filter=insufficient_evidence]": t("filter_insufficient"),
+    "#footer-snapshot-id": state.snapshot.snapshot_id,
+    ".footer-meta a": t("source_repository"),
+  };
+  for (const [selector, text] of Object.entries(map)) {
+    const node = $(selector);
+    if (node) node.textContent = text;
+  }
+  document.title = state.catalog.meta.title;
+  document.querySelector('meta[name="description"]').content = state.catalog.meta.description;
+}
+
+function showError(message) {
+  for (const id of ["claims-grid", "projects-grid", "goals-grid"]) document.getElementById(id).replaceChildren(element("p", "error-state", message));
+  $("#snapshot-version").textContent = t("snapshot_unavailable");
+}
+
+export async function boot({ snapshot, catalog, loadActivity } = {}) {
+  globalThis.window?.portfolioTheme?.connectToggle?.();
+  document.querySelectorAll(".language-switcher a").forEach((link) => {
+    if (link.getAttribute("href") === `/${locale}/`) link.setAttribute("aria-current", "page");
+  });
+  document.querySelectorAll("[data-filter]").forEach((button) => button.addEventListener("click", () => {
+    state.filter = button.dataset.filter;
+    document.querySelectorAll("[data-filter]").forEach((item) => item.classList.toggle("is-active", item === button));
+    if (state.snapshot) renderClaims();
+  }));
+  const loadSnapshot = snapshot ? Promise.resolve(snapshot) : fetch(`${basePath}public-snapshot/snapshot.json`).then((response) => {
+    if (!response.ok) throw new Error("snapshot");
+    return response.json();
+  });
+  const loadCatalog = catalog ? Promise.resolve(catalog) : fetch(`${basePath}site/i18n/${locale}.json`).then((response) => {
+    if (!response.ok) throw new Error("catalog");
+    return response.json();
+  });
+  return Promise.all([loadSnapshot, loadCatalog]).then(([loadedSnapshot, loadedCatalog]) => {
+    state.snapshot = loadedSnapshot;
+    state.catalog = loadedCatalog;
+    renderStaticText();
+    renderCommercialText();
+    renderClaims();
+    renderProjects();
+    renderEvidence();
+    renderGoals();
+    renderGithubActivity();
+    const activityRequest = loadActivity ? loadActivity() : fetch(`${basePath}github-activity/snapshot.json`).then((response) => {
+      if (!response.ok) throw new Error("activity");
+      return response.json();
+    });
+    return activityRequest.then((activity) => {
+      state.activity = activity;
+      renderGithubActivity();
+    }).catch(() => {
+      state.activity = null;
+      renderGithubActivity();
+    });
+  }).catch(() => {
+    state.catalog = { ui: { snapshot_unavailable: "Snapshot unavailable", no_filter_results: "No claims match this evidence filter." }, status: {} };
+    showError(t("snapshot_error"));
+  });
+}
 
 if (!globalThis.__PORTFOLIO_TEST__) boot();
