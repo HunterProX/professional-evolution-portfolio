@@ -90,6 +90,17 @@ test("locale catalogs have complete claim parity", async () => { const en = JSON
 test("URL registry has one canonical and a distinct mirror", () => { assert.equal(registry.deployments.filter((item) => item.role === "canonical" && item.enabled).length, 1); assert.ok(registry.deployments.some((item) => item.role === "mirror")); assert.match(registry.canonical_deployment_id, /^[a-z0-9-]+$/); });
 test("release build script exists and emits a manifest contract", async () => { const build = await readFile(resolve(root, "site/release-build.mjs"), "utf8"); assert.match(build, /release-manifest\.json/); assert.match(build, /SITE_ORIGIN/); assert.match(build, /SITE_BASE_PATH/); });
 
+test("release artifact includes theme assets referenced by root and localized HTML", async () => {
+  await run(process.execPath, [resolve(root, "site/release-build.mjs")], { cwd: root });
+  const releaseRoot = resolve(root, "dist");
+  for (const asset of ["theme.js", "theme.css"]) assert.ok((await readFile(resolve(releaseRoot, "site", asset), "utf8")).length > 0);
+  for (const [page, themePath] of [["index.html", "site/"], ["en/index.html", "../site/"], ["es/index.html", "../site/"]]) {
+    const markup = await readFile(resolve(releaseRoot, page), "utf8");
+    assert.ok(markup.includes(`${themePath}theme.js`), `${page} references the copied theme.js`);
+    assert.ok(markup.includes(`${themePath}theme.css`), `${page} references the copied theme.css`);
+  }
+});
+
 test("GitHub activity contract is public, allowlisted, and empty without inventing activity", () => { assert.equal(activitySchema.properties.schema_version.const, "1.0.0"); assert.equal(activity.source.mode, "checked_in_fixture"); assert.equal(activity.status.availability, "empty"); assert.equal(activity.repositories.length, 0); assert.ok(activity.allowed_repositories.every((url) => /^https:\/\/github\.com\/[^/]+\/[^/]+$/.test(url))); assert.match(app, /github-activity\/snapshot\.json/); assert.doesNotMatch(JSON.stringify(activity), /private|token|localhost|Users[\\/]/i); });
 test("GitHub activity rendering is offline and bilingual", () => { assert.match(app, /renderGithubActivity/); assert.match(app, /github_activity_empty/); assert.match(enPage, /github-activity/); assert.match(esPage, /github-activity/); });
 test("rendered navigation uses stable keys and complete English/Spanish labels", async () => {
