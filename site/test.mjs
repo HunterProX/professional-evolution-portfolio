@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { pathToFileURL } from "node:url";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import { runInNewContext } from "node:vm";
 const run = promisify(execFile);
 const root = resolve(import.meta.dirname, "..");
 const activity = JSON.parse(await readFile(resolve(root, "github-activity/snapshot.json"), "utf8"));
@@ -13,10 +14,21 @@ const activitySchema = JSON.parse(await readFile(resolve(root, "github-activity/
 const snapshot = JSON.parse(await readFile(resolve(root, "public-snapshot/snapshot.json"), "utf8"));
 const html = await readFile(resolve(root, "index.html"), "utf8");
 const css = await readFile(resolve(root, "site/styles.css"), "utf8");
+const themeCss = await readFile(resolve(root, "site/theme.css"), "utf8");
+const themeScript = await readFile(resolve(root, "site/theme.js"), "utf8");
 const app = await readFile(resolve(root, "site/app.js"), "utf8");
 const registry = JSON.parse(await readFile(resolve(root, "site/site-config.json"), "utf8"));
 const enPage = await readFile(resolve(root, "en/index.html"), "utf8").catch(() => "");
 const esPage = await readFile(resolve(root, "es/index.html"), "utf8").catch(() => "");
+function runTheme({ stored = null, language = "en", systemLight = false } = {}) {
+  const root = { dataset: {}, lang: language };
+  const button = { dataset: {}, attributes: {}, listeners: {}, textContent: "", setAttribute(name, value) { this.attributes[name] = value; }, addEventListener(name, listener) { this.listeners[name] = listener; } };
+  const values = new Map(stored === null ? [] : [["portfolio-theme", stored]]);
+  const storage = { getItem: (key) => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) };
+  const window = { matchMedia: () => ({ matches: systemLight }) };
+  runInNewContext(themeScript, { document: { documentElement: root, querySelector: () => button }, window, localStorage: storage });
+  return { root, button, storage, window };
+}
 test("portfolio UI uses the approved snapshot as its only data source", () => { assert.match(app, /public-snapshot\/snapshot\.json/); assert.doesNotMatch(app, /personal-wt|portfolio-work|Desktop|Users[\\/]/i); assert.doesNotMatch(html, /portfolio-work|Desktop|Users[\\/]/i); });
 test("portfolio includes required evidence-first sections", () => { for (const section of ["evidence", "projects", "trajectory", "goals", "boundaries"]) assert.match(html, new RegExp(`id="${section}"`)); assert.match(css, /prefers-reduced-motion/); assert.match(css, /:focus-visible/); });
 test("employment and exploratory systems-review paths stay separate and evidence-bounded", async () => {
@@ -36,9 +48,58 @@ test("employment and exploratory systems-review paths stay separate and evidence
 test("rendered data remains bounded to snapshot records", () => { assert.equal(snapshot.claims.length, 12); assert.equal(snapshot.projects.length, 4); assert.equal(Object.keys(snapshot.goals).length, 3); assert.equal(snapshot.requires_human_review, true); });
 test("site does not contain unsupported marketing claims", () => { assert.doesNotMatch(`${app}\n${css}`, /10\+|years of experience|cost reduction|AWS|GCP|Kubernetes|Terraform/i); });
 test("localized pages are generated with correct language routes", () => { assert.match(enPage, /<html lang="en">/); assert.match(esPage, /<html lang="es">/); assert.match(enPage, /src="\.\.\/site\/app\.js"/); assert.match(esPage, /src="\.\.\/site\/app\.js"/); assert.match(html, /href="en\/"/); assert.match(html, /href="es\/"/); assert.match(html, /language-switcher/); });
+test("theme defaults to dark before styles load regardless of system preference", () => {
+  assert.match(html, /src="site\/theme\.js"/);
+  for (const page of [enPage, esPage]) assert.match(page, /src="\.\.\/site\/theme\.js"/);
+  for (const page of [html, enPage, esPage]) assert.ok(page.indexOf("theme.js") < page.indexOf("styles.css"));
+  assert.equal(runTheme({ systemLight: true }).root.dataset.theme, "dark");
+});
+test("stored light and dark preferences are applied, with invalid values falling back to dark", () => {
+  for (const [stored, expected] of [["light", "light"], ["dark", "dark"], ["system", "dark"], [null, "dark"]]) {
+    assert.equal(runTheme({ stored }).root.dataset.theme, expected);
+  }
+});
+test("theme toggle updates visible state, accessible name, pressed state, and saved preference", () => {
+  const { root: themeRoot, button, storage, window } = runTheme({ language: "es" });
+  window.portfolioTheme.connectToggle();
+  assert.equal(button.textContent, "Tema oscuro");
+  assert.equal(button.attributes["aria-pressed"], "false");
+  assert.match(button.attributes["aria-label"], /tema oscuro activo/i);
+  button.listeners.click();
+  assert.equal(themeRoot.dataset.theme, "light");
+  assert.equal(button.textContent, "Tema claro");
+  assert.equal(button.attributes["aria-pressed"], "true");
+  assert.match(button.attributes["aria-label"], /tema claro activo/i);
+  assert.equal(storage.getItem("portfolio-theme"), "light");
+  button.listeners.click();
+  assert.equal(themeRoot.dataset.theme, "dark");
+  assert.equal(storage.getItem("portfolio-theme"), "dark");
+});
+test("dark and light theme tokens include readable surfaces, focus, and text-labelled statuses", () => {
+  for (const token of ["--paper", "--ink", "--muted", "--line", "--white", "--focus", "--status-demonstrated-text", "--status-developing-text", "--status-aspirational-text", "--status-insufficient-text"]) assert.match(themeCss, new RegExp(`${token}:`));
+  assert.match(themeCss, /:root\s*\{[\s\S]*?color-scheme:\s*dark/);
+  assert.match(themeCss, /:root\[data-theme="light"\]\s*\{[\s\S]*?color-scheme:\s*light/);
+  assert.match(themeCss, /:focus-visible\s*\{[\s\S]*?outline:\s*3px solid var\(--focus\)/);
+  assert.match(css, /\.status-pill/);
+  assert.match(html, /href="site\/theme\.css"/);
+  for (const page of [enPage, esPage]) assert.match(page, /href="\.\.\/site\/theme\.css"/);
+  for (const page of [html, enPage, esPage]) assert.match(page, /<button[^>]+type="button"[^>]+data-theme-toggle[^>]+aria-label="[^"]+" aria-pressed="false"/);
+  assert.match(esPage, /aria-label="Tema oscuro activo\. Cambiar a tema claro" aria-pressed="false">Tema oscuro/);
+});
 test("locale catalogs have complete claim parity", async () => { const en = JSON.parse(await readFile(resolve(root, "site/i18n/en.json"), "utf8")); const es = JSON.parse(await readFile(resolve(root, "site/i18n/es.json"), "utf8")); assert.deepEqual(Object.keys(en.claims).sort(), Object.keys(es.claims).sort()); assert.deepEqual(Object.keys(en.projects).sort(), Object.keys(es.projects).sort()); assert.deepEqual(Object.keys(en.goals).sort(), Object.keys(es.goals).sort()); });
 test("URL registry has one canonical and a distinct mirror", () => { assert.equal(registry.deployments.filter((item) => item.role === "canonical" && item.enabled).length, 1); assert.ok(registry.deployments.some((item) => item.role === "mirror")); assert.match(registry.canonical_deployment_id, /^[a-z0-9-]+$/); });
 test("release build script exists and emits a manifest contract", async () => { const build = await readFile(resolve(root, "site/release-build.mjs"), "utf8"); assert.match(build, /release-manifest\.json/); assert.match(build, /SITE_ORIGIN/); assert.match(build, /SITE_BASE_PATH/); });
+
+test("release artifact includes theme assets referenced by root and localized HTML", async () => {
+  await run(process.execPath, [resolve(root, "site/release-build.mjs")], { cwd: root });
+  const releaseRoot = resolve(root, "dist");
+  for (const asset of ["theme.js", "theme.css"]) assert.ok((await readFile(resolve(releaseRoot, "site", asset), "utf8")).length > 0);
+  for (const [page, themePath] of [["index.html", "site/"], ["en/index.html", "../site/"], ["es/index.html", "../site/"]]) {
+    const markup = await readFile(resolve(releaseRoot, page), "utf8");
+    assert.ok(markup.includes(`${themePath}theme.js`), `${page} references the copied theme.js`);
+    assert.ok(markup.includes(`${themePath}theme.css`), `${page} references the copied theme.css`);
+  }
+});
 
 test("GitHub activity contract is public, allowlisted, and empty without inventing activity", () => { assert.equal(activitySchema.properties.schema_version.const, "1.0.0"); assert.equal(activity.source.mode, "checked_in_fixture"); assert.equal(activity.status.availability, "empty"); assert.equal(activity.repositories.length, 0); assert.ok(activity.allowed_repositories.every((url) => /^https:\/\/github\.com\/[^/]+\/[^/]+$/.test(url))); assert.match(app, /github-activity\/snapshot\.json/); assert.doesNotMatch(JSON.stringify(activity), /private|token|localhost|Users[\\/]/i); });
 test("GitHub activity rendering is offline and bilingual", () => { assert.match(app, /renderGithubActivity/); assert.match(app, /github_activity_empty/); assert.match(enPage, /github-activity/); assert.match(esPage, /github-activity/); });

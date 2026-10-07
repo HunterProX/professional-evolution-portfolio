@@ -18,7 +18,7 @@ execFileSync(process.execPath, [resolve(root, "site/build.mjs")], {
 });
 await cp(resolve(root, "public-snapshot"), resolve(output, "public-snapshot"), { recursive: true });
 await mkdir(resolve(output, "site/i18n"), { recursive: true });
-for (const file of ["app.js", "styles.css", "i18n.css"]) await cp(resolve(root, `site/${file}`), resolve(output, `site/${file}`));
+for (const file of ["app.js", "styles.css", "i18n.css", "theme.js", "theme.css"]) await cp(resolve(root, `site/${file}`), resolve(output, `site/${file}`));
 for (const locale of ["en", "es"]) await cp(resolve(root, `site/i18n/${locale}.json`), resolve(output, `site/i18n/${locale}.json`));
 let sourceCommit = "unknown";
 try { sourceCommit = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim(); } catch {}
