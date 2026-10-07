@@ -1,0 +1,271 @@
+:root {
+  color-scheme: dark;
+  --ink: #f1f5f9;
+  --muted: #bdc7d3;
+  --line: #6b7b8e;
+  --paper: #10151d;
+  --white: #f1f5f9;
+  --surface: #1a222d;
+  --action: #bdf5da;
+  --action-text: #10251a;
+  --mint: #bdf5da;
+  --mint-strong: #62d49b;
+  --blue: #9dd9ff;
+  --yellow: #ffe59a;
+  --lavender: #d7c9ff;
+  --dark: #080b10;
+  --header-background: rgba(16, 21, 29, .94);
+  --section-tint: #151d27;
+  --footer-background: #151d27;
+  --hero-glow: rgba(70, 157, 119, .16);
+  --eyebrow-color: #83dfb0;
+  --heading-accent: #86e1b3;
+  --body-copy: #d0d8e2;
+  --focus: #7dd3fc;
+  --status-demonstrated-bg: #173b2e;
+  --status-demonstrated-text: #bdf5da;
+  --status-developing-bg: #17364a;
+  --status-developing-text: #b8e5ff;
+  --status-aspirational-bg: #30264a;
+  --status-aspirational-text: #e0d6ff;
+  --status-insufficient-bg: #303844;
+  --status-insufficient-text: #e0e6ee;
+  --error: #ffb4ab;
+  --error-line: #8a4744;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --ink: #101820;
+  --muted: #45515f;
+  --line: #c3ccd5;
+  --paper: #f7f8f6;
+  --white: #ffffff;
+  --surface: #ffffff;
+  --action: #101820;
+  --action-text: #ffffff;
+  --mint: #bdf5da;
+  --mint-strong: #176b4a;
+  --blue: #9dd9ff;
+  --yellow: #ffe59a;
+  --lavender: #d7c9ff;
+  --dark: #171a20;
+  --header-background: rgba(247, 248, 246, .95);
+  --section-tint: #edf1ef;
+  --footer-background: #e9eeeb;
+  --hero-glow: rgba(189, 245, 218, .85);
+  --eyebrow-color: #245b43;
+  --heading-accent: #216b4b;
+  --body-copy: #354250;
+  --focus: #075985;
+  --status-demonstrated-bg: #d8f4e5;
+  --status-demonstrated-text: #174d35;
+  --status-developing-bg: #dceffc;
+  --status-developing-text: #154666;
+  --status-aspirational-bg: #eee8ff;
+  --status-aspirational-text: #493773;
+  --status-insufficient-bg: #eceeef;
+  --status-insufficient-text: #414a55;
+  --error: #8c1d18;
+  --error-line: #bd5a55;
+}
+
+body {
+  color: var(--ink);
+  background: var(--paper);
+}
+
+.site-header {
+  background: var(--header-background);
+  border-bottom-color: var(--line);
+}
+
+.header-controls {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-mark {
+  background: var(--action);
+  color: var(--action-text);
+}
+
+.skip-link {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.theme-toggle {
+  min-height: 40px;
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink);
+  background: var(--surface);
+  font: inherit;
+  font-size: .78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  border-color: var(--ink);
+}
+
+.hero {
+  background: radial-gradient(circle at 84% 26%, var(--hero-glow), transparent 25%), var(--paper);
+}
+
+.eyebrow {
+  color: var(--eyebrow-color);
+}
+
+h1 span {
+  color: var(--heading-accent);
+}
+
+.hero-lede,
+.body-copy,
+.project-list,
+.boundary-list li {
+  color: var(--body-copy);
+}
+
+.hero-note {
+  border-color: var(--line);
+  background: var(--surface);
+  box-shadow: 13px 13px 0 rgba(98, 212, 155, .13);
+}
+
+.note-icon {
+  color: #10251a;
+}
+
+.hero-note a {
+  color: var(--eyebrow-color);
+}
+
+.review-banner {
+  border-color: var(--line);
+  background: #173b30;
+  color: #effff6;
+}
+
+.snapshot-version {
+  color: #bdf5da;
+}
+
+.section-tint {
+  background: var(--section-tint);
+}
+
+.section-intro,
+.category-label,
+.claim-note,
+.project-meta,
+.rail-item small,
+.footer-inner p span,
+.footer-meta,
+.activity-meta,
+.activity-status,
+.activity-repositories {
+  color: var(--muted);
+}
+
+.section-heading-light .section-intro {
+  color: #d0d8e2;
+}
+
+.filter-button {
+  color: var(--muted);
+  border-color: var(--line);
+}
+
+.filter-button:hover,
+.filter-button:focus-visible,
+.filter-button.is-active {
+  border-color: var(--action);
+  background: var(--action);
+  color: var(--action-text);
+}
+
+.button-primary {
+  border-color: var(--action);
+  background: var(--action);
+  color: var(--action-text);
+}
+
+.claim-card,
+.project-card,
+.activity-card,
+.activity-repositories .evidence-link {
+  background: var(--surface);
+}
+
+.status-demonstrated {
+  background: var(--status-demonstrated-bg);
+  color: var(--status-demonstrated-text);
+}
+
+.status-developing {
+  background: var(--status-developing-bg);
+  color: var(--status-developing-text);
+}
+
+.status-aspirational {
+  background: var(--status-aspirational-bg);
+  color: var(--status-aspirational-text);
+}
+
+.status-insufficient_evidence {
+  background: var(--status-insufficient-bg);
+  color: var(--status-insufficient-text);
+}
+
+.site-footer {
+  background: var(--footer-background);
+}
+
+.loading-state,
+.empty-state,
+.error-state {
+  color: var(--muted);
+}
+
+.error-state {
+  border-color: var(--error-line);
+  color: var(--error);
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+@media (max-width: 980px) {
+  .primary-nav {
+    display: none;
+  }
+
+  .header-inner {
+    gap: 12px;
+  }
+
+  .header-controls {
+    gap: 10px;
+  }
+}
+
+@media (max-width: 580px) {
+  .header-inner {
+    flex-wrap: wrap;
+    padding: 10px 0;
+  }
+
+  .header-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

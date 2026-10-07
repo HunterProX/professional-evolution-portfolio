@@ -16,15 +16,20 @@ for (const locale of locales) {
     .replace('<html lang="en">', `<html lang="${locale}">`)
     .replace(/<title>[^<]+<\/title>/, `<title>${catalog.meta.title}</title>`)
     .replace(/(<meta name="description" content=")[^"]+(">)/, `$1${catalog.meta.description}$2`)
+    .replace('src="site/theme.js"', 'src="../site/theme.js"')
     .replace('href="site/styles.css"', 'href="../site/styles.css"')
     .replace('href="site/i18n.css"', 'href="../site/i18n.css"')
+    .replace('href="site/theme.css"', 'href="../site/theme.css"')
     .replace('src="site/app.js"', 'src="../site/app.js"')
     .replace('href="en/"', 'href="../en/"')
     .replace('href="es/"', 'href="../es/"')
     .replace('<script type="module" src="../site/app.js"></script>', '<script type="module" src="../site/app.js"></script>');
+  const localizedOutput = locale === "es"
+    ? output.replace('aria-label="Dark theme active. Switch to light theme" aria-pressed="false">Dark theme</button>', 'aria-label="Tema oscuro activo. Cambiar a tema claro" aria-pressed="false">Tema oscuro</button>')
+    : output;
   const target = resolve(outputRoot, locale, "index.html");
   await mkdir(dirname(target), { recursive: true });
-  await writeFile(target, output, "utf8");
+  await writeFile(target, localizedOutput, "utf8");
 }
 const rootPage = source.replace(/<html lang="en">/, '<html lang="en">');
 await mkdir(outputRoot, { recursive: true });
