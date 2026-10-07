@@ -19,6 +19,20 @@ const enPage = await readFile(resolve(root, "en/index.html"), "utf8").catch(() =
 const esPage = await readFile(resolve(root, "es/index.html"), "utf8").catch(() => "");
 test("portfolio UI uses the approved snapshot as its only data source", () => { assert.match(app, /public-snapshot\/snapshot\.json/); assert.doesNotMatch(app, /personal-wt|portfolio-work|Desktop|Users[\\/]/i); assert.doesNotMatch(html, /portfolio-work|Desktop|Users[\\/]/i); });
 test("portfolio includes required evidence-first sections", () => { for (const section of ["evidence", "projects", "trajectory", "goals", "boundaries"]) assert.match(html, new RegExp(`id="${section}"`)); assert.match(css, /prefers-reduced-motion/); assert.match(css, /:focus-visible/); });
+test("employment and exploratory systems-review paths stay separate and evidence-bounded", async () => {
+  for (const page of [html, enPage, esPage]) {
+    assert.match(page, /data-nav-key="professional_opportunities"[^>]+href="#professional-opportunities"/);
+    assert.match(page, /data-nav-key="services_review"[^>]+href="#systems-review"/);
+    assert.match(page, /id="professional-opportunities"[\s\S]*?href="https:\/\/www\.linkedin\.com\/in\/cristian-cardona-dev\/"/);
+    assert.match(page, /id="systems-review"[\s\S]*?href="#evidence-index"/);
+    assert.match(page, /not a validated or packaged service/i);
+    assert.doesNotMatch(page, /<form\b|mailto:/i);
+  }
+  const en = JSON.parse(await readFile(resolve(root, "site/i18n/en.json"), "utf8")); const es = JSON.parse(await readFile(resolve(root, "site/i18n/es.json"), "utf8"));
+  for (const key of ["professional_opportunities", "services_review", "paths_heading", "paths_intro", "professional_path_label", "professional_path_text", "professional_path_cta", "systems_path_label", "systems_path_text", "systems_path_cta"]) { assert.ok(en.ui[key]); assert.ok(es.ui[key]); }
+  assert.match(en.ui.systems_path_text, /exploratory|not a validated/i); assert.match(es.ui.systems_path_text, /exploratoria|No es un servicio validado/i);
+  assert.match(app, /renderCommercialText\(\)/);
+});
 test("rendered data remains bounded to snapshot records", () => { assert.equal(snapshot.claims.length, 12); assert.equal(snapshot.projects.length, 4); assert.equal(Object.keys(snapshot.goals).length, 3); assert.equal(snapshot.requires_human_review, true); });
 test("site does not contain unsupported marketing claims", () => { assert.doesNotMatch(`${app}\n${css}`, /10\+|years of experience|cost reduction|AWS|GCP|Kubernetes|Terraform/i); });
 test("localized pages are generated with correct language routes", () => { assert.match(enPage, /<html lang="en">/); assert.match(esPage, /<html lang="es">/); assert.match(enPage, /src="\.\.\/site\/app\.js"/); assert.match(esPage, /src="\.\.\/site\/app\.js"/); assert.match(html, /href="en\/"/); assert.match(html, /href="es\/"/); assert.match(html, /language-switcher/); });
