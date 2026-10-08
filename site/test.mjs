@@ -125,6 +125,11 @@ test("release artifact includes theme assets referenced by root and localized HT
     assert.ok(markup.includes(`${themePath}theme.js`), `${page} references the copied theme.js`);
     assert.ok(markup.includes(`${themePath}theme.css`), `${page} references the copied theme.css`);
   }
+  const activityPath = resolve(releaseRoot, "github-activity/snapshot.json");
+  assert.ok((await readFile(activityPath, "utf8")).length > 0, "release includes the GitHub activity snapshot");
+  const releaseApp = await readFile(resolve(releaseRoot, "site/app.js"), "utf8");
+  assert.match(releaseApp, /github-activity\/snapshot\.json/, "release app references the copied GitHub activity snapshot");
+  await run(process.execPath, [resolve(root, "github-activity/validate.mjs"), activityPath], { cwd: root });
 });
 
 test("GitHub activity contract is public, allowlisted, and empty without inventing activity", () => { assert.equal(activitySchema.properties.schema_version.const, "1.0.0"); assert.equal(activity.source.mode, "checked_in_fixture"); assert.equal(activity.status.availability, "empty"); assert.equal(activity.repositories.length, 0); assert.ok(activity.allowed_repositories.every((url) => /^https:\/\/github\.com\/[^/]+\/[^/]+$/.test(url))); assert.match(app, /github-activity\/snapshot\.json/); assert.doesNotMatch(JSON.stringify(activity), /private|token|localhost|Users[\\/]/i); });

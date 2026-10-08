@@ -17,6 +17,8 @@ execFileSync(process.execPath, [resolve(root, "site/build.mjs")], {
   env: { ...process.env, OUTPUT_DIR: "dist", SITE_ORIGIN: target.origin, SITE_BASE_PATH: target.base_path },
 });
 await cp(resolve(root, "public-snapshot"), resolve(output, "public-snapshot"), { recursive: true });
+await mkdir(resolve(output, "github-activity"), { recursive: true });
+await cp(resolve(root, "github-activity/snapshot.json"), resolve(output, "github-activity/snapshot.json"));
 await mkdir(resolve(output, "site/i18n"), { recursive: true });
 for (const file of ["app.js", "styles.css", "i18n.css", "theme.js", "theme.css"]) await cp(resolve(root, `site/${file}`), resolve(output, `site/${file}`));
 for (const locale of ["en", "es"]) await cp(resolve(root, `site/i18n/${locale}.json`), resolve(output, `site/i18n/${locale}.json`));
