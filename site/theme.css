@@ -115,7 +115,26 @@ body {
 }
 
 .hero {
-  background: radial-gradient(circle at 84% 26%, var(--hero-glow), transparent 25%), var(--paper);
+  color: #f1f5f9;
+  background: radial-gradient(ellipse at 84% 18%, var(--hero-glow), transparent 30%), #0d141c;
+}
+
+.hero h1,
+.hero .note-text {
+  color: #f1f5f9;
+}
+
+.hero .eyebrow,
+.hero .note-label {
+  color: #9ce9be;
+}
+
+.hero .hero-lede {
+  color: #c8d2de;
+}
+
+.hero .hero-note a {
+  color: #a6edc3;
 }
 
 .eyebrow {
@@ -246,7 +265,11 @@ h1 span {
 
 @media (max-width: 980px) {
   .primary-nav {
-    display: none;
+    display: flex;
+  }
+
+  .primary-nav a {
+    flex: 0 0 auto;
   }
 
   .header-inner {
