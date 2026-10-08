@@ -239,6 +239,8 @@ test("snapshot-controlled labels and trajectory copy have English and Spanish ma
 test("English and Spanish rendering localizes controlled labels, ARIA state, and loading without translating source content", async () => {
   globalThis.__PORTFOLIO_TEST__ = true;
   const activityData = JSON.parse(await readFile(resolve(root, "github-activity/fixtures/non-empty.json"), "utf8"));
+  const staleActivity = JSON.parse(await readFile(resolve(root, "github-activity/fixtures/stale.json"), "utf8"));
+  const unavailableActivity = JSON.parse(await readFile(resolve(root, "github-activity/fixtures/unavailable.json"), "utf8"));
   const evidenceNotes = snapshot.evidence[0].notes; const capabilityText = snapshot.projects[0].capabilities_demonstrated[0];
   for (const language of ["en", "es"]) {
     const document = makeTestDocument(language, language === "es" ? "/es/" : "/en/");
@@ -254,15 +256,38 @@ test("English and Spanish rendering localizes controlled labels, ARIA state, and
     assert.match(document.ids["github-activity-grid"].textContent, new RegExp(catalog.ui.github_activity_loading, "i"));
     assert.doesNotMatch(document.ids["github-activity-grid"].textContent, /unavailable/i);
     assert.ok(document.ids["claims-grid"].textContent.includes(catalog.ui.category.capability));
+    for (const claim of snapshot.claims) {
+      assert.ok(document.ids["claims-grid"].textContent.includes(catalog.ui.category[claim.category]), `${language} renders claim category ${claim.category}`);
+      assert.ok(document.ids["claims-grid"].textContent.includes(catalog.status[claim.status]), `${language} renders claim status ${claim.status}`);
+    }
     assert.ok(document.ids["projects-grid"].textContent.includes(catalog.ui.project_maturity.prototype));
     assert.ok(document.ids["projects-grid"].textContent.includes(catalog.ui.project_status.in_progress_prototype));
+    for (const project of snapshot.projects) {
+      assert.ok(document.ids["projects-grid"].textContent.includes(catalog.ui.project_maturity[project.maturity]), `${language} renders project maturity ${project.maturity}`);
+      assert.ok(document.ids["projects-grid"].textContent.includes(catalog.ui.project_status[project.status]), `${language} renders project status ${project.status}`);
+      assert.ok(document.ids["projects-grid"].textContent.includes(catalog.status[project.evidence_level]), `${language} renders project evidence status ${project.evidence_level}`);
+    }
     assert.ok(document.ids["projects-grid"].textContent.includes(capabilityText));
+    const untranslatedProject = snapshot.projects.find((project) => !catalog.projects[project.id]);
+    assert.ok(document.ids["projects-grid"].textContent.includes(untranslatedProject.name), `${language} preserves a project name without localized copy`);
+    assert.ok(document.ids["projects-grid"].textContent.includes(untranslatedProject.capabilities_demonstrated[0]), `${language} preserves project detail without localized copy`);
     assert.ok(document.ids["evidence-grid"].textContent.includes(catalog.ui.evidence_type.professional_profile));
     assert.ok(document.ids["evidence-grid"].textContent.includes(catalog.ui.verification_status.unverified_self_reported));
     assert.ok(document.ids["evidence-grid"].textContent.includes(evidenceNotes));
     assert.ok(document.ids["evidence-grid"].textContent.includes(language === "es" ? "afirmaciones respaldadas" : "supported claims"));
+    for (const evidence of snapshot.evidence) {
+      assert.ok(document.ids["evidence-grid"].textContent.includes(catalog.ui.evidence_type[evidence.type]), `${language} renders evidence type ${evidence.type}`);
+      assert.ok(document.ids["evidence-grid"].textContent.includes(catalog.ui.verification_status[evidence.verification_status]), `${language} renders verification status ${evidence.verification_status}`);
+      const supportKey = evidence.supports_claims.length === 1 ? "evidence_support_one" : "evidence_support_many";
+      assert.ok(document.ids["evidence-grid"].textContent.includes(catalog.ui[supportKey].replace("{count}", evidence.supports_claims.length)), `${language} renders the evidence support count`);
+    }
     assert.ok(document.ids["goals-grid"].textContent.includes(catalog.ui.goal_horizon.short));
     assert.ok(document.ids["goals-grid"].textContent.includes(catalog.status.draft));
+    for (const [horizon, goal] of Object.entries(snapshot.goals)) {
+      assert.ok(document.ids["goals-grid"].textContent.includes(catalog.ui.goal_horizon[horizon]), `${language} renders goal horizon ${horizon}`);
+      assert.ok(document.ids["goals-grid"].textContent.includes(catalog.status[goal.status]), `${language} renders goal status ${goal.status}`);
+    }
+    assert.ok(document.ids["snapshot-version"].textContent.includes(catalog.status[snapshot.snapshot_status]), `${language} renders the snapshot status`);
     assert.deepEqual(document.uiLabels.map((node) => node.textContent), [catalog.ui.full_stack_cloud, catalog.ui.ai_engineering, catalog.ui.ai_automation_agentic]);
     assert.deepEqual(document.ariaLabels.map((node) => node.getAttribute("aria-label")), [catalog.ui.language_switcher, catalog.ui.evidence_filters, catalog.ui.professional_direction]);
     document.filters[1].listeners.click();
@@ -272,14 +297,45 @@ test("English and Spanish rendering localizes controlled labels, ARIA state, and
     assert.doesNotMatch(document.ids["claims-grid"].textContent, /aspirational|aspiracional/);
     void pending;
 
+    const fallbackDocument = makeTestDocument(language, language === "es" ? "/es/" : "/en/");
+    globalThis.document = fallbackDocument; globalThis.window = { location: { pathname: fallbackDocument.pathname } };
+    const fallbackModule = await import(`${pathToFileURL(resolve(root, "site/app.js"))}?source-fallback-regression-${language}`);
+    const fallbackCatalog = JSON.parse(JSON.stringify(catalog));
+    const fallbackSnapshot = structuredClone(snapshot);
+    const untranslatedClaim = fallbackSnapshot.claims[0];
+    const untranslatedGoal = fallbackSnapshot.goals.short;
+    delete fallbackCatalog.claims[untranslatedClaim.id];
+    delete fallbackCatalog.goals.short;
+    fallbackSnapshot.claims[0].category = "new_category_value";
+    await fallbackModule.boot({ snapshot: fallbackSnapshot, catalog: fallbackCatalog, loadActivity: () => Promise.resolve(activityData) });
+    assert.ok(fallbackDocument.ids["claims-grid"].textContent.includes(untranslatedClaim.text), `${language} preserves a claim without localized copy`);
+    assert.ok(fallbackDocument.ids["claims-grid"].textContent.includes("new_category_value"), "unmapped enum values retain their source spelling");
+    assert.doesNotMatch(fallbackDocument.ids["claims-grid"].textContent, /new category value/);
+    assert.ok(fallbackDocument.ids["goals-grid"].textContent.includes(untranslatedGoal.statement), `${language} preserves a goal without localized copy`);
+
     const resolvedDocument = makeTestDocument(language, language === "es" ? "/es/" : "/en/");
     globalThis.document = resolvedDocument; globalThis.window = { location: { pathname: resolvedDocument.pathname } };
     const activityModule = await import(`${pathToFileURL(resolve(root, "site/app.js"))}?activity-locale-regression-${language}`);
     await activityModule.boot({ snapshot, catalog, loadActivity: () => Promise.resolve(activityData) });
     assert.ok(resolvedDocument.ids["github-activity-grid"].textContent.includes(catalog.ui.activity_availability.available));
     assert.ok(resolvedDocument.ids["github-activity-grid"].textContent.includes(catalog.ui.activity_kind.pull_requests));
+    for (const key of ["github_activity_status", "github_activity_captured", "github_activity_message", "github_activity_source"]) assert.ok(resolvedDocument.ids["github-activity-grid"].textContent.includes(catalog.ui[key]), `${language} renders GitHub activity UI label ${key}`);
     assert.ok(resolvedDocument.ids["github-activity-grid"].textContent.includes(activityData.status.message));
     assert.ok(resolvedDocument.ids["github-activity-grid"].textContent.includes(activityData.repositories[0].pull_requests[0].title));
+
+    const staleDocument = makeTestDocument(language, language === "es" ? "/es/" : "/en/");
+    globalThis.document = staleDocument; globalThis.window = { location: { pathname: staleDocument.pathname } };
+    const staleModule = await import(`${pathToFileURL(resolve(root, "site/app.js"))}?activity-stale-regression-${language}`);
+    await staleModule.boot({ snapshot, catalog, loadActivity: () => Promise.resolve(staleActivity) });
+    assert.ok(staleDocument.ids["github-activity-grid"].textContent.includes(catalog.ui.github_activity_stale));
+    assert.ok(staleDocument.ids["github-activity-grid"].textContent.includes(staleActivity.status.stale_reason), "stale reason remains source text");
+
+    const unavailableDocument = makeTestDocument(language, language === "es" ? "/es/" : "/en/");
+    globalThis.document = unavailableDocument; globalThis.window = { location: { pathname: unavailableDocument.pathname } };
+    const unavailableModule = await import(`${pathToFileURL(resolve(root, "site/app.js"))}?activity-unavailable-regression-${language}`);
+    await unavailableModule.boot({ snapshot, catalog, loadActivity: () => Promise.resolve(unavailableActivity) });
+    assert.ok(unavailableDocument.ids["github-activity-grid"].textContent.includes(catalog.ui.activity_availability.unavailable));
+    assert.ok(unavailableDocument.ids["github-activity-grid"].textContent.includes(unavailableActivity.status.message), "activity status message remains source text");
 
     const failedDocument = makeTestDocument(language, language === "es" ? "/es/" : "/en/");
     globalThis.document = failedDocument; globalThis.window = { location: { pathname: failedDocument.pathname } };

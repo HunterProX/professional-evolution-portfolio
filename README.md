@@ -61,3 +61,9 @@ public pull requests, commits, releases, and deployment objects. The browser nev
 calls GitHub and no token is required. The checked-in first snapshot is intentionally
 empty when verified activity is unavailable; it must not be read as a complete live
 contribution feed. Validate it with `npm run activity:check`.
+
+## Changelog
+
+| Date | Version | Summary |
+|---|---|---|
+| 2026-10-08 | 0.1.1 | Localize controlled labels and strengthen accessibility regressions. |

@@ -15,11 +15,11 @@ function t(key) {
 }
 
 function statusPill(status) {
-  return element("span", `status-pill status-${status}`, state.catalog?.status?.[status] || status.replaceAll("_", " "));
+  return element("span", `status-pill status-${status}`, state.catalog?.status?.[status] || status);
 }
 
 function label(group, value) {
-  return state.catalog?.ui?.[group]?.[value] || value.replaceAll("_", " ");
+  return state.catalog?.ui?.[group]?.[value] || value;
 }
 
 function renderClaims() {
