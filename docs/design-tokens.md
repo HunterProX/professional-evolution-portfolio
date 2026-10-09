@@ -33,13 +33,13 @@ non-text UI**.
 | `--color-bg` | `#0A192F` | Page background | base |
 | `--color-surface` | `#112240` | Cards, panels, code blocks | base |
 | `--color-surface-raised` | `#1D3254` | Hovered cards, popovers | base |
-| `--color-text` | `#E6F1FF` | Primary body + headings | ~15.9:1 on `bg` ✅ AAA |
-| `--color-text-muted` | `#8892B0` | Secondary copy, metadata | ~5.6:1 on `bg` ✅ AA body |
-| `--color-border` | `#233554` | Hairlines, dividers, chip borders | ~1.6:1 on `bg` — decorative only; any *interactive* border must use `accent` (3:1+) |
-| `--color-accent` | `#64FFDA` | Links, active nav, focus ring, chips | ~11.4:1 on `bg` ✅ AAA |
-| `--color-accent-ink` | `#0A192F` | Text on accent-filled buttons | ~11.4:1 ✅ AAA |
-| `--color-success` | `#48BB78` | "Verified / shipped / evidence ok" status | ~6.4:1 on `bg` ✅ AA |
-| `--color-warn` | `#F6C177` | "Draft / estimated / in-progress" status | ~9.6:1 on `bg` ✅ AA |
+| `--color-text` | `#E6F1FF` | Primary body + headings | 15.42:1 on `bg` ✅ AAA |
+| `--color-text-muted` | `#8892B0` | Secondary copy, metadata | 5.69:1 on `bg` ✅ AA body |
+| `--color-border` | `#233554` | Hairlines, dividers, chip borders | 1.43:1 on `bg` — decorative only; any *interactive* border must use `accent` (3:1+) |
+| `--color-accent` | `#64FFDA` | Links, active nav, focus ring, chips | 14.13:1 on `bg` ✅ AAA |
+| `--color-accent-ink` | `#0A192F` | Text on accent-filled buttons | 14.13:1 ✅ AAA |
+| `--color-success` | `#48BB78` | "Verified / shipped / evidence ok" status | 7.25:1 on `bg` ✅ AA |
+| `--color-warn` | `#F6C177` | "Draft / estimated / in-progress" status | 10.74:1 on `bg` ✅ AA |
 
 ### 2.2 Light theme
 
@@ -48,13 +48,15 @@ non-text UI**.
 | `--color-bg` | `#F7FAFC` | Page background | base |
 | `--color-surface` | `#FFFFFF` | Cards, panels | base |
 | `--color-surface-raised` | `#EDF2F7` | Hovered cards, chips | base |
-| `--color-text` | `#1A202C` | Primary body + headings | ~15.4:1 on `bg` ✅ AAA |
-| `--color-text-muted` | `#4A5568` | Secondary copy, metadata | ~7.6:1 on `bg` ✅ AA |
+| `--color-text` | `#1A202C` | Primary body + headings | 15.57:1 on `bg` ✅ AAA |
+| `--color-text-muted` | `#4A5568` | Secondary copy, metadata | 7.18:1 on `bg` ✅ AA |
 | `--color-border` | `#E2E8F0` | Hairlines, dividers | decorative; interactive borders use `accent-ink` |
-| `--color-accent` | `#008C7A` | Links, active nav, focus ring (light needs a darker accent than `#64FFDA`) | ~4.8:1 on `bg` ✅ AA body |
-| `--color-accent-ink` | `#FFFFFF` | Text on accent-filled buttons | ~4.8:1 ✅ AA |
-| `--color-success` | `#2F855A` | Verified status | ~5.1:1 on `bg` ✅ AA |
-| `--color-warn` | `#B7791F` | Draft status | ~4.6:1 on `bg` ✅ AA |
+| `--color-accent` | `#007A6A` | Links, active nav, focus ring (light needs a darker accent than `#64FFDA`) | 5.02:1 on `bg` ✅ AA body |
+| `--color-accent-ink` | `#FFFFFF` | Text on accent-filled buttons (white on `#007A6A`) | 5.26:1 ✅ AA |
+| `--color-success` | `#276749` | Verified status | 6.42:1 on `bg` ✅ AA |
+| `--color-warn` | `#97570F` | Draft status | 5.44:1 on `bg` ✅ AA |
+
+Verified with WCAG 2.1 relative-luminance formula on 2026-10-09.
 
 Rules:
 - Body copy never uses `text-muted` below 16px on `surface` without re-checking contrast.
