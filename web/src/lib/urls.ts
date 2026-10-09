@@ -16,6 +16,14 @@ import type { Locale } from '../i18n/copy';
 
 const BASE: string = import.meta.env.BASE_URL;
 
+/**
+ * The public suggestion issue form of the source repository. It is a constant,
+ * not copy: the target never changes with the locale, and both the suggestions
+ * panel and the contextual case-study CTA point at the same place.
+ */
+export const SUGGESTION_ISSUE_URL =
+  'https://github.com/cristian-cardona-dev/professional-evolution-portfolio/issues/new?template=suggestion.yml';
+
 /** Root of a locale under the deployment base: `/base/` for `en`, `/base/es/` for `es`. */
 export function localeRoot(locale: Locale): string {
   return locale === 'es' ? `${BASE}es/` : BASE;

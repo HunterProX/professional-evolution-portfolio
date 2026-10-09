@@ -1,0 +1,36 @@
+---
+/**
+ * Case-study route (en) — one static page per project in `data/projects.json`,
+ * rendering the case study derived from `case-studies/*.md` when one exists
+ * and the honest empty state when it does not.
+ */
+import type { Locale } from '../../i18n/copy';
+import { getCopy } from '../../i18n/copy';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CaseStudy from '../../views/CaseStudy.astro';
+import { projects } from '../../lib/data';
+import type { Project } from '../../lib/data';
+
+interface Props {
+  project: Project;
+}
+
+export function getStaticPaths() {
+  return projects.map((project) => ({
+    params: { slug: project.slug },
+    props: { project },
+  }));
+}
+
+const { project } = Astro.props;
+
+const locale: Locale = 'en';
+const copy = getCopy(locale);
+
+const title = `${project.name} — ${copy.caseStudy.eyebrow} — ${copy.meta.title}`;
+const description = project.summary;
+---
+
+<BaseLayout locale={locale} title={title} description={description} activeNav="projects">
+  <CaseStudy locale={locale} copy={copy} project={project} />
+</BaseLayout>

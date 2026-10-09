@@ -6,6 +6,11 @@
  * when `screenshots` is empty the card renders a CSS gradient plus the project
  * initials and says so, rather than shipping a placeholder "screenshot".
  *
+ * The root element also carries `data-tags` (the project tags, space
+ * separated): it is the hook the client-side filter on `/work/` uses to show
+ * or hide this card. Without JavaScript the attribute is inert and the card
+ * stays visible.
+ *
  * Status colours (tokens doc §2): live -> success, mvp/demo -> accent,
  * prototype -> warn (draft-like), lab/planned -> neutral.
  */
@@ -53,6 +58,7 @@ const initials = project.name
 <article
   class="project-card reveal"
   id={project.slug}
+  data-tags={project.tags.join(' ')}
   style={`--card-hue: ${hue}; --reveal-index: ${revealIndex}`}
   aria-labelledby={`${project.slug}-title`}
 >

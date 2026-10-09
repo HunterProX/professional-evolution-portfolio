@@ -74,6 +74,25 @@ export interface Copy {
     related: string;
     relatedEmpty: string;
     screenshotPlaceholder: string;
+    /** Accessible label of the tag filter bar on the work listing. */
+    filterLabel: string;
+    /** The button that clears the tag filter and shows every card. */
+    filterAll: string;
+  };
+  /** Case-study detail page (`/work/<slug>/` and `/es/work/<slug>/`). */
+  caseStudy: {
+    /** Eyebrow above the project name. */
+    eyebrow: string;
+    /** Back link to the work listing. */
+    back: string;
+    /** Summary label that reveals the technical sections (progressive disclosure). */
+    disclosure: string;
+    /** Honest empty state for a project without case-study content. */
+    empty: string;
+    /** Heading of the closing CTA block. */
+    ctaHeading: string;
+    /** Label of the link to the contact section of the home page. */
+    ctaContact: string;
   };
   projectStatus: {
     label: Record<'live' | 'mvp' | 'demo' | 'prototype' | 'lab', string>;
@@ -210,6 +229,17 @@ export const en: Copy = {
     related: 'Related work',
     relatedEmpty: 'No related entries in the dataset yet.',
     screenshotPlaceholder: 'No screenshot published for this project yet.',
+    filterLabel: 'Filter projects by tag',
+    filterAll: 'All',
+  },
+  caseStudy: {
+    eyebrow: 'Case study',
+    back: 'Back to all projects',
+    disclosure: 'Read technical details',
+    empty:
+      'No case study is published for this project yet. The repository below is the artifact you can inspect; no write-up is invented where none exists.',
+    ctaHeading: 'Questions about this work?',
+    ctaContact: 'Ask about this work',
   },
   projectStatus: {
     label: {
@@ -380,6 +410,17 @@ export const es: Copy = {
     related: 'Trabajo relacionado',
     relatedEmpty: 'Todavía no hay entradas relacionadas en el conjunto de datos.',
     screenshotPlaceholder: 'Todavía no hay capturas publicadas para este proyecto.',
+    filterLabel: 'Filtrar proyectos por etiqueta',
+    filterAll: 'Todos',
+  },
+  caseStudy: {
+    eyebrow: 'Estudio de caso',
+    back: 'Volver a todos los proyectos',
+    disclosure: 'Leer detalles técnicos',
+    empty:
+      'Todavía no hay un estudio de caso publicado para este proyecto. El repositorio de abajo es el artefacto que puedes inspeccionar; no se inventa un resumen donde no lo hay.',
+    ctaHeading: '¿Preguntas sobre este trabajo?',
+    ctaContact: 'Preguntar sobre este trabajo',
   },
   projectStatus: {
     label: {

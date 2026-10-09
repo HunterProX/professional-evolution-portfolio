@@ -1,0 +1,473 @@
+---
+/**
+ * Case-study composition — one project plus the case study derived from
+ * `case-studies/*.md` by `scripts/case-studies-sync.mjs`.
+ *
+ * Shared by `/work/<slug>/` and `/es/work/<slug>/`, exactly like the other
+ * views: `locale` picks the copy catalog and builds every internal link.
+ *
+ * Content rules:
+ *   - The name, status, repository and summary come from `data/projects.json`.
+ *   - Section bodies come verbatim from `data/case-studies.json` and are
+ *     rendered through `renderSectionBody` (escape first, then bold + links
+ *     only — no HTML passthrough). The section text is English because the
+ *     source markdown is English in both locales: it is evidence, not copy.
+ *   - The first two sections (classification, problem/context) are always
+ *     visible; everything after them sits behind one `<details>` disclosure
+ *     labelled from `copy.caseStudy.disclosure`.
+ *   - A project with no case study gets the honest empty state and its
+ *     repository link — never an invented write-up.
+ *
+ * Heading order: h1 (project) → h2 (sections, related, CTA) → h3 (cards).
+ */
+import type { Copy, Locale } from '../i18n/copy';
+import type { Project } from '../lib/data';
+import { caseStudyFor, relatedProjects } from '../lib/data';
+import { renderSectionBody } from '../lib/markdown';
+import { route, sectionHref, SUGGESTION_ISSUE_URL } from '../lib/urls';
+import ProjectCard from '../components/ProjectCard.astro';
+
+interface Props {
+  locale: Locale;
+  copy: Copy;
+  project: Project;
+}
+
+const { locale, copy, project } = Astro.props;
+
+const study = caseStudyFor(project.slug);
+
+/** Sections 1–2 (classification / problem) stay open. */
+const visibleSections = study ? study.sections.slice(0, 2) : [];
+/** Everything else is progressive disclosure. */
+const disclosedSections = study ? study.sections.slice(2) : [];
+const hasContent = visibleSections.length > 0;
+
+const related = relatedProjects(project.slug);
+
+/** Same status→colour mapping the project card uses (see ProjectCard.astro). */
+const statusVariant: Record<Project['status'], string> = {
+  live: 'chip--success',
+  mvp: 'chip--accent',
+  demo: 'chip--accent',
+  prototype: 'chip--warn',
+  lab: 'chip--neutral',
+};
+
+const backHref = route(locale, 'work/');
+/** Base-aware: from this page it resolves to `<locale root>#contact`. */
+const contactHref = sectionHref(locale, 'contact', Astro.url.pathname);
+---
+
+<article class="case-study">
+  <header class="case-study__hero">
+    <div class="shell shell--narrow">
+      <p class="case-study__back reveal">
+        <a href={backHref}>
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path
+              d="M19 12H5M11 6l-6 6 6 6"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ></path>
+          </svg>
+          {copy.caseStudy.back}
+        </a>
+      </p>
+
+      <div class="case-study__intro reveal">
+        <p class="eyebrow">{copy.caseStudy.eyebrow}</p>
+        <h1>{project.name}</h1>
+
+        <div class="case-study__meta">
+          <span
+            class={`chip ${statusVariant[project.status]}`}
+            title={copy.projectStatus.hint[project.status]}
+          >
+            {copy.projectStatus.label[project.status]}
+            <span class="visually-hidden">. {copy.projectStatus.hint[project.status]}</span>
+          </span>
+
+          <a class="case-study__repo" href={project.repo} target="_blank" rel="noopener noreferrer">
+            {copy.work.repo}
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path
+                d="M14 4h6v6M20 4l-8.5 8.5M18 14v4.5A1.5 1.5 0 0 1 16.5 20h-11A1.5 1.5 0 0 1 4 18.5v-11A1.5 1.5 0 0 1 5.5 6H10"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ></path>
+            </svg>
+            <span class="visually-hidden">({copy.a11y.opensInNewTab})</span>
+          </a>
+        </div>
+
+        {
+          study && (
+            <p class="case-study__source-title">{study.title}</p>
+          )
+        }
+
+        <p class="lead">{project.summary}</p>
+      </div>
+    </div>
+  </header>
+
+  <div class="shell shell--narrow case-study__main">
+    {
+      hasContent ? (
+        <>
+          {visibleSections.map((section, index) => (
+            <section class="case-study__section" aria-labelledby={`case-study-section-${index}`}>
+              <h2 id={`case-study-section-${index}`}>{section.heading}</h2>
+              <div class="case-study__text" set:html={renderSectionBody(section.body)} />
+            </section>
+          ))}
+
+          {disclosedSections.length > 0 && (
+            <details class="disclosure">
+              <summary class="disclosure__summary">{copy.caseStudy.disclosure}</summary>
+              <div class="disclosure__body">
+                {disclosedSections.map((section, offset) => {
+                  const index = visibleSections.length + offset;
+                  return (
+                    <section class="case-study__section" aria-labelledby={`case-study-section-${index}`}>
+                      <h2 id={`case-study-section-${index}`}>{section.heading}</h2>
+                      <div class="case-study__text" set:html={renderSectionBody(section.body)} />
+                    </section>
+                  );
+                })}
+              </div>
+            </details>
+          )}
+        </>
+      ) : (
+        <div class="case-study__empty">
+          <p>{copy.caseStudy.empty}</p>
+          <p>
+            <a class="button button--ghost" href={project.repo} target="_blank" rel="noopener noreferrer">
+              {copy.work.repo}
+              <span class="visually-hidden">({copy.a11y.opensInNewTab})</span>
+            </a>
+          </p>
+        </div>
+      )
+    }
+  </div>
+
+  <section class="case-study__related" aria-labelledby="case-study-related-heading">
+    <div class="shell">
+      <div class="case-study__related-head reveal">
+        <p class="eyebrow">{copy.work.eyebrow}</p>
+        <h2 id="case-study-related-heading">{copy.work.related}</h2>
+      </div>
+
+      {
+        related.length > 0 ? (
+          <ul class="case-study__related-grid">
+            {related.map((item, index) => (
+              <li class="case-study__related-item">
+                <ProjectCard copy={copy} locale={locale} project={item} revealIndex={index} />
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p class="case-study__related-empty">{copy.work.relatedEmpty}</p>
+        )
+      }
+    </div>
+  </section>
+
+  <section class="case-study__cta" aria-labelledby="case-study-cta-heading">
+    <div class="shell shell--narrow case-study__cta-inner reveal">
+      <div class="case-study__cta-text">
+        <p class="eyebrow">{copy.contact.eyebrow}</p>
+        <h2 id="case-study-cta-heading">{copy.caseStudy.ctaHeading}</h2>
+      </div>
+
+      <div class="case-study__cta-actions">
+        <a class="button button--primary" href={contactHref}>{copy.caseStudy.ctaContact}</a>
+        <a
+          class="button button--ghost"
+          href={SUGGESTION_ISSUE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {copy.suggestions.cta}
+          <span class="visually-hidden">({copy.a11y.opensInNewTab})</span>
+        </a>
+        <p class="case-study__cta-note">{copy.suggestions.note}</p>
+      </div>
+    </div>
+  </section>
+</article>
+
+<style>
+  .case-study {
+    display: block;
+  }
+
+  /* --- Hero-lite ------------------------------------------------------------ */
+  .case-study__hero {
+    padding-block: var(--space-8) var(--space-12);
+    background-color: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .case-study__back {
+    margin-bottom: var(--space-6);
+  }
+
+  .case-study__back a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 44px;
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .case-study__back a:hover {
+    color: var(--color-accent);
+  }
+
+  .case-study__back svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .case-study__intro h1 {
+    margin-block: var(--space-2) var(--space-4);
+  }
+
+  .case-study__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3) var(--space-5);
+    margin-bottom: var(--space-4);
+  }
+
+  .case-study__repo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-height: 44px;
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+
+  .case-study__repo svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  /* The H1 of the source markdown: it carries the boundary wording of the
+     original document ("public reproduction"), so it is shown verbatim. */
+  .case-study__source-title {
+    margin-bottom: var(--space-4);
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  /* --- Body ---------------------------------------------------------------- */
+  .case-study__main {
+    padding-block: var(--space-12) var(--space-8);
+  }
+
+  .case-study__section + .case-study__section {
+    margin-top: var(--space-10);
+  }
+
+  .case-study__section h2 {
+    margin-bottom: var(--space-3);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .case-study__text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    color: var(--color-text);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .case-study__text :global(ul) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0;
+    padding-left: var(--space-5);
+  }
+
+  .case-study__text :global(li) {
+    max-width: var(--measure);
+  }
+
+  .case-study__text :global(li::marker) {
+    color: var(--color-accent);
+  }
+
+  /* --- Progressive disclosure ---------------------------------------------- */
+  .disclosure {
+    margin-top: var(--space-8);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-surface);
+  }
+
+  .disclosure__summary {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 44px;
+    padding: var(--space-3) var(--space-5);
+    color: var(--color-accent);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .disclosure__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  /* A chevron that rotates with the open state, so the affordance reads as a
+     disclosure without hiding the meaning behind an icon. */
+  .disclosure__summary::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    margin-left: auto;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg) translate(-2px, -2px);
+    transition: transform var(--duration-fast) var(--ease-standard);
+  }
+
+  .disclosure[open] .disclosure__summary::after {
+    transform: rotate(225deg) translate(-2px, -2px);
+  }
+
+  .disclosure__summary:hover {
+    background-color: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  }
+
+  .disclosure__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-10);
+    padding: var(--space-5);
+    border-top: 1px solid var(--color-border);
+  }
+
+  /* --- Empty state ---------------------------------------------------------- */
+  .case-study__empty {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    align-items: flex-start;
+    padding: var(--space-6);
+    background-color: var(--color-surface);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .case-study__empty p {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  /* --- Related work --------------------------------------------------------- */
+  .case-study__related {
+    padding-block: var(--space-12);
+    background-color: var(--color-surface);
+    border-block: 1px solid var(--color-border);
+  }
+
+  .case-study__related-head {
+    margin-bottom: var(--space-6);
+  }
+
+  .case-study__related-head h2 {
+    margin-top: var(--space-2);
+  }
+
+  .case-study__related-grid {
+    display: grid;
+    gap: var(--space-6);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .case-study__related-item {
+    display: flex;
+  }
+
+  /* Compact cards: the related row is navigation, so the visual block and the
+     nested related list of each card are dropped. The full card — figure and
+     all — stays on `/work/` and the home page. */
+  .case-study__related-item :global(.project-card__figure),
+  .case-study__related-item :global(.project-card__related) {
+    display: none;
+  }
+
+  .case-study__related-empty {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  @media (min-width: 768px) {
+    .case-study__related-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  /* --- Contextual CTA -------------------------------------------------------- */
+  .case-study__cta {
+    padding-block: var(--space-16) var(--space-24);
+  }
+
+  .case-study__cta-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-6);
+    padding: var(--space-8);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .case-study__cta-text h2 {
+    margin-top: var(--space-2);
+  }
+
+  .case-study__cta-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .case-study__cta-note {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+  }
+</style>
