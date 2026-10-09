@@ -95,7 +95,7 @@ jobs:
         if: env.PIPELINE == 'web'
         env:
           ASTRO_BASE: /
-          ASTRO_SITE: ${{ vars.CLOUDFLARE_PRODUCTION_URL }}
+          PUBLIC_CANONICAL_BASE: https://cristian-cardona-dev.github.io/professional-evolution-portfolio/
         run: |
           npm --prefix web ci
           npm --prefix web run build

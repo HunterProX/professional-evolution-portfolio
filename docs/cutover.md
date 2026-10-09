@@ -40,6 +40,29 @@ and deploy it. Each artifact carries a `release-manifest.json` with the same
 `base_path`. See [dual-deployment.md](dual-deployment.md) for the host
 roles, the Cloudflare mirror parity rule, and the no-duplicate-deploy rule.
 
+## Worker target fix (2026-10-09)
+
+`wrangler.jsonc` now targets the production mirror worker
+**`professional-evolution-portfolio`** (`professional-evolution-portfolio.crisss198.workers.dev`),
+not the earlier `cristian-cardona` worker, so `wrangler deploy` from the
+`cloudflare-worker` job updates the URL the dual-host contract calls the mirror.
+The mirror build now also sets `PUBLIC_CANONICAL_BASE` to the GitHub Pages
+canonical (`https://cristian-cardona-dev.github.io/professional-evolution-portfolio/`),
+so the mirror's `canonical`, `og:url`, `og:image` and `hreflang` tags point at
+the Pages canonical instead of advertising the mirror origin. Internal asset and
+nav links are unchanged (still root-relative on the mirror).
+
+> **CRITICAL HUMAN STEP.** Disconnect the **Cloudflare Workers Builds Git
+> integration** for this repository (per
+> [dual-deployment.md](dual-deployment.md#prevent-duplicate-cloudflare-deployments)).
+> While it remains connected, a push builds and deploys the legacy worker
+> independently and **overwrites** the `wrangler deploy` output from the
+> `cloudflare-worker` job, undoing this fix. Deploy Hooks must be disconnected
+> for the same reason.
+
+The legacy rollback is unchanged: a `pipeline=legacy` dispatch still rebuilds
+and republishes both hosts (see [Rollback](#rollback)).
+
 ## Dual-path workflow (applied)
 
 The workflow is **dual-path** so the legacy build remains an immediately
