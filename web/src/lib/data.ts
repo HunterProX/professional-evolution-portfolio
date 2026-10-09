@@ -52,6 +52,8 @@ export interface Project {
   slug: string;
   name: string;
   summary: string;
+  /** Optional reviewed Spanish translation of `summary`, used on the es locale. */
+  summary_es?: string;
   status: ProjectStatus;
   repo: string;
   caseStudy: string | null;
@@ -253,7 +255,7 @@ const MILESTONE_LABEL_KEY: Record<MilestoneStatus, 'shipped' | 'inProgress' | 'p
 const KIND_TERMS: Record<AssistantKind, string[]> = {
   work: ['project', 'projects', 'built', 'software', 'code', 'repo'],
   evidence: ['evidence', 'proof', 'artifact'],
-  evolution: ['evolution', 'milestone', 'timeline', 'roadmap'],
+  evolution: ['evolution', 'milestone', 'milestones', 'timeline', 'roadmap'],
   profile: ['contact', 'email', 'person', 'about'],
 };
 
@@ -314,6 +316,11 @@ export function assistantIndex(copy: Copy, locale: Locale): AssistantEntry[] {
   const entries: AssistantEntry[] = [];
 
   for (const project of projects) {
+    // On the es locale, prefer the reviewed Spanish summary so the assistant
+    // snippet and its weak-text matching read in the page's language; the
+    // English summary stays the fallback when no translation is published.
+    const projectSummary =
+      locale === 'es' && project.summary_es ? project.summary_es : project.summary;
     entries.push({
       ty: 'work',
       lo: uniqueTerms([
@@ -323,9 +330,9 @@ export function assistantIndex(copy: Copy, locale: Locale): AssistantEntry[] {
         ...KIND_TERMS.work,
         ...(STATUS_TERMS[project.status] ?? []),
       ]),
-      we: fold(project.summary),
+      we: fold(projectSummary),
       ti: project.name,
-      sn: clip(project.summary),
+      sn: clip(projectSummary),
       hr: route(locale, `work/${project.slug}/`),
       ba: copy.projectStatus.label[project.status],
       bv: PROJECT_BADGE[project.status],

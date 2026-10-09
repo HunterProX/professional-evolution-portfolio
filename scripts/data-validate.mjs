@@ -7,6 +7,7 @@
  * Checks:
  *   - required fields and types for profile, projects, evolution, evidence,
  *     case-studies
+ *   - optional project `summary_es`, when present, is a non-empty string
  *   - project status and milestone status/source/phase enums
  *   - unique project slugs and unique milestone ids
  *   - every project `repo` URL lives under github.com/cristian-cardona-dev/
@@ -171,6 +172,11 @@ function validateProjects(data) {
     }
     for (const field of ['slug', 'name', 'summary']) {
       if (!isNonEmptyString(project[field])) fail(`${label}: "${field}" must be a non-empty string`);
+    }
+    // Optional Spanish translation of `summary`; when present it must be a
+    // non-empty string so the es locale never renders an empty paragraph.
+    if (project.summary_es !== undefined && !isNonEmptyString(project.summary_es)) {
+      fail(`${label}: "summary_es" must be a non-empty string when present`);
     }
     if (!isNonEmptyString(project.slug) || !SLUG.test(project.slug)) {
       fail(`${label}: "slug" must be lowercase kebab-case`);

@@ -86,10 +86,67 @@ const STOPWORDS = new Set([
   'tambien', 'tambien', 'si', 'asi', 'entre', 'desde', 'hasta', 'segun',
 ]);
 
-/** Query tokens: folded, split, single-character words and stopwords dropped,
- *  duplicates removed. Order of first appearance is kept. */
+/**
+ * Spanish → English keyword synonyms.
+ *
+ * The published data is English-only (the site's own translation contract), so
+ * a free-typed Spanish query would otherwise match almost nothing. This map
+ * folds a small, documented set of Spanish query words onto the English tokens
+ * the index actually carries. It is applied on the query side only (inside
+ * `tokenize`), so the index is never rewritten; a synonym whose target is not
+ * in the index simply scores nothing and the widget keeps its honest fallback.
+ *
+ * Keys are accent-folded (`evolucion`, not `evolución`) because `fold` runs
+ * before this lookup. Values are the English tokens produced by the index
+ * builders in `lib/data.ts` (`KIND_TERMS`, `STATUS_TERMS`, names and tags).
+ */
+const SYNONYMS: Record<string, string[]> = {
+  // work / built
+  construido: ['built'],
+  construida: ['built'],
+  construye: ['built'],
+  construyo: ['built'],
+  construccion: ['built'],
+  builds: ['built'],
+  proyecto: ['projects'],
+  proyectos: ['projects'],
+  trabajo: ['projects'],
+  // contact
+  contacto: ['contact'],
+  contactar: ['contact'],
+  correo: ['contact'],
+  email: ['contact'],
+  // evidence
+  evidencia: ['evidence'],
+  // evolution / milestones
+  evolucion: ['evolution'],
+  hito: ['milestone', 'milestones'],
+  hitos: ['milestone', 'milestones'],
+  // claims
+  demostrado: ['demonstrated'],
+  demostrada: ['demonstrated'],
+  demostrar: ['demonstrated'],
+  aspiracional: ['aspirational'],
+  // ai
+  inteligencia: ['ai'],
+  ia: ['ai'],
+  // suggestion
+  sugerencia: ['suggestion'],
+  sugerencias: ['suggestion'],
+};
+
+/**
+ * Query tokens: folded, split, single-character words and stopwords dropped,
+ * duplicates removed, then each surviving word expanded with its Spanish
+ * synonyms (`SYNONYMS`). Order of first appearance is kept.
+ */
 export function tokenize(query: string): string[] {
-  return [...new Set(words(query).filter((word) => word.length > 1 && !STOPWORDS.has(word)))];
+  const base = words(query).filter((word) => word.length > 1 && !STOPWORDS.has(word));
+  const expanded: string[] = [];
+  for (const word of base) {
+    expanded.push(word, ...(SYNONYMS[word] ?? []));
+  }
+  return [...new Set(expanded)];
 }
 
 /**

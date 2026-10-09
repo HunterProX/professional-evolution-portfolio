@@ -58,6 +58,12 @@ const statusVariant: Record<Project['status'], string> = {
 
 const related = relatedProjects(project.slug);
 
+/**
+ * Spanish pages read the reviewed `summary_es` when the dataset publishes one;
+ * every other locale (and any project without a translation) keeps `summary`.
+ */
+const summary = locale === 'es' && project.summary_es ? project.summary_es : project.summary;
+
 /** Deterministic hue so a card keeps the same colour across builds. */
 const hue = [...project.slug].reduce((total, char) => (total + char.charCodeAt(0)) % 360, 0);
 
@@ -112,7 +118,7 @@ const initials = project.name
       {project.name}
     </h3>
 
-    <p class="project-card__summary">{project.summary}</p>
+    <p class="project-card__summary">{summary}</p>
 
     {
       project.tags.length > 0 && (

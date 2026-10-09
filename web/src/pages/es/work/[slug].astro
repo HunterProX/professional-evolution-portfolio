@@ -28,7 +28,7 @@ const locale: Locale = 'es';
 const copy = getCopy(locale);
 
 const title = `${project.name} — ${copy.caseStudy.eyebrow}`;
-const description = project.summary;
+const description = project.summary_es ?? project.summary;
 ---
 
 <BaseLayout

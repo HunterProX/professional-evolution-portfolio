@@ -7,7 +7,8 @@
  * views: `locale` picks the copy catalog and builds every internal link.
  *
  * Content rules:
- *   - The name, status, repository and summary come from `data/projects.json`.
+ *   - The name, status, repository and summary come from `data/projects.json`
+ *     (the es locale reads `summary_es` when the dataset publishes one).
  *   - Section bodies come verbatim from `data/case-studies.json` and are
  *     rendered through `renderSectionBody` (escape first, then bold + links
  *     only — no HTML passthrough). The section text is English because the
@@ -44,6 +45,12 @@ const disclosedSections = study ? study.sections.slice(2) : [];
 const hasContent = visibleSections.length > 0;
 
 const related = relatedProjects(project.slug);
+
+/**
+ * Spanish pages read the reviewed `summary_es` when the dataset publishes one,
+ * exactly like `ProjectCard`; every other locale keeps `summary`.
+ */
+const summary = locale === 'es' && project.summary_es ? project.summary_es : project.summary;
 
 /** Same status→colour mapping the project card uses (see ProjectCard.astro). */
 const statusVariant: Record<Project['status'], string> = {
@@ -113,7 +120,7 @@ const contactHref = sectionHref(locale, 'contact', Astro.url.pathname);
           )
         }
 
-        <p class="lead">{project.summary}</p>
+        <p class="lead">{summary}</p>
       </div>
     </div>
   </header>

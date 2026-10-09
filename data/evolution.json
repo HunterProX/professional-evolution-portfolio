@@ -74,7 +74,7 @@
       "id": "2026-10-09-portfolio-10x-rebuild",
       "date": "2026-10-09",
       "title": "Portfolio 10x rebuild starts",
-      "narrative": "Redesign kicked off with a research artifact covering dark-first dual-theme tokens, type scale, motion rules and an accessibility checklist, replacing the previous text-heavy layout. The Astro scaffold and canonical data layer follow in this task; the legacy static site stays live until the cutover gate.",
+      "narrative": "The Astro redesign shipped: a research artifact covering dark-first dual-theme tokens, type scale, motion rules and an accessibility checklist replaced the previous text-heavy layout, and the rebuild was merged to main and released through the dual-host deployment pipeline (GitHub Pages plus the Cloudflare Worker mirror). The legacy static site is no longer what the deployment serves.",
       "evidence": [
         "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/7a60cce",
         "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/a5c0f67",
@@ -82,9 +82,11 @@
         "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/76a404f",
         "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/c4d7936",
         "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/43fb841",
-        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/6b7a307"
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/6b7a307",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/3a6b2ea",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/actions/runs/37989005888"
       ],
-      "status": "in-progress",
+      "status": "shipped",
       "source": "curated",
       "phase": "transition",
       "projects": [
