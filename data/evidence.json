@@ -1,4 +1,26 @@
 {
-  "note": "derived from public-snapshot at build; see scripts/data-validate",
-  "items": []
+  "note": "Derived from public-snapshot/snapshot.json by scripts/evidence-sync.mjs; validate with scripts/data-validate.mjs.",
+  "generatedAt": "2026-10-03T00:00:00Z",
+  "items": [
+    {
+      "label": "Public LinkedIn profile",
+      "url": "https://www.linkedin.com/in/cristian-cardona-dev/",
+      "status": "developing"
+    },
+    {
+      "label": "Cloud Dashboard public reproduction repository",
+      "url": "https://github.com/cristian-cardona-dev/cloud-dashboard",
+      "status": "demonstrated"
+    },
+    {
+      "label": "AI Engineering Reliability Lab repository",
+      "url": "https://github.com/cristian-cardona-dev/ai-chat-app",
+      "status": "demonstrated"
+    },
+    {
+      "label": "AI Automation Workflow Lab repository",
+      "url": "https://github.com/cristian-cardona-dev/ai-automation-workflow-lab",
+      "status": "demonstrated"
+    }
+  ]
 }

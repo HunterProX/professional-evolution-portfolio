@@ -1,0 +1,26 @@
+---
+/**
+ * Ruta de evidencia (es) — la lista completa de evidencia de
+ * `data/evidence.json`, derivada de la instantánea pública aprobada.
+ */
+import type { Locale } from '../../i18n/copy';
+import { getCopy } from '../../i18n/copy';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Evidence from '../../views/Evidence.astro';
+
+const locale: Locale = 'es';
+const copy = getCopy('es');
+
+const title = `${copy.nav.evidence} — ${copy.meta.title}`;
+const description = copy.evidence.summary;
+---
+
+<BaseLayout
+  locale={locale}
+  lang="es"
+  title={title}
+  description={description}
+  activeNav="evidence"
+>
+  <Evidence locale={locale} copy={copy} />
+</BaseLayout>

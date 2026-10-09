@@ -101,6 +101,10 @@ export interface Copy {
     eyebrow: string;
     heading: string;
     summary: string;
+    /** One extra line under the page intro explaining how the list is built. */
+    introNote: string;
+    /** Heading above the grouped evidence list on the evidence page. */
+    listHeading: string;
     count: (count: number) => string;
     empty: string;
     viewAll: string;
@@ -123,6 +127,14 @@ export interface Copy {
     fallbackNote: string;
     mailtoCta: string;
     emailLabel: string;
+    /** Client-side validation messages for the POST branch. */
+    fieldRequired: string;
+    invalidEmail: string;
+    /** Fallback branch: compose an email with a prefilled subject and body. */
+    suggestionLabel: string;
+    suggestionHint: string;
+    suggestionSubject: string;
+    suggestionCta: string;
   };
   suggestions: {
     eyebrow: string;
@@ -246,6 +258,9 @@ export const en: Copy = {
     heading: 'Evidence, not a skill score.',
     summary:
       'Every statement carries a status. A missing public proof is shown as a gap instead of being filled with marketing language.',
+    introNote:
+      'The list below is generated from the public snapshot at build time. Items are grouped by the status of the claim they support, and nothing appears here without a public link.',
+    listHeading: 'Published evidence',
     count: (count) => (count === 1 ? '1 linked evidence item' : `${count} linked evidence items`),
     empty:
       'No evidence items are published yet. This section is populated from the public snapshot at build time, and an empty list is shown rather than invented claims.',
@@ -282,6 +297,13 @@ export const en: Copy = {
       'No form endpoint is configured for this deployment, so this page does not collect messages yet. Writing by email reaches the same inbox.',
     mailtoCta: 'Write by email',
     emailLabel: 'Email address',
+    fieldRequired: 'This field is required.',
+    invalidEmail: 'Enter a valid email address.',
+    suggestionLabel: 'Suggestion',
+    suggestionHint:
+      'Describe what to improve. This opens your email client with the subject and message already filled in.',
+    suggestionSubject: 'Portfolio suggestion',
+    suggestionCta: 'Compose email',
   },
   suggestions: {
     eyebrow: 'Suggestions',
@@ -407,6 +429,9 @@ export const es: Copy = {
     heading: 'Evidencia, no una puntuación de habilidades.',
     summary:
       'Cada afirmación lleva un estado. La falta de prueba pública se muestra como una laguna en lugar de rellenarse con lenguaje de marketing.',
+    introNote:
+      'La lista siguiente se genera desde la instantánea pública en tiempo de compilación. Las entradas se agrupan por el estado de la afirmación que respaldan, y nada aparece aquí sin un enlace público.',
+    listHeading: 'Evidencia publicada',
     count: (count) =>
       count === 1 ? '1 elemento de evidencia enlazado' : `${count} elementos de evidencia enlazados`,
     empty:
@@ -445,6 +470,13 @@ export const es: Copy = {
       'Esta publicación no tiene configurado un endpoint de formulario, así que la página todavía no recoge mensajes. Escribir por correo llega al mismo buzón.',
     mailtoCta: 'Escribir por correo',
     emailLabel: 'Dirección de correo',
+    fieldRequired: 'Este campo es obligatorio.',
+    invalidEmail: 'Introduce una dirección de correo electrónico válida.',
+    suggestionLabel: 'Sugerencia',
+    suggestionHint:
+      'Describe qué mejorar. Esto abre tu cliente de correo con el asunto y el mensaje ya rellenados.',
+    suggestionSubject: 'Sugerencia para el portafolio',
+    suggestionCta: 'Redactar correo',
   },
   suggestions: {
     eyebrow: 'Sugerencias',

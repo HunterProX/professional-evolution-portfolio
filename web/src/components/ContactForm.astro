@@ -3,11 +3,16 @@
  * Contact form with graceful degradation.
  *
  * When `profile.json` carries both `formEndpoint` and `formKey` the component
- * renders a real POST form (the honeypot is part of that branch, since it only
- * means something for a form that actually posts). While the endpoint is unset
- * — the current state of the canonical data — it renders an honest fallback:
- * a mailto link to the published address plus a note that no message is being
- * collected. Nothing pretends to submit.
+ * renders a real POST form. The honeypot sits in that branch, before the
+ * submit controls, and is hidden from people (`aria-hidden`, `tabindex="-1"`,
+ * `autocomplete="off"`); a small inline script adds minimal client-side
+ * validation (required fields + email format) and reports the first error
+ * through a polite live region. While the endpoint is unset — the current
+ * state of the canonical data — it renders an honest fallback: a mailto link
+ * to the published address, a note that no message is being collected, and a
+ * lightweight suggestion box that composes a prefilled mailto (subject + body)
+ * so contact-by-email can still carry structured feedback without a service.
+ * Nothing pretends to submit.
  *
  * Accessibility: every input has a visible `<label>`, hints and errors are
  * wired through `aria-describedby`, invalid fields carry `aria-invalid`, and
@@ -27,7 +32,7 @@ const { copy, errors = {} } = Astro.props;
 const canPost = Boolean(profile.formEndpoint && profile.formKey);
 const mailto = `mailto:${profile.email}`;
 const describedBy = (field: 'name' | 'email' | 'message', hintId?: string) =>
-  [hintId, errors[field] ? `contact-${field}-error` : null].filter(Boolean).join(' ') || undefined;
+  [hintId, `contact-${field}-error`].filter(Boolean).join(' ');
 ---
 
 <section class="contact" id="contact" aria-labelledby="contact-heading">
@@ -46,10 +51,15 @@ const describedBy = (field: 'name' | 'email' | 'message', hintId?: string) =>
             action={profile.formEndpoint ?? undefined}
             method="POST"
             accept-charset="UTF-8"
+            novalidate
+            data-contact-post
+            data-required-message={copy.contact.fieldRequired}
+            data-email-message={copy.contact.invalidEmail}
           >
             <input type="hidden" name="form_key" value={profile.formKey ?? ''} />
 
-            {/* Honeypot: hidden from people, tempting to bots. */}
+            {/* Honeypot: hidden from people, tempting to bots. It renders before
+                the submit controls with aria-hidden + tabindex=-1. */}
             <div class="contact__honeypot" aria-hidden="true">
               <label for="contact-website">{copy.contact.honeypot}</label>
               <input type="text" id="contact-website" name="website" tabindex="-1" autocomplete="off" />
@@ -66,16 +76,20 @@ const describedBy = (field: 'name' | 'email' | 'message', hintId?: string) =>
                 type="text"
                 id="contact-name"
                 name="name"
-                autocomplete="name"
+                autocomplete="off"
                 required
                 aria-invalid={errors.name ? 'true' : undefined}
                 aria-describedby={describedBy('name')}
               />
-              {errors.name && (
-                <p class="contact__error" id="contact-name-error">
-                  {errors.name}
-                </p>
-              )}
+              <p
+                class="contact__error"
+                id="contact-name-error"
+                data-contact-error="name"
+                aria-live="polite"
+                hidden={!errors.name}
+              >
+                {errors.name ?? ''}
+              </p>
             </div>
 
             <div class="contact__field">
@@ -92,11 +106,15 @@ const describedBy = (field: 'name' | 'email' | 'message', hintId?: string) =>
                 aria-invalid={errors.email ? 'true' : undefined}
                 aria-describedby={describedBy('email')}
               />
-              {errors.email && (
-                <p class="contact__error" id="contact-email-error">
-                  {errors.email}
-                </p>
-              )}
+              <p
+                class="contact__error"
+                id="contact-email-error"
+                data-contact-error="email"
+                aria-live="polite"
+                hidden={!errors.email}
+              >
+                {errors.email ?? ''}
+              </p>
             </div>
 
             <div class="contact__field">
@@ -115,14 +133,18 @@ const describedBy = (field: 'name' | 'email' | 'message', hintId?: string) =>
               <p class="contact__hint" id="contact-message-hint">
                 {copy.contact.messageHint}
               </p>
-              {errors.message && (
-                <p class="contact__error" id="contact-message-error">
-                  {errors.message}
-                </p>
-              )}
+              <p
+                class="contact__error"
+                id="contact-message-error"
+                data-contact-error="message"
+                aria-live="polite"
+                hidden={!errors.message}
+              >
+                {errors.message ?? ''}
+              </p>
             </div>
 
-            <p class="contact__status" role="status" aria-live="polite" />
+            <p class="contact__status" role="status" aria-live="polite" data-contact-status />
 
             <button class="button button--primary" type="submit">
               {copy.contact.submit}
@@ -142,6 +164,36 @@ const describedBy = (field: 'name' | 'email' | 'message', hintId?: string) =>
               {copy.contact.mailtoCta}
             </a>
 
+            {/* Structured fallback: compose a prefilled email instead of only
+                offering a blank mailto. */}
+            <form
+              class="contact__mailto"
+              data-contact-mailto
+              data-mailto={mailto}
+              data-subject={copy.contact.suggestionSubject}
+            >
+              <div class="contact__field">
+                <label class="contact__label" for="contact-suggestion">
+                  {copy.contact.suggestionLabel}
+                </label>
+                <textarea
+                  class="contact__input contact__input--textarea"
+                  id="contact-suggestion"
+                  name="suggestion"
+                  rows="4"
+                  aria-describedby="contact-suggestion-hint"
+                  data-contact-suggestion
+                />
+                <p class="contact__hint" id="contact-suggestion-hint">
+                  {copy.contact.suggestionHint}
+                </p>
+              </div>
+
+              <button class="button button--ghost contact__cta" type="submit">
+                {copy.contact.suggestionCta}
+              </button>
+            </form>
+
             <p class="contact__privacy">{copy.contact.privacy}</p>
           </div>
         )
@@ -149,6 +201,83 @@ const describedBy = (field: 'name' | 'email' | 'message', hintId?: string) =>
     </div>
   </div>
 </section>
+
+<script is:inline>
+  (() => {
+    // POST branch: minimal client-side validation (required fields + email
+    // format). The form is `novalidate` so this owns the inline messaging.
+    const postForm = document.querySelector('[data-contact-post]');
+    if (postForm) {
+      const requiredMessage = postForm.dataset.requiredMessage || '';
+      const emailMessage = postForm.dataset.emailMessage || '';
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const rules = {
+        name: (value) => (value === '' ? requiredMessage : ''),
+        email: (value) =>
+          value === '' ? requiredMessage : emailPattern.test(value) ? '' : emailMessage,
+        message: (value) => (value === '' ? requiredMessage : ''),
+      };
+      const errorFor = (field) => postForm.querySelector('[data-contact-error="' + field + '"]');
+      const inputFor = (field) => postForm.querySelector('[name="' + field + '"]');
+      const status = postForm.querySelector('[data-contact-status]');
+
+      postForm.addEventListener('submit', (event) => {
+        let firstInvalid = null;
+        let firstMessage = '';
+        for (const field of Object.keys(rules)) {
+          const input = inputFor(field);
+          const error = errorFor(field);
+          const message = input ? rules[field](input.value.trim()) : '';
+          if (error) {
+            error.textContent = message;
+            error.hidden = message === '';
+          }
+          if (input) {
+            if (message === '') {
+              input.removeAttribute('aria-invalid');
+            } else {
+              input.setAttribute('aria-invalid', 'true');
+              if (!firstInvalid) {
+                firstInvalid = input;
+                firstMessage = message;
+              }
+            }
+          }
+        }
+        if (firstInvalid) {
+          event.preventDefault();
+          if (status) status.textContent = firstMessage;
+          firstInvalid.focus();
+        }
+      });
+
+      // Clear a field's error as soon as the visitor starts correcting it.
+      postForm.addEventListener('input', (event) => {
+        const input = event.target;
+        if (!input || !input.name) return;
+        const error = errorFor(input.name);
+        if (!error || error.hidden) return;
+        error.textContent = '';
+        error.hidden = true;
+        input.removeAttribute('aria-invalid');
+      });
+    }
+
+    // Fallback branch: compose a mailto with a prefilled subject and body.
+    const mailtoForm = document.querySelector('[data-contact-mailto]');
+    if (mailtoForm) {
+      mailtoForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const textarea = mailtoForm.querySelector('[data-contact-suggestion]');
+        const body = textarea ? textarea.value.trim() : '';
+        const subject = mailtoForm.dataset.subject || '';
+        const query =
+          'subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+        window.location.href = mailtoForm.dataset.mailto + '?' + query;
+      });
+    }
+  })();
+</script>
 
 <style>
   .contact {
@@ -173,7 +302,8 @@ const describedBy = (field: 'name' | 'email' | 'message', hintId?: string) =>
   }
 
   .contact__form,
-  .contact__fallback {
+  .contact__fallback,
+  .contact__mailto {
     display: flex;
     flex-direction: column;
     gap: var(--space-4);

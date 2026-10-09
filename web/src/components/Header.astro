@@ -26,14 +26,14 @@ const { copy, locale, active } = Astro.props;
 const pathname = Astro.url.pathname;
 const root = localeRoot(locale);
 
-/* Work and Evolution are routes and stay absolute from every page; Evidence
-   and Contact are home sections, so they are plain fragments on the home page
-   itself and point at the same-language home section everywhere else.
-   Section ids keep the preserved anchors: #projects, #evidence, #contact. */
+/* Work, Evolution and Evidence are routes and stay absolute from every page;
+   Contact is a home section, so it is a plain fragment on the home page
+   itself and points at the same-language home section everywhere else.
+   Section ids keep the preserved anchors: #projects, #contact. */
 const links: { id: NonNullable<Props['active']>; href: string; label: string }[] = [
   { id: 'projects', href: route(locale, 'work/'), label: copy.nav.work },
   { id: 'evolution', href: route(locale, 'evolution/'), label: copy.nav.evolution },
-  { id: 'evidence', href: sectionHref(locale, 'evidence', pathname), label: copy.nav.evidence },
+  { id: 'evidence', href: route(locale, 'evidence/'), label: copy.nav.evidence },
   { id: 'contact', href: sectionHref(locale, 'contact', pathname), label: copy.nav.contact },
 ];
 ---
