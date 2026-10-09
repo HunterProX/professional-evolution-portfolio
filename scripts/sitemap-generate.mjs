@@ -13,6 +13,10 @@
  *     `web/astro.config.mjs` (they are duplicated because a build script runs
  *     before any page and importing the Astro config would drag in the whole
  *     toolchain for two strings).
+ *   - Not-found routes are excluded: Astro emits `404.html` (served by GitHub
+ *     Pages for any unresolved address) and a localized `es/404/` page, neither
+ *     of which is a real destination. Any route containing `/404` or ending
+ *     `404.html` is dropped.
  *   - Output is deterministic: routes are sorted lexicographically, and the
  *     file always ends with a newline.
  *
@@ -62,7 +66,9 @@ if (pages.length === 0) {
   process.exit(1);
 }
 
-const routes = [...new Set(pages.map(toRoute))].sort();
+const routes = [...new Set(pages.map(toRoute))]
+  .filter((route) => !route.includes('/404') && !route.endsWith('404.html'))
+  .sort();
 const lines = [
   '<?xml version="1.0" encoding="UTF-8"?>',
   '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
