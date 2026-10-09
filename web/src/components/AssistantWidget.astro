@@ -1,0 +1,610 @@
+---
+/**
+ * Portfolio assistant — honest, keyword-based search (v1).
+ *
+ * A floating button opens an accessible dialog (role=dialog, aria-modal, Esc
+ * and click-outside close, focus moves in on open and back to the trigger on
+ * close) and searches a compact index that is serialized into the page at
+ * build time from the canonical `data/*.json` — no runtime fetch, no API key,
+ * no backend, and, above all, no simulated intelligence: there is no typing
+ * animation, no canned prose and no model call anywhere in this component.
+ * The honesty banner at the top of the panel says what this is in plain
+ * words, and an unmatched query renders the honest fallback (links to the
+ * full work and evidence listings plus a prefilled `mailto:` carrying the
+ * question) instead of an invented answer.
+ *
+ * The index is built by `assistantIndex` in `lib/data.ts`; all matching and
+ * ranking lives in `lib/assistant-search.ts`, which is pure enough to run in
+ * a browser, in the Astro build and in a plain `node` verification script.
+ * Result rows are rendered server-side (in the page locale, with localized
+ * status chips mirroring `EvidenceBadge`/`ProjectCard`); the client script
+ * only scores queries and moves pre-rendered rows into the results list, so
+ * no copy ever has to be shipped to the browser as strings.
+ *
+ * Suggested-question chips display the visitor's language but carry fixed
+ * English keyword queries, because the published data they search is
+ * English-only; a Spanish question would otherwise answer nothing. The
+ * limitation is stated in `docs/assistant.md`.
+ *
+ * Without JavaScript the button itself is hidden (the `html.js` gate), so a
+ * no-JS visit loses nothing: every piece of content the assistant indexes is
+ * already a published page.
+ */
+import type { Copy, Locale } from '../i18n/copy';
+import { assistantIndex, profile } from '../lib/data';
+import { route } from '../lib/urls';
+
+interface Props {
+  copy: Copy;
+  locale: Locale;
+}
+
+const { copy, locale } = Astro.props;
+
+/** The widget is useful only with an index; the canonical data is always
+ *  non-empty, but the guard keeps the promise explicit. */
+const entries = assistantIndex(copy, locale);
+
+/** Chip display labels come from the locale (`copy.assistant.chips`); the
+ *  queries are the stable English keyword sets the canonical data contains. */
+const chips = [
+  { query: 'built projects', label: copy.assistant.chips.built },
+  // `ai` alone is the honest answer to "What AI work is demonstrated?":
+  // the labs rank first because their names carry the token. Adding
+  // "demonstrated" would promote status-word matches over the AI work
+  // itself, which is not what the question asks.
+  { query: 'ai', label: copy.assistant.chips.ai },
+  { query: 'contact', label: copy.assistant.chips.contact },
+  { query: 'aspirational demonstrated', label: copy.assistant.chips.contrast },
+];
+
+/** Fallback compose: subject prefill is localized copy, body is filled by the
+ *  client script with the visitor's actual question. */
+const mailtoBase = `mailto:${profile.email}?subject=${encodeURIComponent(
+  copy.assistant.emailSubject,
+)}&body=`;
+
+/** `<` is escaped so a `</script>` sequence can never terminate the block. */
+const indexJson = JSON.stringify(entries).replace(/</g, '\\u003c');
+---
+
+{
+  entries.length > 0 && (
+    <div class="assistant" data-assistant>
+      <button
+        type="button"
+        class="assistant__fab"
+        data-a-fab
+        aria-haspopup="dialog"
+        aria-expanded="false"
+        aria-controls="pep-assistant-panel"
+        aria-label={copy.assistant.open}
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2" />
+          <path
+            d="m16.5 16.5 4.5 4.5"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+        </svg>
+      </button>
+
+      <div
+        class="assistant__panel"
+        id="pep-assistant-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="pep-assistant-title"
+        data-a-panel
+        tabindex="-1"
+        hidden
+      >
+        <div class="assistant__head">
+          <h2 class="assistant__title" id="pep-assistant-title">{copy.assistant.title}</h2>
+          <button
+            type="button"
+            class="assistant__close"
+            data-a-close
+            aria-label={copy.assistant.close}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path
+                d="M6 6l12 12M18 6 6 18"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <p class="assistant__banner" id="pep-assistant-banner">{copy.assistant.banner}</p>
+
+        <form class="assistant__form" data-a-form>
+          <label class="visually-hidden" for="pep-assistant-input">{copy.assistant.open}</label>
+          <input
+            class="assistant__input"
+            id="pep-assistant-input"
+            data-a-input
+            type="search"
+            name="q"
+            autocomplete="off"
+            placeholder={copy.assistant.placeholder}
+            aria-describedby="pep-assistant-banner"
+          />
+          <button class="button button--primary assistant__submit" type="submit">
+            {copy.assistant.submit}
+          </button>
+        </form>
+
+        <p class="assistant__chips-heading">{copy.assistant.suggestedHeading}</p>
+        <ul class="assistant__chips">
+          {chips.map((chip) => (
+            <li>
+              <button type="button" class="assistant__chip" data-a-chip data-query={chip.query}>
+                {chip.label}
+              </button>
+            </li>
+          ))}
+        </ul>
+
+        <div class="assistant__out" data-a-out aria-live="polite" hidden>
+          <p class="assistant__out-label" data-a-label hidden>{copy.assistant.results}</p>
+          <ol class="assistant__results" data-a-results hidden></ol>
+          <div class="assistant__fallback" data-a-fallback hidden>
+            <p>{copy.assistant.fallback}</p>
+            <ul class="assistant__fallback-links">
+              <li>
+                <a href={route(locale, 'work/')}>{copy.work.viewAll}</a>
+              </li>
+              <li>
+                <a href={route(locale, 'evidence/')}>{copy.evidence.viewAll}</a>
+              </li>
+              <li>
+                <a href={mailtoBase} data-a-mailto data-mailto-base={mailtoBase}>
+                  {copy.assistant.askByEmail}
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Server-rendered lookup table: one row per index entry, in the same
+            order as the serialized index below. The script never builds HTML
+            — it only moves these nodes — so every visible string stays
+            localized markup produced by the build. */}
+        <ol class="assistant__source" data-a-source hidden>
+          {entries.map((entry) => (
+            <li class="assistant__row">
+              <a class="assistant__row-title" href={entry.hr}>{entry.ti}</a>
+              {entry.ba ? (
+                <span class={`chip assistant__row-badge chip--${entry.bv}`}>{entry.ba}</span>
+              ) : null}
+              {entry.yr ? <span class="assistant__row-year">{entry.yr}</span> : null}
+              <p class="assistant__row-snippet">{entry.sn}</p>
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      <script type="application/json" data-assistant-index set:html={indexJson} />
+    </div>
+  )
+}
+
+<script>
+  import { searchEntries, type AssistantEntry } from '../lib/assistant-search';
+
+  (() => {
+    const root = document.querySelector<HTMLElement>('[data-assistant]');
+    const index = document.querySelector<HTMLScriptElement>('[data-assistant-index]');
+    if (!root || !index) return;
+
+    let entries: AssistantEntry[];
+    try {
+      const parsed: unknown = JSON.parse(index.textContent ?? '[]');
+      if (!Array.isArray(parsed)) return;
+      entries = parsed as AssistantEntry[];
+    } catch {
+      return;
+    }
+
+    const fab = root.querySelector<HTMLButtonElement>('[data-a-fab]');
+    const panel = root.querySelector<HTMLElement>('[data-a-panel]');
+    const closeButton = root.querySelector<HTMLButtonElement>('[data-a-close]');
+    const form = root.querySelector<HTMLFormElement>('[data-a-form]');
+    const input = root.querySelector<HTMLInputElement>('[data-a-input]');
+    const source = root.querySelector<HTMLElement>('[data-a-source]');
+    const out = root.querySelector<HTMLElement>('[data-a-out]');
+    const label = root.querySelector<HTMLElement>('[data-a-label]');
+    const results = root.querySelector<HTMLElement>('[data-a-results]');
+    const fallback = root.querySelector<HTMLElement>('[data-a-fallback]');
+    const mailto = root.querySelector<HTMLAnchorElement>('[data-a-mailto]');
+    if (
+      !fab || !panel || !closeButton || !form || !input || !source ||
+      !out || !label || !results || !fallback || !mailto
+    ) {
+      return;
+    }
+
+    // Same order as `entries` — the build renders the rows from that array.
+    const rows = Array.from(source.children) as HTMLElement[];
+    const chips = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-a-chip]'));
+    let opener: HTMLElement | null = null;
+
+    const openPanel = () => {
+      if (!panel.hidden) return;
+      opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      panel.hidden = false;
+      fab.setAttribute('aria-expanded', 'true');
+      input.focus();
+    };
+
+    const closePanel = () => {
+      if (panel.hidden) return;
+      panel.hidden = true;
+      fab.setAttribute('aria-expanded', 'false');
+      (opener ?? fab).focus();
+      opener = null;
+    };
+
+    fab.addEventListener('click', () => (panel.hidden ? openPanel() : closePanel()));
+    closeButton.addEventListener('click', closePanel);
+
+    const visibleFocusables = (): HTMLElement[] =>
+      Array.from(panel.querySelectorAll<HTMLElement>('button, input, a[href]')).filter(
+        (el) => el.offsetParent !== null,
+      );
+
+    document.addEventListener('keydown', (event) => {
+      if (panel.hidden) return;
+      if (event.key === 'Escape') {
+        closePanel();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      // Minimal focus containment for the modal: wrap at both ends.
+      const items = visibleFocusables();
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      const active = document.activeElement;
+      if (event.shiftKey && (active === first || active === panel || !panel.contains(active))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    });
+
+    document.addEventListener('pointerdown', (event) => {
+      if (panel.hidden) return;
+      const target = event.target;
+      if (target instanceof Node && !panel.contains(target) && !fab.contains(target)) {
+        closePanel();
+      }
+    });
+
+    const run = (query: string) => {
+      const trimmed = query.trim();
+      if (trimmed === '') {
+        out.hidden = true;
+        return;
+      }
+      out.hidden = false;
+      // Reset row positions, then append the winners in ranked order; moving
+      // a node into `results` empties the previous listing by itself.
+      rows.forEach((row) => source.append(row));
+      const hits = searchEntries(entries, trimmed, 3);
+      if (hits.length > 0) {
+        label.hidden = false;
+        fallback.hidden = true;
+        results.hidden = false;
+        for (const hit of hits) {
+          const row = rows[entries.indexOf(hit)];
+          if (row) results.append(row);
+        }
+      } else {
+        // The honest path: nothing matched, so say so and offer the doors
+        // that actually exist — no invented answer, no guessed intent.
+        label.hidden = true;
+        results.hidden = true;
+        fallback.hidden = false;
+        const base = mailto.dataset.mailtoBase ?? `mailto:?body=`;
+        mailto.href = `${base}${encodeURIComponent(trimmed)}`;
+      }
+    };
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      run(input.value);
+    });
+
+    for (const chip of chips) {
+      chip.addEventListener('click', () => {
+        const query = chip.dataset.query ?? chip.textContent ?? '';
+        // Show the query that actually ran — transparency over theatre.
+        input.value = query;
+        run(query);
+      });
+    }
+  })();
+</script>
+
+<style>
+  /* No-JS: the assistant needs scripting to open, so the button is hidden
+     unless the pre-paint `html.js` gate ran — the same progressive-enhancement
+     contract as the mobile nav. Nothing else on the page changes. */
+  .assistant__fab {
+    display: none;
+  }
+
+  html.js .assistant__fab {
+    display: inline-flex;
+  }
+
+  .assistant__fab {
+    position: fixed;
+    right: var(--space-6);
+    bottom: var(--space-6);
+    z-index: 90;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    background-color: var(--color-accent);
+    color: var(--color-accent-ink);
+    border: 1px solid transparent;
+    border-radius: var(--radius-full);
+    box-shadow: var(--shadow-md);
+    cursor: pointer;
+  }
+
+  .assistant__fab:hover {
+    background-color: color-mix(in srgb, var(--color-accent) 85%, var(--color-text));
+  }
+
+  .assistant__fab svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .assistant__panel {
+    position: fixed;
+    right: var(--space-6);
+    bottom: calc(var(--space-6) + 68px);
+    z-index: 91;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    width: min(380px, calc(100vw - var(--space-6) * 2));
+    max-height: calc(100vh - var(--space-6) * 2 - 68px);
+    overflow-y: auto;
+    padding: var(--space-6);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* Class `display` rules outrank the UA `[hidden]` rule, so every toggled
+     element re-asserts hiding explicitly. The panel is static with no open
+     animation: reduced motion cannot be disrespected by motion that does
+     not exist. */
+  .assistant__panel[hidden],
+  .assistant__out[hidden],
+  .assistant__out-label[hidden],
+  .assistant__results[hidden],
+  .assistant__fallback[hidden],
+  .assistant__source[hidden] {
+    display: none;
+  }
+
+  .assistant__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+
+  .assistant__title {
+    margin: 0;
+    font-size: var(--text-md);
+    line-height: var(--leading-md);
+  }
+
+  .assistant__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background-color: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    cursor: pointer;
+  }
+
+  .assistant__close:hover {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+
+  .assistant__close svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* The honesty banner sits at the top of the panel on purpose: it is read
+     before the first input, not whispered under the results. */
+  .assistant__banner {
+    margin: 0;
+    padding: var(--space-3);
+    background-color: var(--color-surface-raised);
+    border-left: 3px solid var(--color-accent);
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+  }
+
+  .assistant__form {
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  .assistant__input {
+    flex: 1;
+    min-width: 0;
+    padding: var(--space-3);
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    font-size: var(--text-sm);
+  }
+
+  .assistant__input:hover {
+    border-color: var(--color-accent);
+  }
+
+  .assistant__input:focus-visible {
+    border-color: var(--color-accent);
+    box-shadow: var(--ring-focus);
+  }
+
+  .assistant__chips-heading {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    font-weight: 600;
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+  }
+
+  .assistant__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .assistant__chip {
+    min-height: 44px;
+    padding: var(--space-2) var(--space-3);
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .assistant__chip:hover {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+
+  .assistant__out {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .assistant__out-label {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    font-weight: 600;
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+  }
+
+  .assistant__results,
+  .assistant__source {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .assistant__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-2);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .assistant__row-title {
+    color: var(--color-accent);
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+
+  .assistant__row-year {
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+  }
+
+  .assistant__row-snippet {
+    flex-basis: 100%;
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    overflow-wrap: anywhere;
+  }
+
+  .assistant__fallback {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .assistant__fallback p {
+    margin: 0;
+  }
+
+  .assistant__fallback-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--text-sm);
+  }
+
+  .assistant__fallback-links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  @media print {
+    .assistant__fab {
+      display: none !important;
+    }
+  }
+</style>

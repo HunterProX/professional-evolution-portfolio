@@ -24,6 +24,7 @@ import { profile } from '../lib/data';
 import { route } from '../lib/urls';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import AssistantWidget from '../components/AssistantWidget.astro';
 import '../styles/tokens.css';
 import '../styles/global.css';
 
@@ -140,6 +141,11 @@ const faviconHref = `${import.meta.env.BASE_URL}favicon.svg`;
     </main>
 
     <Footer copy={copy} snapshotId={snapshotId} />
+
+    {/* Honest keyword-search assistant (v1). The canonical data is always
+        available at build, so the widget renders on every page; it hides
+        itself entirely without JavaScript. See docs/assistant.md. */}
+    <AssistantWidget copy={copy} locale={locale} />
 
     <script is:inline>
       // Reveal-on-scroll: one pass over the page, no framework. It only starts

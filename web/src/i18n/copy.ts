@@ -189,6 +189,37 @@ export interface Copy {
     cta: string;
     note: string;
   };
+  /** Floating keyword-search assistant (`components/AssistantWidget.astro`). */
+  assistant: {
+    /** Accessible name of the floating open button. */
+    open: string;
+    /** Panel heading, referenced by the dialog's `aria-labelledby`. */
+    title: string;
+    /** Accessible name of the close button. */
+    close: string;
+    /** Honesty banner: what the assistant is, and what it is not. */
+    banner: string;
+    /** Search input placeholder. */
+    placeholder: string;
+    /** Submit button label. */
+    submit: string;
+    /** Heading above the suggested-question chips. */
+    suggestedHeading: string;
+    /**
+     * The four suggested questions. Each chip carries a fixed English keyword
+     * query (the canonical data is English, so a translated query could not
+     * match it); the label here is what the visitor reads, in their language.
+     */
+    chips: { built: string; ai: string; contact: string; contrast: string };
+    /** Label above the result list once a search has run. */
+    results: string;
+    /** No-match explanation: nothing was found, and where to go instead. */
+    fallback: string;
+    /** Fallback link that composes an email with the question as the body. */
+    askByEmail: string;
+    /** Subject line of the prefilled `mailto:` compose. */
+    emailSubject: string;
+  };
   footer: {
     tagline: string;
     sourceRepository: string;
@@ -396,6 +427,27 @@ export const en: Copy = {
       'Suggestions are filed as public issues in the source repository, so the request and the response stay inspectable by anyone.',
     cta: 'Open a suggestion',
     note: 'Opens GitHub in a new tab.',
+  },
+  assistant: {
+    open: 'Search this portfolio',
+    title: 'Portfolio assistant',
+    close: 'Close the assistant',
+    banner:
+      'This is a keyword search over the public data published on this site — not an AI model. It can only point at what is already published here, and it says so when it finds nothing.',
+    placeholder: 'Projects, evidence, milestones…',
+    submit: 'Search',
+    suggestedHeading: 'Suggested questions',
+    chips: {
+      built: 'What has Cristian built?',
+      ai: 'What AI work is demonstrated?',
+      contact: 'How can I contact Cristian?',
+      contrast: 'What is aspirational vs demonstrated?',
+    },
+    results: 'Published entries that match',
+    fallback:
+      'No published entry matches those words. The pages below hold the same content, and a question by email is answered from what is public.',
+    askByEmail: 'Ask by email',
+    emailSubject: 'Question about the portfolio',
   },
   footer: {
     tagline: 'Evidence before confidence.',
@@ -607,6 +659,27 @@ export const es: Copy = {
       'Las sugerencias se registran como incidencias públicas en el repositorio fuente, para que la petición y la respuesta queden inspeccionables por cualquiera.',
     cta: 'Abrir una sugerencia',
     note: 'Abre GitHub en una pestaña nueva.',
+  },
+  assistant: {
+    open: 'Buscar en este portafolio',
+    title: 'Asistente del portafolio',
+    close: 'Cerrar el asistente',
+    banner:
+      'Esto es una búsqueda por palabras clave sobre los datos públicos publicados en este sitio, no un modelo de IA. Solo puede señalar lo que ya está publicado aquí, y lo dice cuando no encuentra nada.',
+    placeholder: 'Proyectos, evidencia, hitos…',
+    submit: 'Buscar',
+    suggestedHeading: 'Preguntas sugeridas',
+    chips: {
+      built: '¿Qué ha construido Cristian?',
+      ai: '¿Qué trabajo de IA está demostrado?',
+      contact: '¿Cómo contacto con Cristian?',
+      contrast: '¿Qué es aspiracional y qué está demostrado?',
+    },
+    results: 'Entradas publicadas que coinciden',
+    fallback:
+      'Ninguna entrada publicada coincide con esas palabras. Las páginas de abajo contienen el mismo contenido, y una pregunta por correo se responde con lo que es público.',
+    askByEmail: 'Preguntar por correo',
+    emailSubject: 'Pregunta sobre el portafolio',
   },
   footer: {
     tagline: 'Evidencia antes que confianza.',
