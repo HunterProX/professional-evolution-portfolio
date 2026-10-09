@@ -13,10 +13,12 @@
  * label — not colour — states the status.
  *
  * Heading order: h1 (page) → h2 (list) → h3 (status group). Item labels are
- * not headings.
+ * not headings. Below the list, `ActivityFeed` adds the build-time public GitHub
+ * activity section (its own h2 → h3 heading order).
  */
 import type { ClaimStatus, Copy, Locale } from '../i18n/copy';
 import { evidence } from '../lib/data';
+import ActivityFeed from '../components/ActivityFeed.astro';
 import EvidenceBadge from '../components/EvidenceBadge.astro';
 
 interface Props {
@@ -24,7 +26,7 @@ interface Props {
   copy: Copy;
 }
 
-const { copy } = Astro.props;
+const { locale, copy } = Astro.props;
 
 /** Strongest first: a demonstrated artifact is the strongest kind of proof. */
 const STATUS_ORDER: readonly ClaimStatus[] = [
@@ -98,6 +100,8 @@ const itemCount = groups.reduce((total, group) => total + group.items.length, 0)
     }
   </div>
 </section>
+
+<ActivityFeed locale={locale} copy={copy} />
 
 <style>
   .section {

@@ -1,0 +1,220 @@
+---
+/**
+ * Public GitHub activity feed — a compact, build-time snapshot.
+ *
+ * Reads `github-activity/snapshot.json` through a static import, so the site
+ * ships the data with the HTML and the browser never calls GitHub. One entry is
+ * rendered per allowlisted repository: its name and link, the latest commit
+ * message and date, the open pull-request count, and the latest release tag when
+ * one exists.
+ *
+ * Nothing is invented: when the snapshot carries no records the honest empty
+ * state is shown, and a repository without commits says so rather than rendering
+ * a fabricated message. The section heading is an `h2` (the page `h1` is the
+ * evidence page heading) and each repository is an `h3`, keeping the heading
+ * order h1 → h2 → h3.
+ */
+import type { Copy, Locale } from '../i18n/copy';
+import snapshot from '../../../github-activity/snapshot.json';
+
+/** One commit, pull request or release as the snapshot stores it. */
+interface ActivityObject {
+  id: string;
+  url: string;
+  captured_at: string;
+  title: string;
+}
+
+interface Repository {
+  id: string;
+  url: string;
+  visibility: string;
+  commits: ActivityObject[];
+  pull_requests: ActivityObject[];
+  releases: ActivityObject[];
+  deployments: ActivityObject[];
+  /** Open pull-request count, when the refresh captured one. */
+  open_pull_requests?: number;
+  /** Marker set by the refresh script when the last fetch failed. */
+  error?: string;
+}
+
+interface Props {
+  copy: Copy;
+  locale: Locale;
+}
+
+const { copy, locale } = Astro.props;
+
+/** JSON imports widen array literals; the shape is enforced by the validator. */
+const repositories = (snapshot.repositories ?? []) as unknown as Repository[];
+
+const dateFormat = new Intl.DateTimeFormat(locale === 'es' ? 'es-ES' : 'en-GB', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+
+function formatDate(value: string): string {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : dateFormat.format(date);
+}
+
+/** `owner/repo` → `repo`; the owner is the same across the allowlist. */
+function repoName(id: string): string {
+  const parts = id.split('/');
+  return parts[parts.length - 1] || id;
+}
+---
+
+<section class="section activity" id="github-activity" aria-labelledby="activity-heading">
+  <div class="shell">
+    <header class="section__head reveal">
+      <p class="eyebrow">{copy.activity.eyebrow}</p>
+      <h2 id="activity-heading">{copy.activity.heading}</h2>
+      <p class="activity__note">{copy.activity.note}</p>
+    </header>
+
+    {
+      repositories.length === 0 ? (
+        <p class="state-panel activity__empty">{copy.activity.empty}</p>
+      ) : (
+        <ul class="activity__repos">
+          {repositories.map((repo) => {
+            const latestCommit = repo.commits?.[0];
+            const release = repo.releases?.[0];
+            const openPullRequests = repo.open_pull_requests ?? repo.pull_requests?.length ?? 0;
+            return (
+              <li class="activity__repo reveal">
+                <h3 class="activity__repo-name">
+                  <a href={repo.url} target="_blank" rel="noopener noreferrer">
+                    {repoName(repo.id)}
+                    <span class="visually-hidden"> ({copy.a11y.opensInNewTab})</span>
+                  </a>
+                </h3>
+
+                {latestCommit ? (
+                  <p class="activity__commit">
+                    <a
+                      class="activity__commit-link"
+                      href={latestCommit.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {latestCommit.title}
+                      <span class="visually-hidden"> ({copy.a11y.opensInNewTab})</span>
+                    </a>
+                    <time class="activity__date tabular" datetime={latestCommit.captured_at}>
+                      {formatDate(latestCommit.captured_at)}
+                    </time>
+                  </p>
+                ) : (
+                  <p class="activity__muted">{copy.activity.noCommits}</p>
+                )}
+
+                <p class="activity__meta">
+                  <span class="chip chip--neutral">
+                    {copy.activity.openPullRequests(openPullRequests)}
+                  </span>
+                  {release && (
+                    <span class="chip chip--accent">{copy.activity.latestRelease(release.title)}</span>
+                  )}
+                </p>
+              </li>
+            );
+          })}
+        </ul>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .section {
+    padding-block: var(--space-16) var(--space-24);
+    scroll-margin-top: var(--header-height);
+  }
+
+  .section__head {
+    max-width: 68ch;
+    margin-bottom: var(--space-8);
+  }
+
+  .section__head h2 {
+    margin-block: var(--space-2) var(--space-3);
+  }
+
+  .activity__note {
+    margin-top: var(--space-3);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .activity__empty {
+    max-width: 68ch;
+  }
+
+  .activity__repos {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .activity__repo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .activity__repo-name {
+    font-size: var(--text-lg);
+    line-height: var(--leading-lg);
+  }
+
+  .activity__repo-name a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  .activity__commit {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-2) var(--space-3);
+  }
+
+  .activity__commit-link {
+    color: var(--color-accent);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+
+  .activity__date {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+  }
+
+  .activity__muted {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .activity__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+</style>

@@ -157,6 +157,19 @@ export interface Copy {
     statusLabel: Record<ClaimStatus, string>;
     statusHint: Record<ClaimStatus, string>;
   };
+  /** Build-time GitHub activity feed (`components/ActivityFeed.astro`). */
+  activity: {
+    eyebrow: string;
+    heading: string;
+    /** Honesty note: the feed is a snapshot, not a live API call. */
+    note: string;
+    /** Honest empty state when the snapshot carries no records. */
+    empty: string;
+    /** Shown for a repository whose snapshot has no commit records. */
+    noCommits: string;
+    openPullRequests: (count: number) => string;
+    latestRelease: (tag: string) => string;
+  };
   contact: {
     eyebrow: string;
     heading: string;
@@ -403,6 +416,16 @@ export const en: Copy = {
       insufficient: 'No public artifact exists today that could support the claim.',
     },
   },
+  activity: {
+    eyebrow: 'Open source',
+    heading: 'Public GitHub activity',
+    note: 'Captured at build time; no live API calls from this site.',
+    empty: 'Snapshot captured at build time; no activity recorded.',
+    noCommits: 'No recent commits recorded for this repository.',
+    openPullRequests: (count) =>
+      count === 1 ? '1 open pull request' : `${count} open pull requests`,
+    latestRelease: (tag) => `Latest release ${tag}`,
+  },
   contact: {
     eyebrow: 'Contact',
     heading: 'Start from the evidence.',
@@ -643,6 +666,16 @@ export const es: Copy = {
       aspirational: 'Dirección o intención declarada. No iniciado, o iniciado pero no verificable.',
       insufficient: 'Hoy no existe ningún artefacto público que pueda respaldar la afirmación.',
     },
+  },
+  activity: {
+    eyebrow: 'Código abierto',
+    heading: 'Actividad pública en GitHub',
+    note: 'Capturada en tiempo de compilación; este sitio no hace llamadas a la API en vivo.',
+    empty: 'Instantánea capturada en tiempo de compilación; no hay actividad registrada.',
+    noCommits: 'No hay commits recientes registrados para este repositorio.',
+    openPullRequests: (count) =>
+      count === 1 ? '1 pull request abierto' : `${count} pull requests abiertos`,
+    latestRelease: (tag) => `Última versión ${tag}`,
   },
   contact: {
     eyebrow: 'Contacto',

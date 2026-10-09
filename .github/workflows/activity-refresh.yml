@@ -1,0 +1,81 @@
+name: Refresh public GitHub activity
+
+# Build-time refresh of `github-activity/snapshot.json`. The browser never calls
+# GitHub; this job fetches the allowlisted repositories with the server-side
+# `GITHUB_TOKEN`, commits the snapshot when its content actually changed, and
+# then asks the deploy workflow to rebuild the static site.
+#
+# A push made with the default `GITHUB_TOKEN` does not trigger other workflows,
+# so the deploy is dispatched explicitly through `gh workflow run` (which needs
+# the `actions: write` permission granted below).
+
+on:
+  schedule:
+    # Weekly, Monday 06:17 UTC.
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: activity-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Refresh snapshot
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/activity-refresh.mjs
+
+      - name: Validate snapshot
+        run: node github-activity/validate.mjs
+
+      - name: Detect content change (ignoring captured_at)
+        id: change
+        run: |
+          node --input-type=module -e '
+            import { execSync } from "node:child_process";
+            import { appendFileSync, readFileSync } from "node:fs";
+            const strip = (text) => {
+              const doc = JSON.parse(text);
+              delete doc.captured_at;
+              return JSON.stringify(doc);
+            };
+            const head = execSync("git show HEAD:github-activity/snapshot.json", { encoding: "utf8" });
+            const work = readFileSync("github-activity/snapshot.json", "utf8");
+            const changed = strip(head) !== strip(work);
+            console.log(changed ? "Snapshot content changed." : "Snapshot content unchanged (timestamp only).");
+            appendFileSync(process.env.GITHUB_OUTPUT, `changed=${changed}\n`);
+          '
+
+      - name: Commit and push refreshed snapshot
+        if: steps.change.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add github-activity/snapshot.json
+          git commit -m "ai(portfolio): refresh public github activity"
+          git push
+
+      - name: Trigger static deploy (web)
+        if: steps.change.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run deploy-static.yml -f pipeline=web
+
+      - name: No change
+        if: steps.change.outputs.changed != 'true'
+        run: echo "No upstream activity change; skipping commit and deploy."

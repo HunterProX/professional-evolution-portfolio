@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "snapshot_id": "public-github-activity-fixture-01",
-  "captured_at": "2026-10-03T00:00:00Z",
+  "captured_at": "2026-10-09T22:09:23Z",
   "status": {
     "availability": "empty",
     "stale": false,
@@ -13,10 +13,10 @@
     "url": "https://github.com/"
   },
   "allowed_repositories": [
-    "https://github.com/HunterProX/professional-evolution-portfolio",
-    "https://github.com/HunterProX/cloud-dashboard",
-    "https://github.com/HunterProX/ai-chat-app",
-    "https://github.com/HunterProX/ai-automation-workflow-lab"
+    "https://github.com/cristian-cardona-dev/professional-evolution-portfolio",
+    "https://github.com/cristian-cardona-dev/cloud-dashboard",
+    "https://github.com/cristian-cardona-dev/ai-chat-app",
+    "https://github.com/cristian-cardona-dev/ai-automation-workflow-lab"
   ],
   "repositories": []
 }

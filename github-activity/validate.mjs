@@ -37,8 +37,10 @@ for (const url of doc.allowed_repositories || []) if (!repoUrl(url)) fail(`non-p
 if (!Array.isArray(doc.repositories)) fail("repositories must be an array");
 const allowed = new Set((doc.allowed_repositories || []).map(cleanRepoUrl)); const repositoryIds = new Set(); const objectIds = new Set();
 for (const repository of doc.repositories || []) {
-  hasOnly(repository, ["id", "url", "visibility", ...Object.keys(objectKinds)], "repository"); required(repository, ["id", "url", "visibility", ...Object.keys(objectKinds)], "repository");
+  hasOnly(repository, ["id", "url", "visibility", "open_pull_requests", "error", ...Object.keys(objectKinds)], "repository"); required(repository, ["id", "url", "visibility", ...Object.keys(objectKinds)], "repository");
   if (!repository || typeof repository.id !== "string" || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repository.id) || !repoUrl(repository.url) || repository.visibility !== "public" || !allowed.has(cleanRepoUrl(repository.url))) fail("repository is not public, valid, and allowlisted");
+  if (repository && "open_pull_requests" in repository && (!Number.isInteger(repository.open_pull_requests) || repository.open_pull_requests < 0)) fail("repository open_pull_requests must be a non-negative integer");
+  if (repository && "error" in repository && (typeof repository.error !== "string" || repository.error.length < 1)) fail("repository error marker must be a non-empty string");
   if (repository && typeof repository === "object" && repoUrl(repository.url)) {
     const expectedId = cleanRepoUrl(repository.url).slice("https://github.com/".length);
     if (repository.id !== expectedId) fail("repository id must match its URL");
