@@ -1,0 +1,271 @@
+---
+/**
+ * Site header — sticky, one nav, no JS framework.
+ *
+ * The mobile menu is the checkbox pattern: the checkbox is the disclosure
+ * state, the label is the operable control, and CSS does the rest. It is
+ * keyboard operable with Space, keeps the toggle as the first tab stop before
+ * the links, and carries `aria-controls` so the relationship is explicit.
+ * From 768px up the checkbox and its label are removed from the layout and the
+ * panel is always visible, so exactly one nav landmark exists at every width.
+ */
+import type { Copy, Locale } from '../i18n/copy';
+import { profile } from '../lib/data';
+import LangSwitch from './LangSwitch.astro';
+import ThemeToggle from './ThemeToggle.astro';
+
+interface Props {
+  copy: Copy;
+  locale: Locale;
+  /** Currently visible home section, used for the active nav indicator. */
+  active?: 'projects' | 'evolution' | 'evidence' | 'contact';
+}
+
+const { copy, locale, active } = Astro.props;
+const base = import.meta.env.BASE_URL;
+
+/* Section ids follow the preserved anchors: #projects, #evidence. */
+const links: { id: NonNullable<Props['active']>; href: string; label: string }[] = [
+  { id: 'projects', href: `${base}#projects`, label: copy.nav.work },
+  { id: 'evolution', href: `${base}#evolution`, label: copy.nav.evolution },
+  { id: 'evidence', href: `${base}#evidence`, label: copy.nav.evidence },
+  { id: 'contact', href: `${base}#contact`, label: copy.nav.contact },
+];
+---
+
+<header class="site-header">
+  <div class="shell site-header__inner">
+    <a class="site-header__brand" href={base}>
+      <span class="site-header__mark" aria-hidden="true"></span>
+      <span class="site-header__name">{profile.name}</span>
+    </a>
+
+    <input
+      type="checkbox"
+      id="site-nav-toggle"
+      class="site-nav__checkbox"
+      aria-controls="site-nav-panel"
+    />
+
+    <label class="site-nav__button" for="site-nav-toggle">
+      <span class="site-nav__bars" aria-hidden="true"></span>
+      <span class="site-nav__button-label">{copy.nav.menuLabel}</span>
+      <span class="visually-hidden">{copy.nav.openMenu} / {copy.nav.closeMenu}</span>
+    </label>
+
+    <div class="site-header__panel" id="site-nav-panel">
+      <nav class="site-nav" aria-label={copy.a11y.primaryNav}>
+        <ul class="site-nav__list">
+          {
+            links.map((link) => (
+              <li>
+                <a
+                  class="site-nav__link"
+                  href={link.href}
+                  aria-current={active === link.id ? 'true' : undefined}
+                >
+                  {link.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <div class="site-header__controls">
+        <LangSwitch copy={copy} locale={locale} />
+        <ThemeToggle copy={copy} />
+      </div>
+    </div>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background-color: color-mix(in srgb, var(--color-bg) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .site-header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    min-height: var(--header-height);
+    flex-wrap: wrap;
+    padding-block: var(--space-2);
+  }
+
+  .site-header__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 44px;
+    color: var(--color-text);
+    font-weight: 700;
+    letter-spacing: var(--tracking-tight);
+    text-decoration: none;
+  }
+
+  .site-header__mark {
+    width: 10px;
+    height: 10px;
+    flex: none;
+    background-color: var(--color-accent);
+    border-radius: var(--radius-sm);
+  }
+
+  /* --- Disclosure control -------------------------------------------------- */
+  .site-nav__checkbox {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .site-nav__button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 44px;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    font-size: var(--text-sm);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .site-nav__bars,
+  .site-nav__bars::before,
+  .site-nav__bars::after {
+    display: block;
+    width: 16px;
+    height: 2px;
+    background-color: currentColor;
+    content: '';
+  }
+
+  .site-nav__bars {
+    position: relative;
+  }
+
+  .site-nav__bars::before,
+  .site-nav__bars::after {
+    position: absolute;
+    left: 0;
+  }
+
+  .site-nav__bars::before {
+    top: -5px;
+  }
+
+  .site-nav__bars::after {
+    top: 5px;
+  }
+
+  /* The checkbox is visually hidden but stays focusable, so the focus ring has
+     to be drawn on its label. */
+  .site-nav__checkbox:focus-visible + .site-nav__button {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .site-nav__checkbox:checked ~ .site-nav__button {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+
+  /* --- Panel --------------------------------------------------------------- */
+  .site-header__panel {
+    display: none;
+    flex-basis: 100%;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding-block: var(--space-3);
+  }
+
+  .site-nav__checkbox:checked ~ .site-header__panel {
+    display: flex;
+  }
+
+  .site-nav__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .site-nav__link {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    text-decoration: none;
+    transition:
+      color var(--duration-fast) var(--ease-standard),
+      background-color var(--duration-fast) var(--ease-standard);
+  }
+
+  .site-nav__link:hover {
+    color: var(--color-accent);
+    background-color: var(--color-surface-raised);
+  }
+
+  .site-nav__link[aria-current='true'] {
+    color: var(--color-accent);
+  }
+
+  .site-header__controls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--color-border);
+  }
+
+  /* --- Wide viewport: one always-visible nav, no disclosure control -------- */
+  @media (min-width: 768px) {
+    .site-nav__checkbox,
+    .site-nav__button {
+      display: none;
+    }
+
+    .site-header__inner {
+      flex-wrap: nowrap;
+    }
+
+    .site-header__panel {
+      display: flex;
+      flex-basis: auto;
+      flex-direction: row;
+      align-items: center;
+      gap: var(--space-6);
+      padding-block: 0;
+    }
+
+    .site-nav__list {
+      flex-direction: row;
+      align-items: center;
+      gap: var(--space-1);
+    }
+
+    .site-header__controls {
+      padding-top: 0;
+      padding-left: var(--space-4);
+      border-top: 0;
+      border-left: 1px solid var(--color-border);
+    }
+  }
+</style>

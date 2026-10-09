@@ -1,0 +1,337 @@
+---
+/**
+ * Project card — the scannable unit of proof.
+ *
+ * Every field comes from a `data/projects.json` entry. Nothing is invented:
+ * when `screenshots` is empty the card renders a CSS gradient plus the project
+ * initials and says so, rather than shipping a placeholder "screenshot".
+ *
+ * Status colours (tokens doc §2): live -> success, mvp/demo -> accent,
+ * prototype -> warn (draft-like), lab/planned -> neutral.
+ */
+import type { Copy } from '../i18n/copy';
+import type { Project } from '../lib/data';
+import { profile, relatedProjects } from '../lib/data';
+
+interface Props {
+  copy: Copy;
+  project: Project;
+  /** Index used for the reveal stagger on listing grids. */
+  revealIndex?: number;
+}
+
+const { copy, project, revealIndex = 0 } = Astro.props;
+const base = import.meta.env.BASE_URL;
+
+/* Case studies are markdown inside the portfolio repository itself, so the
+   owner comes from the data layer and the repository name is fixed here. */
+const siteRepo = `https://github.com/${profile.reposOwner}/professional-evolution-portfolio`;
+const caseStudyUrl = project.caseStudy ? `${siteRepo}/blob/main/${project.caseStudy}` : null;
+
+const statusVariant: Record<Project['status'], string> = {
+  live: 'chip--success',
+  mvp: 'chip--accent',
+  demo: 'chip--accent',
+  prototype: 'chip--warn',
+  lab: 'chip--neutral',
+};
+
+const related = relatedProjects(project.slug);
+
+/** Deterministic hue so a card keeps the same colour across builds. */
+const hue = [...project.slug].reduce((total, char) => (total + char.charCodeAt(0)) % 360, 0);
+
+const initials = project.name
+  .split(/\s+/)
+  .slice(0, 2)
+  .map((word) => word.charAt(0).toUpperCase())
+  .join('');
+---
+
+<article
+  class="project-card reveal"
+  id={project.slug}
+  style={`--card-hue: ${hue}; --reveal-index: ${revealIndex}`}
+  aria-labelledby={`${project.slug}-title`}
+>
+  <div class="project-card__figure">
+    {
+      project.screenshots.length > 0 ? (
+        <img
+          class="project-card__image"
+          src={project.screenshots[0]}
+          alt={`Screenshot of ${project.name}`}
+          width="640"
+          height="360"
+          loading="lazy"
+        />
+      ) : (
+        <>
+          <span class="project-card__placeholder" aria-hidden="true">
+            <span class="project-card__initials">{initials}</span>
+          </span>
+          <span class="project-card__figure-note">{copy.work.screenshotPlaceholder}</span>
+        </>
+      )
+    }
+  </div>
+
+  <div class="project-card__body">
+    <div class="project-card__meta">
+      <span
+        class={`chip ${statusVariant[project.status]}`}
+        title={copy.projectStatus.hint[project.status]}
+      >
+        {copy.projectStatus.label[project.status]}
+        <span class="visually-hidden">. {copy.projectStatus.hint[project.status]}</span>
+      </span>
+    </div>
+
+    <h3 class="project-card__title" id={`${project.slug}-title`}>
+      {project.name}
+    </h3>
+
+    <p class="project-card__summary">{project.summary}</p>
+
+    {
+      project.tags.length > 0 && (
+        <ul class="project-card__tags">
+          {project.tags.map((tag) => (
+            <li class="project-card__tag">{tag}</li>
+          ))}
+        </ul>
+      )
+    }
+
+    <div class="project-card__links">
+      <a class="project-card__link" href={project.repo} target="_blank" rel="noopener noreferrer">
+        {copy.work.repo}
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path
+            d="M14 4h6v6M20 4l-8.5 8.5M18 14v4.5A1.5 1.5 0 0 1 16.5 20h-11A1.5 1.5 0 0 1 4 18.5v-11A1.5 1.5 0 0 1 5.5 6H10"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <span class="visually-hidden">({copy.a11y.opensInNewTab})</span>
+      </a>
+      {
+        caseStudyUrl && (
+          <a class="project-card__link" href={caseStudyUrl} target="_blank" rel="noopener noreferrer">
+            {copy.work.caseStudy}
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path
+                d="M14 4h6v6M20 4l-8.5 8.5M18 14v4.5A1.5 1.5 0 0 1 16.5 20h-11A1.5 1.5 0 0 1 4 18.5v-11A1.5 1.5 0 0 1 5.5 6H10"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            <span class="visually-hidden">({copy.a11y.opensInNewTab})</span>
+          </a>
+        )
+      }
+    </div>
+
+    {
+      related.length > 0 && (
+        <div class="project-card__related">
+          <h4 class="project-card__related-heading">{copy.work.related}</h4>
+          <ul class="project-card__related-list">
+            {related.map((item) => (
+              <li>
+                <a href={`${base}work/#${item.slug}`}>{item.name}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+    }
+  </div>
+</article>
+
+<style>
+  .project-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    /* This card carries `.reveal`, so its own transition must also cover the
+       reveal properties (the global `html.js .reveal` rule is less specific
+       than a scoped class+attribute selector). `translate` is used for the
+       hover lift so it composes with the reveal `transform` instead of
+       replacing it. */
+    transition:
+      opacity var(--duration-slow) var(--ease-out),
+      transform var(--duration-slow) var(--ease-out),
+      translate var(--duration-base) var(--ease-standard),
+      border-color var(--duration-base) var(--ease-standard),
+      box-shadow var(--duration-base) var(--ease-standard);
+  }
+
+  .project-card:hover {
+    translate: 0 -4px;
+    border-color: var(--color-accent);
+    box-shadow: var(--shadow-md);
+  }
+
+  .project-card:focus-within {
+    border-color: var(--color-accent);
+  }
+
+  /* --- Placeholder visual ---------------------------------------------------
+   * A gradient derived from the slug hue plus the project initials. Alpha is
+   * kept low so the block works in both themes without a contrast cost. */
+  .project-card__figure {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-4) var(--space-4) 0;
+  }
+
+  .project-card__placeholder {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius-md);
+    background-image:
+      radial-gradient(
+        70% 80% at 20% 10%,
+        hsl(var(--card-hue) 70% 50% / 0.22) 0%,
+        transparent 60%
+      ),
+      linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--color-accent) 10%, var(--color-surface-raised)) 0%,
+        var(--color-surface) 70%
+      );
+    border: 1px solid var(--color-border);
+  }
+
+  .project-card__initials {
+    color: var(--color-accent);
+    font-size: var(--text-3xl);
+    font-weight: 700;
+    letter-spacing: var(--tracking-tight);
+    line-height: 1;
+  }
+
+  .project-card__image {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+  }
+
+  .project-card__figure-note {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+  }
+
+  /* --- Body ---------------------------------------------------------------- */
+  .project-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
+  }
+
+  /* The status sits in its own row above the title so the chip lands in the
+     same place on every card regardless of how long the name is. */
+  .project-card__meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .project-card__title {
+    font-size: var(--text-lg);
+    line-height: var(--leading-lg);
+  }
+
+  .project-card__summary {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .project-card__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .project-card__tag {
+    padding: 2px var(--space-2);
+    background-color: var(--color-surface-raised);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+  }
+
+  .project-card__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+  }
+
+  .project-card__link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-height: 44px;
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+
+  .project-card__link svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  .project-card__related {
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .project-card__related-heading {
+    margin-bottom: var(--space-1);
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    font-weight: 600;
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+  }
+
+  .project-card__related-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--text-sm);
+  }
+
+  .project-card__related-list a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+</style>

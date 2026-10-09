@@ -1,0 +1,132 @@
+---
+/**
+ * Site footer — including the disclosure about how the site is built, which
+ * extends the evidence-first identity to the artifact itself.
+ *
+ * `snapshotId` is an optional slot: it is only rendered when a caller has a
+ * public snapshot to name, so no placeholder snapshot claim can ever leak onto
+ * the page.
+ */
+import type { Copy } from '../i18n/copy';
+import { profile } from '../lib/data';
+
+interface Props {
+  copy: Copy;
+  snapshotId?: string;
+}
+
+const { copy, snapshotId } = Astro.props;
+
+const SOURCE_REPO = `https://github.com/${profile.reposOwner}/professional-evolution-portfolio`;
+const year = new Date().getUTCFullYear();
+---
+
+<footer class="site-footer">
+  <div class="shell site-footer__inner">
+    <div class="site-footer__identity">
+      <p class="site-footer__name">{profile.name}</p>
+      <p class="site-footer__tagline">{copy.footer.tagline}</p>
+    </div>
+
+    <dl class="site-footer__meta">
+      {
+        snapshotId && (
+          <>
+            <dt class="site-footer__term">{copy.footer.snapshotLabel}</dt>
+            <dd class="site-footer__value">
+              <code>{snapshotId}</code>
+            </dd>
+          </>
+        )
+      }
+      <dt class="site-footer__term">{copy.footer.sourceRepository}</dt>
+      <dd class="site-footer__value">
+        <a href={SOURCE_REPO} target="_blank" rel="noopener noreferrer">
+          {profile.reposOwner}/professional-evolution-portfolio
+          <span class="visually-hidden">({copy.a11y.opensInNewTab})</span>
+        </a>
+      </dd>
+    </dl>
+
+    <div class="site-footer__notes">
+      <p class="site-footer__note">{copy.footer.buildNote}</p>
+      <p class="site-footer__note">{copy.footer.themeNote}</p>
+      <p class="site-footer__note tabular">© {year} {profile.name}</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: var(--space-24);
+    padding-block: var(--space-12);
+    border-top: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+  }
+
+  .site-footer__inner {
+    display: grid;
+    gap: var(--space-8);
+  }
+
+  .site-footer__name {
+    font-weight: 700;
+    letter-spacing: var(--tracking-tight);
+  }
+
+  .site-footer__tagline {
+    color: var(--color-accent);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .site-footer__meta {
+    display: grid;
+    gap: var(--space-1);
+    margin: 0;
+  }
+
+  .site-footer__term {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+  }
+
+  .site-footer__value {
+    margin: 0 0 var(--space-2);
+    font-size: var(--text-sm);
+    word-break: break-word;
+  }
+
+  .site-footer__value a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  .site-footer__notes {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .site-footer__note {
+    max-width: 60ch;
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+  }
+
+  @media (min-width: 768px) {
+    .site-footer__inner {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: start;
+    }
+
+    .site-footer__notes {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

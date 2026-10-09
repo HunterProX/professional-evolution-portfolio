@@ -1,0 +1,275 @@
+---
+/**
+ * Contact form with graceful degradation.
+ *
+ * When `profile.json` carries both `formEndpoint` and `formKey` the component
+ * renders a real POST form (the honeypot is part of that branch, since it only
+ * means something for a form that actually posts). While the endpoint is unset
+ * — the current state of the canonical data — it renders an honest fallback:
+ * a mailto link to the published address plus a note that no message is being
+ * collected. Nothing pretends to submit.
+ *
+ * Accessibility: every input has a visible `<label>`, hints and errors are
+ * wired through `aria-describedby`, invalid fields carry `aria-invalid`, and
+ * the status region is a polite live region.
+ */
+import type { Copy } from '../i18n/copy';
+import { profile } from '../lib/data';
+
+interface Props {
+  copy: Copy;
+  /** Optional server-side validation messages, keyed by field name. */
+  errors?: Partial<Record<'name' | 'email' | 'message', string>>;
+}
+
+const { copy, errors = {} } = Astro.props;
+
+const canPost = Boolean(profile.formEndpoint && profile.formKey);
+const mailto = `mailto:${profile.email}`;
+const describedBy = (field: 'name' | 'email' | 'message', hintId?: string) =>
+  [hintId, errors[field] ? `contact-${field}-error` : null].filter(Boolean).join(' ') || undefined;
+---
+
+<section class="contact" id="contact" aria-labelledby="contact-heading">
+  <div class="shell contact__inner">
+    <div class="contact__intro reveal">
+      <p class="eyebrow">{copy.contact.eyebrow}</p>
+      <h2 class="contact__heading" id="contact-heading">{copy.contact.heading}</h2>
+      <p class="lead">{copy.contact.summary}</p>
+    </div>
+
+    <div class="contact__panel reveal" style="--reveal-index: 1">
+      {
+        canPost ? (
+          <form
+            class="contact__form"
+            action={profile.formEndpoint ?? undefined}
+            method="POST"
+            accept-charset="UTF-8"
+          >
+            <input type="hidden" name="form_key" value={profile.formKey ?? ''} />
+
+            {/* Honeypot: hidden from people, tempting to bots. */}
+            <div class="contact__honeypot" aria-hidden="true">
+              <label for="contact-website">{copy.contact.honeypot}</label>
+              <input type="text" id="contact-website" name="website" tabindex="-1" autocomplete="off" />
+            </div>
+
+            <h3 class="contact__form-heading">{copy.contact.formHeading}</h3>
+
+            <div class="contact__field">
+              <label class="contact__label" for="contact-name">
+                {copy.contact.name} <span class="contact__required">({copy.a11y.required})</span>
+              </label>
+              <input
+                class="contact__input"
+                type="text"
+                id="contact-name"
+                name="name"
+                autocomplete="name"
+                required
+                aria-invalid={errors.name ? 'true' : undefined}
+                aria-describedby={describedBy('name')}
+              />
+              {errors.name && (
+                <p class="contact__error" id="contact-name-error">
+                  {errors.name}
+                </p>
+              )}
+            </div>
+
+            <div class="contact__field">
+              <label class="contact__label" for="contact-email">
+                {copy.contact.email} <span class="contact__required">({copy.a11y.required})</span>
+              </label>
+              <input
+                class="contact__input"
+                type="email"
+                id="contact-email"
+                name="email"
+                autocomplete="email"
+                required
+                aria-invalid={errors.email ? 'true' : undefined}
+                aria-describedby={describedBy('email')}
+              />
+              {errors.email && (
+                <p class="contact__error" id="contact-email-error">
+                  {errors.email}
+                </p>
+              )}
+            </div>
+
+            <div class="contact__field">
+              <label class="contact__label" for="contact-message">
+                {copy.contact.message} <span class="contact__required">({copy.a11y.required})</span>
+              </label>
+              <textarea
+                class="contact__input contact__input--textarea"
+                id="contact-message"
+                name="message"
+                rows="6"
+                required
+                aria-invalid={errors.message ? 'true' : undefined}
+                aria-describedby={describedBy('message', 'contact-message-hint')}
+              />
+              <p class="contact__hint" id="contact-message-hint">
+                {copy.contact.messageHint}
+              </p>
+              {errors.message && (
+                <p class="contact__error" id="contact-message-error">
+                  {errors.message}
+                </p>
+              )}
+            </div>
+
+            <p class="contact__status" role="status" aria-live="polite" />
+
+            <button class="button button--primary" type="submit">
+              {copy.contact.submit}
+            </button>
+
+            <p class="contact__privacy">{copy.contact.privacy}</p>
+          </form>
+        ) : (
+          <div class="contact__fallback">
+            <h3 class="contact__form-heading">{copy.contact.fallbackHeading}</h3>
+            <p class="contact__fallback-note">{copy.contact.fallbackNote}</p>
+
+            <p class="contact__email-label">{copy.contact.emailLabel}</p>
+            <a class="contact__email" href={mailto}>{profile.email}</a>
+
+            <a class="button button--primary contact__cta" href={mailto}>
+              {copy.contact.mailtoCta}
+            </a>
+
+            <p class="contact__privacy">{copy.contact.privacy}</p>
+          </div>
+        )
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .contact {
+    padding-block: var(--space-24);
+  }
+
+  .contact__inner {
+    display: grid;
+    gap: var(--space-8);
+  }
+
+  .contact__heading {
+    margin-block: var(--space-2) var(--space-3);
+  }
+
+  .contact__panel {
+    padding: var(--space-6);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .contact__form,
+  .contact__fallback {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .contact__form-heading {
+    font-size: var(--text-lg);
+    line-height: var(--leading-lg);
+  }
+
+  .contact__honeypot {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .contact__field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .contact__label {
+    color: var(--color-text);
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+
+  .contact__required {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    font-weight: 400;
+  }
+
+  .contact__input {
+    padding: var(--space-3);
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    /* Interactive borders need 3:1, so they follow the accent, not the hairline. */
+    transition: border-color var(--duration-fast) var(--ease-standard);
+  }
+
+  .contact__input:hover {
+    border-color: var(--color-accent);
+  }
+
+  .contact__input:focus-visible {
+    border-color: var(--color-accent);
+    box-shadow: var(--ring-focus);
+  }
+
+  .contact__input--textarea {
+    resize: vertical;
+  }
+
+  .contact__hint,
+  .contact__privacy,
+  .contact__email-label {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  /* Errors are text, not only a red border. */
+  .contact__error {
+    color: var(--color-warn);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+    font-weight: 600;
+  }
+
+  .contact__status:empty {
+    display: none;
+  }
+
+  .contact__cta {
+    align-self: flex-start;
+  }
+
+  .contact__email {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-family: var(--font-mono);
+    font-size: var(--text-md);
+  }
+
+  @media (min-width: 1024px) {
+    .contact__inner {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+      align-items: start;
+      gap: var(--space-16);
+    }
+  }
+</style>

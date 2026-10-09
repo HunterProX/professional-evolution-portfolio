@@ -1,0 +1,300 @@
+---
+/**
+ * Evolution timeline — direction of travel with the receipts attached.
+ *
+ * Milestones are grouped by year, newest year first, and every entry carries
+ * its status, its source (curated by hand, derived from git, or snapshot) and
+ * links to the evidence behind it. Unreviewed git-derived entries are labelled
+ * as such rather than presented as curated history.
+ *
+ * The vertical rail is pure CSS: `.timeline` also carries `.reveal`, so the
+ * reveal observer that flips `.is-visible` is what draws the rail. With
+ * JavaScript unavailable the timeline renders fully drawn, and reduced motion
+ * removes the transform entirely (see tokens.css).
+ */
+import type { Copy, Locale } from '../i18n/copy';
+import type { Milestone } from '../lib/data';
+import { milestonesByDateDesc } from '../lib/data';
+
+interface Props {
+  copy: Copy;
+  locale: Locale;
+  /** Optional subset, e.g. the home page preview. */
+  milestones?: Milestone[];
+  /** When set, the component notes that it is showing a subset. */
+  limit?: number;
+}
+
+const { copy, locale, milestones = milestonesByDateDesc, limit } = Astro.props;
+const base = import.meta.env.BASE_URL;
+
+const ordered = [...milestones].sort((a, b) =>
+  a.date === b.date ? a.id.localeCompare(b.id) : a.date < b.date ? 1 : -1,
+);
+
+const visible = typeof limit === 'number' ? ordered.slice(0, limit) : ordered;
+const isPreview = visible.length < ordered.length;
+
+const years = new Map<string, Milestone[]>();
+for (const milestone of visible) {
+  const year = milestone.date.slice(0, 4);
+  const bucket = years.get(year);
+  if (bucket) bucket.push(milestone);
+  else years.set(year, [milestone]);
+}
+const groups = [...years.entries()].map(([year, items]) => ({ year, items }));
+
+const dateFormat = new Intl.DateTimeFormat(locale === 'es' ? 'es-ES' : 'en-GB', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+
+const statusVariant: Record<Milestone['status'], string> = {
+  shipped: 'chip--success',
+  'in-progress': 'chip--warn',
+  planned: 'chip--neutral',
+};
+
+const statusLabel: Record<Milestone['status'], string> = {
+  shipped: copy.evolution.shipped,
+  'in-progress': copy.evolution.inProgress,
+  planned: copy.evolution.planned,
+};
+
+/** Short, readable evidence labels; the full URL stays in the title. */
+function evidenceLabel(url: string): string {
+  try {
+    const segments = new URL(url).pathname.split('/').filter(Boolean);
+    const last = segments[segments.length - 1] ?? '';
+    if (/^[0-9a-f]{7,40}$/i.test(last)) return last.slice(0, 7);
+    return last.replace(/\.[a-z0-9]+$/i, '') || url;
+  } catch {
+    return url;
+  }
+}
+---
+
+<div class="timeline reveal">
+  {
+    groups.map((group) => (
+      <section class="timeline__year" aria-labelledby={`timeline-year-${group.year}`}>
+        <h3 class="timeline__year-label" id={`timeline-year-${group.year}`}>
+          {group.year}
+        </h3>
+
+        <ol class="timeline__list">
+          <span class="timeline__rail" aria-hidden="true" />
+
+          {group.items.map((milestone) => (
+            <li class="timeline__item" data-status={milestone.status}>
+              <span class="timeline__node" aria-hidden="true" />
+
+              <article class="timeline__entry" aria-labelledby={`${milestone.id}-title`}>
+                <div class="timeline__meta">
+                  <time class="timeline__date tabular" datetime={milestone.date}>
+                    {dateFormat.format(new Date(`${milestone.date}T00:00:00Z`))}
+                  </time>
+                  <span class={`chip ${statusVariant[milestone.status]}`}>
+                    {statusLabel[milestone.status]}
+                  </span>
+                  <span class="chip chip--neutral timeline__source">
+                    {copy.evolution.sourceLabel[milestone.source]}
+                  </span>
+                </div>
+
+                <h4 class="timeline__title" id={`${milestone.id}-title`}>
+                  {milestone.title}
+                </h4>
+
+                <p class="timeline__narrative">{milestone.narrative}</p>
+
+                <p class="timeline__evidence-count">
+                  {copy.evolution.evidenceLinks(milestone.evidence.length)}
+                </p>
+
+                <ul class="timeline__evidence">
+                  {milestone.evidence.map((url) => (
+                    <li>
+                      <a class="timeline__evidence-link" href={url} title={url} target="_blank" rel="noopener noreferrer">
+                        {evidenceLabel(url)}
+                        <span class="visually-hidden"> ({copy.a11y.opensInNewTab})</span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            </li>
+          ))}
+        </ol>
+      </section>
+    ))
+  }
+
+  {
+    isPreview && (
+      <p class="timeline__preview-note">
+        <span>{copy.evolution.previewNote}</span>{' '}
+        <a href={`${base}evolution/`}>{copy.evolution.viewAll}</a>
+      </p>
+    )
+  }
+</div>
+
+<style>
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+  }
+
+  .timeline__year-label {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+  }
+
+  .timeline__list {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    margin: var(--space-4) 0 0;
+    padding: 0 0 0 var(--space-8);
+    list-style: none;
+  }
+
+  /* The rail is the element the draw animation scales. */
+  .timeline__rail {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 7px;
+    width: 2px;
+    background-color: var(--color-border);
+    transform-origin: top center;
+  }
+
+  /* `:global(.js)` because the `.js` gate lives on <html>, outside this
+     component: a scoped `.js` selector would compile to a class that the
+     document element does not carry, and the rail would never draw. */
+  :global(.js) .timeline__rail {
+    transform: scaleY(0);
+    transition: transform var(--duration-slow) var(--ease-in-out);
+  }
+
+  :global(.js) .timeline.is-visible .timeline__rail {
+    transform: scaleY(1);
+  }
+
+  .timeline__item {
+    position: relative;
+  }
+
+  .timeline__node {
+    position: absolute;
+    top: 6px;
+    left: calc(var(--space-8) * -1 + 2px);
+    width: 14px;
+    height: 14px;
+    background-color: var(--color-bg);
+    border: 2px solid var(--color-accent);
+    border-radius: var(--radius-full);
+    transition: transform var(--duration-base) var(--ease-out);
+  }
+
+  :global(.js) .timeline:not(.is-visible) .timeline__node {
+    transform: scale(0.4);
+  }
+
+  .timeline__item[data-status='planned'] .timeline__node {
+    border-style: dashed;
+    border-color: var(--color-text-muted);
+  }
+
+  .timeline__item[data-status='in-progress'] .timeline__node {
+    border-color: var(--color-warn);
+  }
+
+  .timeline__entry {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .timeline__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .timeline__date {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+  }
+
+  .timeline__title {
+    font-size: var(--text-lg);
+    line-height: var(--leading-lg);
+  }
+
+  .timeline__narrative {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .timeline__evidence-count {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-eyebrow);
+  }
+
+  .timeline__evidence {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .timeline__evidence-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 var(--space-2);
+    background-color: var(--color-surface-raised);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    text-decoration: none;
+  }
+
+  .timeline__evidence-link:hover {
+    background-color: color-mix(in srgb, var(--color-accent) 16%, transparent);
+  }
+
+  .timeline__preview-note {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .timeline__preview-note a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+</style>
