@@ -1,0 +1,20 @@
+---
+/**
+ * Evidence route (en) — the complete evidence list from `data/evidence.json`,
+ * derived from the approved public snapshot.
+ */
+import type { Locale } from '../i18n/copy';
+import { getCopy } from '../i18n/copy';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Evidence from '../views/Evidence.astro';
+
+const locale: Locale = 'en';
+const copy = getCopy(locale);
+
+const title = copy.nav.evidence;
+const description = copy.evidence.summary;
+---
+
+<BaseLayout locale={locale} title={title} description={description} path="evidence/" activeNav="evidence">
+  <Evidence locale={locale} copy={copy} />
+</BaseLayout>

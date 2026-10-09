@@ -1,0 +1,44 @@
+---
+/**
+ * Ruta de estudio de caso (es) — una página estática por proyecto de
+ * `data/projects.json`, con el estudio de caso derivado de `case-studies/*.md`
+ * cuando existe, y con el estado vacío honesto cuando no existe.
+ */
+import type { Locale } from '../../../i18n/copy';
+import { getCopy } from '../../../i18n/copy';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import CaseStudy from '../../../views/CaseStudy.astro';
+import { projects } from '../../../lib/data';
+import type { Project } from '../../../lib/data';
+
+interface Props {
+  project: Project;
+}
+
+export function getStaticPaths() {
+  return projects.map((project) => ({
+    params: { slug: project.slug },
+    props: { project },
+  }));
+}
+
+const { project } = Astro.props;
+
+const locale: Locale = 'es';
+const copy = getCopy(locale);
+
+const title = `${project.name} — ${copy.caseStudy.eyebrow}`;
+const description = project.summary;
+---
+
+<BaseLayout
+  locale={locale}
+  lang="es"
+  title={title}
+  description={description}
+  ogType="article"
+  path={`work/${project.slug}/`}
+  activeNav="projects"
+>
+  <CaseStudy locale={locale} copy={copy} project={project} />
+</BaseLayout>

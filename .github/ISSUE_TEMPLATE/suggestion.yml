@@ -1,0 +1,40 @@
+name: Suggestion
+description: Suggest an improvement to the portfolio
+title: "[Suggestion] "
+labels: ["suggestion"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve this evidence-first portfolio. Please describe
+        a concrete improvement and, where you can, link to public evidence.
+  - type: textarea
+    id: improvement
+    attributes:
+      label: What to improve
+      description: Describe the change or addition you are proposing.
+      placeholder: Explain what should change and why.
+    validations:
+      required: true
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where
+      description: Which part of the site does this suggestion concern?
+      options:
+        - Homepage
+        - Work
+        - Evolution
+        - Evidence
+        - Contact
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: evidence
+    attributes:
+      label: Evidence link (optional)
+      description: A public link that supports the suggestion.
+      placeholder: https://example.com/...
+    validations:
+      required: false

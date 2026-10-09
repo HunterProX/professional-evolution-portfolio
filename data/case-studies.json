@@ -1,0 +1,105 @@
+{
+  "note": "Derived from case-studies/*.md by scripts/case-studies-sync.mjs; bodies are verbatim except GitHub URLs canonicalised to cristian-cardona-dev.",
+  "caseStudies": [
+    {
+      "source": "case-studies/ai-automation-workflow-lab.md",
+      "fileSlug": "ai-automation-workflow-lab",
+      "projectSlug": "ai-automation-workflow-lab",
+      "title": "AI Automation Workflow Lab — public reproduction",
+      "sections": [
+        {
+          "heading": "Classification",
+          "body": "This is a new public reproduction of a bounded workflow. It is not a client\nworkflow, Personal OS integration, autonomous production system, n8n workflow,\nor OpenClaw deployment."
+        },
+        {
+          "heading": "What was implemented",
+          "body": "- Synthetic input contract.\n- Explicit proposal, approval, rejection, and execution states.\n- Allowlisted deterministic actions.\n- Idempotency key and replay-safe execution.\n- Audit event for every state transition.\n- Invalid-input and approval-bypass tests."
+        },
+        {
+          "heading": "What this demonstrates",
+          "body": "- Human-in-the-loop workflow design.\n- State transitions and approval boundaries.\n- Deterministic actions and auditability.\n- Safe duplicate execution behavior."
+        },
+        {
+          "heading": "What this does not demonstrate",
+          "body": "- Autonomous production automation.\n- External service integration.\n- Private system writes.\n- Client data or employer workflow implementation.\n- n8n, OpenClaw, or agent runtime operation."
+        },
+        {
+          "heading": "Evidence",
+          "body": "- Repository: <https://github.com/cristian-cardona-dev/ai-automation-workflow-lab>\n- Portfolio evidence record: `ev-ai-automation-workflow-repository`\n- Portfolio claim: `claim-ai-automation-workflow-reproduction`"
+        }
+      ]
+    },
+    {
+      "source": "case-studies/ai-reliability-lab.md",
+      "fileSlug": "ai-reliability-lab",
+      "projectSlug": "ai-chat-app",
+      "title": "AI Engineering Reliability Lab — public reproduction",
+      "sections": [
+        {
+          "heading": "Classification",
+          "body": "This is a **new public project / public reproduction**. It is not a production\nassistant, client system, employer codebase, or proof of production RAG."
+        },
+        {
+          "heading": "Problem",
+          "body": "Define a safe response contract for a public AI assistant before introducing a\nmodel provider, retrieval system, tools, or persistent conversations."
+        },
+        {
+          "heading": "What was implemented",
+          "body": "- Deterministic representative responses over an allowlisted knowledge fixture.\n- Citation IDs constrained to approved fixture records.\n- Explicit `insufficient_evidence` responses for unsupported questions.\n- Request-size limit and rejection of conversation history.\n- Stateless health endpoint exposing the active provider boundary.\n- Node built-in tests for supported answers, unknown questions, limits, and the\n  response contract."
+        },
+        {
+          "heading": "What this demonstrates",
+          "body": "- Bounded AI API design without depending on a model provider.\n- Fail-closed behavior when evidence is insufficient.\n- A small response contract that can later sit behind a provider-neutral adapter.\n- Testable privacy and citation boundaries."
+        },
+        {
+          "heading": "What this does not demonstrate",
+          "body": "- Production RAG, embeddings, vector search, or retrieval quality.\n- OpenAI or other model-provider operation.\n- Streaming, agents, tools, authentication, rate limiting, or public abuse\n  protection.\n- Client or employer data."
+        },
+        {
+          "heading": "Evidence",
+          "body": "- Repository: <https://github.com/cristian-cardona-dev/ai-chat-app>\n- Portfolio snapshot record: `ev-ai-reliability-lab-repository`\n- Portfolio claim: `claim-ai-chat-prototype-exists`"
+        },
+        {
+          "heading": "Next boundary",
+          "body": "The next safe evolution is a mock/provider adapter with a fixed evaluation set.\nA real provider remains disabled until privacy, cost, timeout, and abuse controls\nare separately reviewed."
+        }
+      ]
+    },
+    {
+      "source": "case-studies/cloud-dashboard.md",
+      "fileSlug": "cloud-dashboard",
+      "projectSlug": "cloud-dashboard",
+      "title": "Cloud Dashboard — public reproduction",
+      "sections": [
+        {
+          "heading": "Classification",
+          "body": "This is a **new public project / public reproduction**. It is not client code,\nlive employer infrastructure, or a reconstruction of a private system."
+        },
+        {
+          "heading": "Problem",
+          "body": "Create a small observability-style interface that can be inspected locally and\nthat makes operational limits visible instead of implying live cloud access."
+        },
+        {
+          "heading": "What was implemented",
+          "body": "- Responsive dashboard UI built with Next.js, React, and TypeScript.\n- Deterministic synthetic CPU, memory, request-volume, availability, service,\n  and alert data.\n- Local CPU and memory threshold controls.\n- Accessible loading and error states.\n- Unit tests, browser-flow tests, typecheck, lint, production build, and a\n  focused privacy scan.\n- Optional server-side AI explanation, disabled by default, using only the\n  built-in synthetic metrics."
+        },
+        {
+          "heading": "What this demonstrates",
+          "body": "- A public, reproducible cloud-oriented interface implementation.\n- Full-stack component composition and typed data handling.\n- Testable UI behavior and explicit failure states.\n- A conservative boundary around optional AI behavior."
+        },
+        {
+          "heading": "What this does not demonstrate",
+          "body": "- Live AWS, Azure, or GCP telemetry.\n- Kubernetes, Prometheus, Terraform, or Helm operation.\n- Real cloud costs, production availability, or customer infrastructure.\n- Production authentication, authorization, rate limiting, or abuse controls.\n- Historical work performed for Talan, Siigo, or another employer."
+        },
+        {
+          "heading": "Evidence",
+          "body": "- Repository: <https://github.com/cristian-cardona-dev/cloud-dashboard>\n- Portfolio snapshot record: `ev-cloud-dashboard-repository`\n- Portfolio claim: `claim-cloud-dashboard-planned` (the ID is retained for\n  snapshot continuity; its current text describes the public reproduction)."
+        },
+        {
+          "heading": "Next boundary",
+          "body": "The next useful improvement is not a larger dashboard. It is a reviewed,\nreproducible operational scenario with a documented failure case and an\nevaluation of any optional AI explanation. No live integration is implied."
+        }
+      ]
+    }
+  ]
+}

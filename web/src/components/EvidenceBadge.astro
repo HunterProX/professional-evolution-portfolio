@@ -1,0 +1,96 @@
+---
+/**
+ * Evidence badge — the smallest expression of "evidence before confidence".
+ *
+ * A claim never appears without a status. The status is a text label (plus a
+ * `title` tooltip and a visually hidden explanation for assistive tech), so
+ * colour is reinforcement and never the only signal.
+ *
+ * Colour mapping (tokens doc §2):
+ *   demonstrated    -> success  (verified / public artifact exists)
+ *   developing      -> accent   (partial, prototype level)
+ *   aspirational    -> warn     (direction, not started)
+ *   insufficient    -> neutral  (no public artifact today)
+ */
+import type { ClaimStatus, Copy } from '../i18n/copy';
+
+interface Props {
+  status: ClaimStatus;
+  copy: Copy;
+  /** Optional prefix rendered before the label, e.g. a claim name. */
+  label?: string;
+  class?: string;
+}
+
+const { status, copy, label, class: className } = Astro.props;
+
+const variant: Record<ClaimStatus, string> = {
+  demonstrated: 'chip--success',
+  developing: 'chip--accent',
+  aspirational: 'chip--warn',
+  insufficient: 'chip--neutral',
+};
+
+const text = copy.evidence.statusLabel[status];
+const hint = copy.evidence.statusHint[status];
+---
+
+<span class={`chip evidence-badge ${variant[status]} ${className ?? ''}`.trim()} title={hint}>
+  <svg class="evidence-badge__icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+    {
+      status === 'demonstrated' && (
+        <path
+          d="M2.5 8.5 6 12l7.5-8"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      )
+    }
+    {
+      status === 'developing' && (
+        <circle cx="8" cy="8" r="5" fill="none" stroke="currentColor" stroke-width="2" />
+      )
+    }
+    {
+      status === 'aspirational' && (
+        <path
+          d="M8 2.5v6M8 11.5v.5"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+      )
+    }
+    {
+      status === 'insufficient' && (
+        <path
+          d="M4 4l8 8M12 4l-8 8"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+      )
+    }
+  </svg>
+  {label ? <span class="evidence-badge__label">{label}</span> : null}
+  <span class="evidence-badge__status">{text}</span>
+  <span class="visually-hidden">. {hint}</span>
+</span>
+
+<style>
+  .evidence-badge__icon {
+    width: 12px;
+    height: 12px;
+    flex: none;
+  }
+
+  .evidence-badge__label {
+    text-transform: none;
+    letter-spacing: 0;
+  }
+</style>

@@ -1,0 +1,259 @@
+---
+/**
+ * Work composition — every project from `data/projects.json`, grouped by
+ * status.
+ *
+ * Groups are ordered from what is live to what is only planned (live → mvp →
+ * demo → prototype → lab) and empty statuses are skipped, so the page shows
+ * exactly the dataset and nothing invented. The heading of each group and its
+ * hint come from `projectStatus` in the catalog, which keeps the label tied to
+ * the claim semantics of the evidence behind it.
+ *
+ * Every `ProjectCard` carries `id="<slug>"`, so related-work links — including
+ * the ones coming from the home page — land on the card instead of the top of
+ * the document.
+ *
+ * Heading order: h1 (page) → h2 (status group) → h3 (card title).
+ *
+ * The filter bar sits between the intro and the groups: one button per unique
+ * tag in `data/projects.json` plus "All". It is plain client-side vanilla JS
+ * (no libraries), toggles card visibility through the `data-tags` attribute
+ * `ProjectCard` renders, and marks its own state with `aria-pressed`. The bar
+ * only appears once JavaScript runs and the cards are visible by default, so
+ * the listing is complete with or without scripting.
+ */
+import type { Copy, Locale } from '../i18n/copy';
+import type { ProjectStatus } from '../lib/data';
+import { projects } from '../lib/data';
+import ProjectCard from '../components/ProjectCard.astro';
+
+interface Props {
+  locale: Locale;
+  copy: Copy;
+}
+
+const { locale, copy } = Astro.props;
+
+/** Presentation order: shipped and reachable first, not-built-yet last. */
+const STATUS_ORDER: readonly ProjectStatus[] = ['live', 'mvp', 'demo', 'prototype', 'lab'];
+
+/** Only statuses that actually have projects are rendered, in that order. */
+const present = [...new Set(projects.map((project) => project.status))].sort(
+  (a, b) => STATUS_ORDER.indexOf(a) - STATUS_ORDER.indexOf(b),
+);
+
+const groups = present.map((status) => ({
+  status,
+  items: projects.filter((project) => project.status === status),
+}));
+
+/**
+ * Every tag that appears on any project, sorted: the filter bar is derived
+ * from the dataset, so a new tag shows up as a button without touching this
+ * file. Cards are visible by default and the bar only renders when JavaScript
+ * runs, so a no-JS visit sees the full listing.
+ */
+const allTags = [...new Set(projects.flatMap((project) => project.tags))].sort();
+---
+
+<section class="section" id="work" aria-labelledby="work-heading">
+  <div class="shell">
+    <header class="section__head reveal">
+      <p class="eyebrow">{copy.work.eyebrow}</p>
+      <h1 id="work-heading">{copy.work.heading}</h1>
+      <p class="lead">{copy.work.summary}</p>
+    </header>
+
+    <!-- Tag filter: inert without JavaScript, where every card stays visible. -->
+    <div class="work-filter" data-work-filter="" role="group" aria-label={copy.work.filterLabel}>
+      <button type="button" class="work-filter__button" data-filter="all" aria-pressed="true">
+        {copy.work.filterAll}
+      </button>
+      {
+        allTags.map((tag) => (
+          <button type="button" class="work-filter__button" data-filter={tag} aria-pressed="false">
+            {tag}
+          </button>
+        ))
+      }
+    </div>
+
+    {
+      groups.map((group) => (
+        <section class="status-group" aria-labelledby={`status-${group.status}`}>
+          <div class="status-group__head reveal">
+            <h2 id={`status-${group.status}`}>{copy.projectStatus.label[group.status]}</h2>
+            <p class="status-group__hint">{copy.projectStatus.hint[group.status]}</p>
+          </div>
+
+          <ul class="project-grid">
+            {group.items.map((project, index) => (
+              <li class="project-grid__item">
+                <ProjectCard copy={copy} locale={locale} project={project} revealIndex={index} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+  </div>
+</section>
+
+<script>
+  // Tag filter for the work listing — vanilla, no dependencies.
+  //
+  // Cards are visible by default and this script only ever hides them, so a
+  // page without JavaScript (or with this script blocked) shows the whole
+  // listing; the bar itself is CSS-hidden until BaseLayout sets `.js` on
+  // <html>, so a no-JS visitor never sees a control that cannot work.
+  const bar = document.querySelector('[data-work-filter]');
+  if (bar instanceof HTMLElement) {
+    const buttons = Array.from(bar.querySelectorAll('button[data-filter]'));
+    const cards = Array.from(document.querySelectorAll('.project-card[data-tags]'));
+
+    const apply = (tag: string) => {
+      for (const card of cards) {
+        if (!(card instanceof HTMLElement)) continue;
+        const tags = (card.dataset.tags ?? '').split(/\s+/).filter(Boolean);
+        const matches = tag === 'all' || tags.includes(tag);
+        // Hide the grid item, not only the card, so the grid has no gap.
+        const item = card.closest('li');
+        if (item instanceof HTMLElement) item.hidden = !matches;
+      }
+
+      // A status group left with no visible card would show an empty heading.
+      // Scoped to the grid items: each card also carries its own related-work
+      // `<li>`s, which would otherwise keep an emptied group on the page.
+      for (const group of document.querySelectorAll('.status-group')) {
+        if (group instanceof HTMLElement) {
+          group.hidden =
+            group.querySelectorAll('.project-grid__item:not([hidden])').length === 0;
+        }
+      }
+
+      for (const button of buttons) {
+        if (button instanceof HTMLButtonElement) {
+          button.setAttribute('aria-pressed', String(button.dataset.filter === tag));
+        }
+      }
+    };
+
+    for (const button of buttons) {
+      if (button instanceof HTMLButtonElement) {
+        button.addEventListener('click', () => apply(button.dataset.filter ?? 'all'));
+      }
+    }
+  }
+</script>
+
+<style>
+  .section {
+    padding-block: var(--space-16) var(--space-24);
+    scroll-margin-top: var(--header-height);
+  }
+
+  .section__head {
+    max-width: 68ch;
+    margin-bottom: var(--space-8);
+  }
+
+  .section__head h1 {
+    margin-block: var(--space-2) var(--space-3);
+  }
+
+  /* --- Tag filter -----------------------------------------------------------
+   * Hidden until BaseLayout sets `.js`: without JavaScript the buttons could
+   * not do anything, and the listing must keep working with all cards shown. */
+  .work-filter {
+    display: none;
+    margin-bottom: var(--space-8);
+  }
+
+  html.js .work-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .work-filter__button {
+    min-height: 44px;
+    padding: var(--space-2) var(--space-4);
+    background-color: var(--color-surface);
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    cursor: pointer;
+    transition:
+      color var(--duration-fast) var(--ease-standard),
+      background-color var(--duration-fast) var(--ease-standard),
+      border-color var(--duration-fast) var(--ease-standard);
+  }
+
+  .work-filter__button:hover {
+    border-color: var(--color-accent);
+    color: var(--color-text);
+  }
+
+  /* The pressed state is carried by aria-pressed, so the visual state can
+     never disagree with the announced one. */
+  .work-filter__button[aria-pressed='true'] {
+    background-color: color-mix(in srgb, var(--color-accent) 14%, transparent);
+    border-color: color-mix(in srgb, var(--color-accent) 42%, transparent);
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+
+  /* Author styles outrank the UA `[hidden]` rule, so hiding a flex item or a
+     section needs an explicit declaration of its own. */
+  .project-grid__item[hidden],
+  .status-group[hidden] {
+    display: none;
+  }
+
+  .status-group + .status-group {
+    margin-top: var(--space-12);
+  }
+
+  .status-group__head {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    max-width: 68ch;
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .status-group__hint {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .project-grid {
+    display: grid;
+    gap: var(--space-6);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .project-grid__item {
+    display: flex;
+  }
+
+  @media (min-width: 768px) {
+    .project-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .project-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>

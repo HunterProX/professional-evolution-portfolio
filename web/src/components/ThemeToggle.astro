@@ -1,0 +1,147 @@
+---
+/**
+ * Theme toggle — the only JS island besides the reveal observer.
+ *
+ * Behaviour contract:
+ * - `[data-theme]` on `<html>`; the value is already applied pre-paint by the
+ *   inline script in BaseLayout, so this component only syncs the button.
+ * - `prefers-color-scheme` decides the first visit; an explicit choice is
+ *   persisted in localStorage and wins on later visits.
+ * - The accessible state is `aria-pressed` (pressed = dark theme) plus a label
+ *   that always names the theme that is currently active, never the action, so
+ *   the announced state and the pressed state cannot contradict each other.
+ * - Labels arrive through data attributes instead of interpolated JS strings.
+ */
+import type { Copy } from '../i18n/copy';
+
+interface Props {
+  copy: Copy;
+}
+
+const { copy } = Astro.props;
+---
+
+<button
+  type="button"
+  class="theme-toggle"
+  data-theme-toggle
+  data-label-dark={copy.theme.dark}
+  data-label-light={copy.theme.light}
+  aria-pressed="true"
+>
+  <svg class="theme-toggle__icon theme-toggle__icon--sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <circle cx="12" cy="12" r="4.5" fill="currentColor"></circle>
+    <g stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.2 5.2l1.8 1.8M17 17l1.8 1.8M18.8 5.2 17 7M7 17l-1.8 1.8"></path>
+    </g>
+  </svg>
+  <svg class="theme-toggle__icon theme-toggle__icon--moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <path
+      d="M20 14.2A8.2 8.2 0 0 1 9.8 4 8.5 8.5 0 1 0 20 14.2Z"
+      fill="currentColor"></path>
+  </svg>
+  <span class="visually-hidden">{copy.theme.toggle}:</span>
+  <span class="theme-toggle__label" data-theme-label>{copy.theme.dark}</span>
+</button>
+
+<script is:inline>
+  (() => {
+    const KEY = 'pep-theme';
+    const root = document.documentElement;
+    const buttons = Array.from(document.querySelectorAll('[data-theme-toggle]'));
+
+    const read = () => {
+      try {
+        return localStorage.getItem(KEY);
+      } catch {
+        return null;
+      }
+    };
+    const write = (value) => {
+      try {
+        localStorage.setItem(KEY, value);
+      } catch {
+        /* storage unavailable (private mode): the choice is simply not persisted */
+      }
+    };
+    const isDark = () => root.dataset.theme !== 'light';
+
+    const sync = () => {
+      const dark = isDark();
+      buttons.forEach((button) => {
+        button.setAttribute('aria-pressed', String(dark));
+        const label = button.querySelector('[data-theme-label]');
+        if (label) label.textContent = dark ? button.dataset.labelDark : button.dataset.labelLight;
+      });
+    };
+
+    // The first visit follows the OS preference unless a choice was persisted.
+    if (!root.dataset.theme) {
+      const stored = read();
+      const preferred = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      root.dataset.theme = stored === 'light' || stored === 'dark' ? stored : preferred;
+    }
+
+    sync();
+
+    buttons.forEach((button) => {
+      button.addEventListener('click', () => {
+        root.dataset.theme = isDark() ? 'light' : 'dark';
+        write(root.dataset.theme);
+        sync();
+      });
+    });
+  })();
+</script>
+
+<style>
+  .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 44px;
+    padding: var(--space-2) var(--space-3);
+    background-color: transparent;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition:
+      color var(--duration-fast) var(--ease-standard),
+      border-color var(--duration-fast) var(--ease-standard),
+      background-color var(--duration-fast) var(--ease-standard);
+  }
+
+  .theme-toggle:hover {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+    background-color: var(--color-surface-raised);
+  }
+
+  .theme-toggle__icon {
+    width: 16px;
+    height: 16px;
+    flex: none;
+  }
+
+  /* Exactly one icon is shown; which one follows the active theme. */
+  .theme-toggle__icon--moon {
+    display: none;
+  }
+
+  :global([data-theme='light']) .theme-toggle__icon--sun {
+    display: none;
+  }
+
+  :global([data-theme='light']) .theme-toggle__icon--moon {
+    display: block;
+  }
+
+  .theme-toggle__label {
+    font-variant-numeric: tabular-nums;
+  }
+</style>

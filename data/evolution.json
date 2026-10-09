@@ -1,0 +1,407 @@
+{
+  "milestones": [
+    {
+      "id": "2026-10-03-initial-portfolio-build",
+      "date": "2026-10-03",
+      "title": "Evidence-first portfolio published",
+      "narrative": "First public version of the portfolio, built as a static site from a public snapshot contract: claims are stored separately from evidence, and every capability statement points at something a reader can inspect.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/631cf84",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/ac25f54"
+      ],
+      "status": "shipped",
+      "source": "curated",
+      "phase": "foundation",
+      "projects": [
+        "professional-evolution-portfolio"
+      ]
+    },
+    {
+      "id": "2026-10-03-evidence-boundary-contract",
+      "date": "2026-10-03",
+      "title": "Evidence boundaries written down",
+      "narrative": "Each public reproduction gained an explicit boundary: what it demonstrates and, in the same list, what it does not. Documented for the cloud dashboard reproduction, the AI reliability lab and the automation workflow lab, together with deployment ownership notes and a documented products quickstart.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/120f3bf",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/27612cf",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/36cff4a",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/992c25e",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/b840cc3"
+      ],
+      "status": "shipped",
+      "source": "curated",
+      "phase": "foundation",
+      "projects": [
+        "professional-evolution-portfolio",
+        "cloud-dashboard",
+        "ai-chat-app",
+        "ai-automation-workflow-lab"
+      ]
+    },
+    {
+      "id": "2026-10-07-dark-first-theme-foundation",
+      "date": "2026-10-07",
+      "title": "Dark-first theme foundation",
+      "narrative": "Theme assets were split out of the pages into a shared foundation and the homepage was recomposed around evidence rather than marketing copy, keeping the dark-first default.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/6f40b2d",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/6dca28d"
+      ],
+      "status": "shipped",
+      "source": "curated",
+      "phase": "transition",
+      "projects": [
+        "professional-evolution-portfolio"
+      ]
+    },
+    {
+      "id": "2026-10-08-bilingual-accessibility-release",
+      "date": "2026-10-08",
+      "title": "Bilingual EN/ES release and accessibility parity",
+      "narrative": "Reviewed English and Spanish locales shipped across the site, followed by homepage parity and accessibility polish so both languages expose the same content and the same interactive affordances.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/6d445ef",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/94c56fc"
+      ],
+      "status": "shipped",
+      "source": "curated",
+      "phase": "transition",
+      "projects": [
+        "professional-evolution-portfolio"
+      ]
+    },
+    {
+      "id": "2026-10-09-portfolio-10x-rebuild",
+      "date": "2026-10-09",
+      "title": "Portfolio 10x rebuild starts",
+      "narrative": "Redesign kicked off with a research artifact covering dark-first dual-theme tokens, type scale, motion rules and an accessibility checklist, replacing the previous text-heavy layout. The Astro scaffold and canonical data layer follow in this task; the legacy static site stays live until the cutover gate.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/7a60cce",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/a5c0f67",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/d3adf2c",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/76a404f",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/c4d7936",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/43fb841",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/6b7a307"
+      ],
+      "status": "in-progress",
+      "source": "curated",
+      "phase": "transition",
+      "projects": [
+        "professional-evolution-portfolio"
+      ]
+    },
+    {
+      "id": "2026-10-09-portfolio-10x-launch",
+      "date": "2026-10-09",
+      "title": "Portfolio 10x launch",
+      "narrative": "Stated goal recorded on 2026-10-09, not a delivery date. Launch means the rebuilt site replaces the legacy static site once the validation battery and the review gate pass; until then the legacy build is still what the deployment serves. The links below point at the in-progress branch, not at a released site.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/6b7a307"
+      ],
+      "status": "in-progress",
+      "source": "curated",
+      "phase": "frontier",
+      "projects": [
+        "professional-evolution-portfolio"
+      ]
+    },
+    {
+      "id": "2026-10-09-ai-engineering-evidence-build-out",
+      "date": "2026-10-09",
+      "title": "AI engineering evidence build-out",
+      "narrative": "Direction recorded on 2026-10-09, with no delivery date implied. The intent is to widen the public AI engineering evidence: a fixed evaluation set for the reliability contract, a provider-neutral adapter seam, and reproducible run artifacts. None of it exists yet — the links below are the reproductions it would extend, not proof that it was built.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/ai-chat-app",
+        "https://github.com/cristian-cardona-dev/ai-automation-workflow-lab"
+      ],
+      "status": "planned",
+      "source": "curated",
+      "phase": "frontier",
+      "projects": [
+        "ai-chat-app",
+        "ai-automation-workflow-lab"
+      ]
+    },
+    {
+      "id": "2026-10-09-agentic-workflow-lab-public-iterations",
+      "date": "2026-10-09",
+      "title": "Agentic workflow lab public iterations",
+      "narrative": "Direction recorded on 2026-10-09, with no delivery date implied. The next iterations would exercise the approval-gated workflow under replay and adversarial conditions while keeping the boundary explicit: still no autonomous actions and no external service integration. The repository below is today's bounded reproduction, not the future one.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/ai-automation-workflow-lab"
+      ],
+      "status": "planned",
+      "source": "curated",
+      "phase": "frontier",
+      "projects": [
+        "ai-automation-workflow-lab"
+      ]
+    },
+    {
+      "id": "git-2026-10-03-ai-snapshot-add-public-snapshot-contract",
+      "date": "2026-10-03",
+      "title": "Add public snapshot contract",
+      "narrative": "Derived from commit 10e5325: \"ai(snapshot): add public snapshot contract\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/10e5325c15b407842b20a36894fa98c7d9b8b113",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/bbbc75e742a9b0c90f89c6da93ad222e6696b151",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/ac20ae98e2e173c11519642eaf829b55ee38b5fe",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/9e0d03a9cd6858400ca01536665ed232b2336261"
+      ],
+      "status": "shipped",
+      "source": "git",
+      "phase": "foundation",
+      "projects": [
+        "professional-evolution-portfolio"
+      ]
+    },
+    {
+      "id": "git-2026-10-03-ai-ui-add-evidence-first-static-portfolio",
+      "date": "2026-10-03",
+      "title": "Add evidence-first static portfolio",
+      "narrative": "Derived from commit ac25f54: \"ai(ui): add evidence-first static portfolio\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/ac25f544d105905a90ea04ff94fd990cbcacd2f0",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/0245cfaa1e00934d232ee082eaac1bfeac420207",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/f0e12b212a3d6ac5ac881ba71d045312938cd82d",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/8cbd8d77591ef207d5ddae8be59ca8dfa4910974",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/19856464b048bc33556039803415cea44a1d4958"
+      ],
+      "status": "shipped",
+      "source": "git",
+      "phase": "foundation",
+      "projects": [
+        "professional-evolution-portfolio"
+      ]
+    },
+    {
+      "id": "git-2026-10-03-ai-i18n-add-reviewed-english-and-spanish-locales",
+      "date": "2026-10-03",
+      "title": "Add reviewed English and Spanish locales",
+      "narrative": "Derived from commit 6d445ef: \"ai(i18n): add reviewed English and Spanish locales\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/6d445efb691f044ff9712a1e2f791ae42811f31c",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/4018d37f2423e38cfaa9eda3f7fae3531dcf5208",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/e60842e4a5a037edfc5fba4e55b2d21c9feba065",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/d55fb4f83dc59bb0b4f795ef562aef814ca28bb8",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/9eed97a9a29f57d118615ac298ccc0368a1016ff",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/0512465aab3da6c076a60acbc906fbbcc48fb7f2"
+      ],
+      "status": "shipped",
+      "source": "git",
+      "phase": "foundation",
+      "projects": [
+        "professional-evolution-portfolio"
+      ]
+    },
+    {
+      "id": "git-2026-10-03-ai-evidence-add-ai-reliability-lab-evidence",
+      "date": "2026-10-03",
+      "title": "Add AI reliability lab evidence",
+      "narrative": "Derived from commit 27612cf: \"ai(evidence): add AI reliability lab evidence\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/27612cf4a7f599c27261bb105b590988abbfa324"
+      ],
+      "status": "shipped",
+      "source": "git",
+      "phase": "foundation",
+      "projects": [
+        "ai-chat-app",
+        "professional-evolution-portfolio"
+      ]
+    },
+    {
+      "id": "git-2026-10-03-ai-evidence-add-automation-workflow-evidence",
+      "date": "2026-10-03",
+      "title": "Add automation workflow evidence",
+      "narrative": "Derived from commit 36cff4a: \"ai(evidence): add automation workflow evidence\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/36cff4a2f3eccc2a3886cd69e19e3277f880dcbc"
+      ],
+      "status": "shipped",
+      "source": "git",
+      "phase": "foundation",
+      "projects": [
+        "ai-automation-workflow-lab",
+        "professional-evolution-portfolio"
+      ]
+    },
+    {
+      "id": "git-2026-10-03-docs-quickstart-document-portfolio-products-and-verification",
+      "date": "2026-10-03",
+      "title": "Document portfolio products and verification",
+      "narrative": "Derived from commit 992c25e: \"docs(quickstart): document portfolio products and verification\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/992c25e81d893185410048350bd4c5bd2a9ebbcf"
+      ],
+      "status": "shipped",
+      "source": "git",
+      "phase": "foundation",
+      "projects": [
+        "professional-evolution-portfolio",
+        "cloud-dashboard",
+        "ai-chat-app",
+        "ai-automation-workflow-lab"
+      ]
+    },
+    {
+      "id": "git-2026-10-03-ai-portfolio-add-public-github-activity-snapshot",
+      "date": "2026-10-03",
+      "title": "Add public github activity snapshot",
+      "narrative": "Derived from commit 8402487: \"ai(portfolio): add public github activity snapshot\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/840248795ed8921a55e045e73c2be3cc47fbad8b"
+      ],
+      "status": "shipped",
+      "source": "git",
+      "phase": "foundation",
+      "projects": [
+        "professional-evolution-portfolio"
+      ]
+    },
+    {
+      "id": "git-2026-10-07-ai-portfolio-add-dark-first-theme-foundation",
+      "date": "2026-10-07",
+      "title": "Add dark-first theme foundation",
+      "narrative": "Derived from commit 6f40b2d: \"ai(portfolio): add dark-first theme foundation\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/6f40b2d707f8f5f553a1b5d4925dc9f0ee19c2f7"
+      ],
+      "status": "shipped",
+      "source": "git",
+      "phase": "transition",
+      "projects": [
+        "professional-evolution-portfolio"
+      ]
+    },
+    {
+      "id": "git-2026-10-07-ai-portfolio-redesign-evidence-led-homepage",
+      "date": "2026-10-07",
+      "title": "Redesign evidence-led homepage",
+      "narrative": "Derived from commit 6dca28d: \"ai(portfolio): redesign evidence-led homepage\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/6dca28dae0a34459a565793f2a453f457c42a7c5"
+      ],
+      "status": "shipped",
+      "source": "git",
+      "phase": "transition",
+      "projects": [
+        "professional-evolution-portfolio"
+      ]
+    },
+    {
+      "id": "git-2026-10-09-ai-portfolio-document-design-research-and-tokens",
+      "date": "2026-10-09",
+      "title": "Document design research and tokens",
+      "narrative": "Derived from commit 7a60cce: \"ai(portfolio): document design research and tokens\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/7a60cce468f08666e2646f373e7f074178dcb981"
+      ],
+      "status": "shipped",
+      "source": "git",
+      "phase": "transition",
+      "projects": [
+        "professional-evolution-portfolio"
+      ]
+    },
+    {
+      "id": "git-2026-10-09-ai-portfolio-scaffold-astro-and-canonical-data-layer",
+      "date": "2026-10-09",
+      "title": "Scaffold Astro and canonical data layer",
+      "narrative": "Derived from commit a5c0f67: \"ai(portfolio): scaffold Astro and canonical data layer\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/a5c0f6716f8d3d8f2bd0bb1d16fccf8a98e7edc4"
+      ],
+      "status": "shipped",
+      "source": "git",
+      "phase": "transition",
+      "projects": [
+        "professional-evolution-portfolio"
+      ]
+    },
+    {
+      "id": "git-2026-10-09-ai-portfolio-build-design-system-and-component-library",
+      "date": "2026-10-09",
+      "title": "Build design system and component library",
+      "narrative": "Derived from commit 76a404f: \"ai(portfolio): build design system and component library\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/76a404fff67ae8dfa54db5f1dd92f3d5a38eaab1"
+      ],
+      "status": "shipped",
+      "source": "git",
+      "phase": "transition",
+      "projects": [
+        "professional-evolution-portfolio"
+      ]
+    },
+    {
+      "id": "git-2026-10-09-ai-portfolio-compose-work-and-evolution-pages-bilingual",
+      "date": "2026-10-09",
+      "title": "Compose work and evolution pages bilingual",
+      "narrative": "Derived from commit c4d7936: \"ai(portfolio): compose work and evolution pages bilingual\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/c4d79360f78ca41d6fbbdbb21e090ceecf9cfebf"
+      ],
+      "status": "shipped",
+      "source": "git",
+      "phase": "transition",
+      "projects": [
+        "professional-evolution-portfolio"
+      ]
+    },
+    {
+      "id": "git-2026-10-09-ai-portfolio-add-evidence-system-and-contact-plumbing",
+      "date": "2026-10-09",
+      "title": "Add evidence system and contact plumbing",
+      "narrative": "Derived from commit 43fb841: \"ai(portfolio): add evidence system and contact plumbing\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/43fb841de9b215a9196fd384bd92d131070c6c43"
+      ],
+      "status": "shipped",
+      "source": "git",
+      "phase": "transition",
+      "projects": [
+        "professional-evolution-portfolio"
+      ]
+    },
+    {
+      "id": "git-2026-10-09-ai-portfolio-add-case-study-pages-with-progressive-disclosure",
+      "date": "2026-10-09",
+      "title": "Add case study pages with progressive disclosure",
+      "narrative": "Derived from commit 6b7a307: \"ai(portfolio): add case study pages with progressive disclosure\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/6b7a3070d3ad389dbef013f42e79b39ed61be8c5"
+      ],
+      "status": "shipped",
+      "source": "git",
+      "phase": "transition",
+      "projects": [
+        "professional-evolution-portfolio"
+      ]
+    },
+    {
+      "id": "git-2026-10-09-ai-portfolio-curate-evolution-timeline-and-roadmap",
+      "date": "2026-10-09",
+      "title": "Curate evolution timeline and roadmap",
+      "narrative": "Derived from commit ed06595: \"ai(portfolio): curate evolution timeline and roadmap\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/ed0659564f372ed53833f99c25e5e53b4b05c26b"
+      ],
+      "status": "shipped",
+      "source": "git"
+    },
+    {
+      "id": "git-2026-10-09-ai-portfolio-add-honest-search-based-portfolio-assistant",
+      "date": "2026-10-09",
+      "title": "Add honest search-based portfolio assistant",
+      "narrative": "Derived from commit 46fd67b: \"ai(portfolio): add honest search-based portfolio assistant\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/46fd67b3682b15dd8ef232b95b51a5b24fe402fa"
+      ],
+      "status": "shipped",
+      "source": "git"
+    }
+  ]
+}

@@ -1,0 +1,462 @@
+---
+/**
+ * Evolution timeline — direction of travel with the receipts attached.
+ *
+ * Structure, and why:
+ *
+ *   - **Two sections, not one.** Everything that happened (`shipped` and
+ *     `in-progress`) sits under one heading; everything that has *not* happened
+ *     (`planned`) sits under a second one with a dashed rail and dimmed entries.
+ *     A single mixed list makes intent and delivery look interchangeable, which
+ *     is exactly the confusion this portfolio exists to avoid.
+ *   - **Valid markup.** The rail is a `::before` pseudo-element, never a child
+ *     of the `<ol>`: an `<ol>` may only contain `<li>`, so the previous
+ *     `<span class="timeline__rail">` was invalid HTML. One rail per section
+ *     spans every year group inside it, so it also reads as continuous.
+ *   - **The draw animation is CSS only.** The rail scales from `scaleY(0)`, and
+ *     the reveal observer in BaseLayout flips `.is-visible` on `.timeline`.
+ *     Without JavaScript the rail renders fully drawn, and reduced motion
+ *     removes the transform entirely (see tokens.css).
+ *   - **Nothing is invented.** A milestone's `projects` slugs resolve through
+ *     `data/projects.json`; a slug that no longer exists is dropped rather than
+ *     rendered as a dead link.
+ */
+import type { Copy, Locale } from '../i18n/copy';
+import type { Milestone } from '../lib/data';
+import { milestoneProjects, milestonesByDateDesc } from '../lib/data';
+import { route } from '../lib/urls';
+
+interface Props {
+  copy: Copy;
+  locale: Locale;
+  /** Optional subset, e.g. the home page preview. */
+  milestones?: Milestone[];
+  /** When set, the component notes that it is showing a subset. */
+  limit?: number;
+  /**
+   * Note under the preview. Defaults to the generic preview note; the home page
+   * passes the curated-only variant, because there the subset is curated
+   * entries, not merely "the most recent ones".
+   */
+  previewNote?: string;
+}
+
+const { copy, locale, milestones = milestonesByDateDesc, limit, previewNote } = Astro.props;
+
+const ordered = [...milestones].sort((a, b) =>
+  a.date === b.date ? a.id.localeCompare(b.id) : a.date < b.date ? 1 : -1,
+);
+
+const visible = typeof limit === 'number' ? ordered.slice(0, limit) : ordered;
+const isPreview = visible.length < ordered.length || visible.length < milestonesByDateDesc.length;
+
+/** Group milestones by year, newest year first. */
+function groupByYear(entries: Milestone[]) {
+  const years = new Map<string, Milestone[]>();
+  for (const milestone of entries) {
+    const year = milestone.date.slice(0, 4);
+    const bucket = years.get(year);
+    if (bucket) bucket.push(milestone);
+    else years.set(year, [milestone]);
+  }
+  return [...years.entries()].map(([year, items]) => ({ year, items }));
+}
+
+/* The two halves of the timeline. `id` is only used to build the aria hook of
+   each heading, so the two can never collide in one document. */
+const sections = [
+  {
+    id: 'completed',
+    heading: copy.evolution.completedHeading,
+    note: copy.evolution.completedNote,
+    modifier: 'timeline__section--done',
+    milestones: visible.filter((milestone) => milestone.status !== 'planned'),
+  },
+  {
+    id: 'ahead',
+    heading: copy.evolution.directionAheadHeading,
+    note: copy.evolution.directionAheadNote,
+    modifier: 'timeline__section--ahead',
+    milestones: visible.filter((milestone) => milestone.status === 'planned'),
+  },
+].filter((section) => section.milestones.length > 0);
+
+const dateFormat = new Intl.DateTimeFormat(locale === 'es' ? 'es-ES' : 'en-GB', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+
+const statusVariant: Record<Milestone['status'], string> = {
+  shipped: 'chip--success',
+  'in-progress': 'chip--warn',
+  planned: 'chip--neutral',
+};
+
+const statusLabel: Record<Milestone['status'], string> = {
+  shipped: copy.evolution.shipped,
+  'in-progress': copy.evolution.inProgress,
+  planned: copy.evolution.planned,
+};
+
+/** Short, readable evidence labels; the full URL stays in the title. */
+function evidenceLabel(url: string): string {
+  try {
+    const segments = new URL(url).pathname.split('/').filter(Boolean);
+    const last = segments[segments.length - 1] ?? '';
+    if (/^[0-9a-f]{7,40}$/i.test(last)) return last.slice(0, 7);
+    return last.replace(/\.[a-z0-9]+$/i, '') || url;
+  } catch {
+    return url;
+  }
+}
+---
+
+<div class="timeline reveal">
+  {
+    sections.map((section) => (
+      <section class={`timeline__section ${section.modifier}`} aria-labelledby={`timeline-${section.id}`}>
+        <header class="timeline__section-head">
+          <h3 class="timeline__section-heading" id={`timeline-${section.id}`}>
+            {section.heading}
+          </h3>
+          <p class="timeline__section-note">{section.note}</p>
+        </header>
+
+        {/* The rail is this wrapper's ::before — it spans every year group
+            below it, so the line is continuous rather than per-year. */}
+        <div class="timeline__track">
+          {groupByYear(section.milestones).map((group) => (
+            <div class="timeline__year">
+              <p class="timeline__year-label">{group.year}</p>
+
+              <ol class="timeline__list">
+                {group.items.map((milestone) => {
+                  const related = milestoneProjects(milestone);
+                  return (
+                    <li class="timeline__item" data-status={milestone.status}>
+                      <span class="timeline__node" aria-hidden="true" />
+
+                      <article class="timeline__entry" aria-labelledby={`${milestone.id}-title`}>
+                        <div class="timeline__meta">
+                          <time class="timeline__date tabular" datetime={milestone.date}>
+                            {dateFormat.format(new Date(`${milestone.date}T00:00:00Z`))}
+                          </time>
+                          <span class={`chip ${statusVariant[milestone.status]}`}>
+                            {statusLabel[milestone.status]}
+                          </span>
+                          <span class="chip chip--neutral timeline__source">
+                            {copy.evolution.sourceLabel[milestone.source]}
+                          </span>
+                        </div>
+
+                        <h4 class="timeline__title" id={`${milestone.id}-title`}>
+                          {milestone.title}
+                        </h4>
+
+                        <p class="timeline__narrative">{milestone.narrative}</p>
+
+                        {related.length > 0 && (
+                          <p class="timeline__related">
+                            <span class="timeline__related-label">{copy.evolution.relatedLabel}</span>
+                            {related.map((project) => (
+                              <a
+                                class="timeline__related-link"
+                                href={route(locale, `work/${project.slug}/`)}
+                              >
+                                {project.name}
+                              </a>
+                            ))}
+                          </p>
+                        )}
+
+                        <p class="timeline__evidence-count">
+                          {copy.evolution.evidenceLinks(milestone.evidence.length)}
+                        </p>
+
+                        <ul class="timeline__evidence">
+                          {milestone.evidence.map((url) => (
+                            <li>
+                              <a
+                                class="timeline__evidence-link"
+                                href={url}
+                                title={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                {evidenceLabel(url)}
+                                <span class="visually-hidden"> ({copy.a11y.opensInNewTab})</span>
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </article>
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
+          ))}
+        </div>
+      </section>
+    ))
+  }
+
+  {
+    isPreview && (
+      <p class="timeline__preview-note">
+        <span>{previewNote ?? copy.evolution.previewNote}</span>{' '}
+        <a href={route(locale, 'evolution/')}>{copy.evolution.viewAll}</a>
+      </p>
+    )
+  }
+</div>
+
+<style>
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-12);
+  }
+
+  /* --- Section heads ------------------------------------------------------- */
+  .timeline__section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .timeline__section-heading {
+    font-size: var(--text-xl);
+    line-height: var(--leading-xl);
+  }
+
+  .timeline__section-note {
+    max-width: var(--measure);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  /* --- Track and rail ------------------------------------------------------
+   * `.timeline__track` is the rail's positioning context. Using a pseudo-element
+   * keeps the rail out of the list: an `<ol>` may only contain `<li>`, so a
+   * real element here would be invalid HTML.
+   * --------------------------------------------------------------------- */
+  .timeline__track {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+    margin-top: var(--space-2);
+    padding-left: var(--space-8);
+  }
+
+  .timeline__track::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 7px;
+    width: 2px;
+    background-color: var(--color-border);
+    transform-origin: top center;
+  }
+
+  /* `:global(.js)` because the `.js` gate lives on <html>, outside this
+     component: a scoped `.js` selector would compile to a class the document
+     element does not carry, and the rail would never draw. */
+  :global(.js) .timeline__track::before {
+    transform: scaleY(0);
+    transition: transform var(--duration-slow) var(--ease-in-out);
+  }
+
+  :global(.js) .timeline.is-visible .timeline__track::before {
+    transform: scaleY(1);
+  }
+
+  /* "Direction ahead" is the same line, promised rather than drawn: a dashed
+     rail plus reduced emphasis, so the eye separates intent from record
+     without having to read the status chip. */
+  .timeline__section--ahead .timeline__track::before {
+    background-color: transparent;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      var(--color-text-muted) 0 6px,
+      transparent 6px 12px
+    );
+    opacity: 0.6;
+  }
+
+  .timeline__section--ahead .timeline__entry {
+    background-color: transparent;
+    border-style: dashed;
+  }
+
+  .timeline__section--ahead .timeline__title,
+  .timeline__section--ahead .timeline__narrative {
+    color: var(--color-text-muted);
+  }
+
+  /* --- Year groups --------------------------------------------------------- */
+  .timeline__year {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  /* A year is a grouping label, not a section of the page outline: it is a
+     `<p>`, which keeps the heading order h3 (section) → h4 (milestone). */
+  .timeline__year-label {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+  }
+
+  .timeline__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .timeline__item {
+    position: relative;
+  }
+
+  /* Node centre sits on the rail: the rail spans 7px–9px of the track, the
+     list starts at `padding-left` (32px), so the node's left edge is -31px. */
+  .timeline__node {
+    position: absolute;
+    top: 6px;
+    left: -31px;
+    width: 14px;
+    height: 14px;
+    background-color: var(--color-bg);
+    border: 2px solid var(--color-accent);
+    border-radius: var(--radius-full);
+    transition: transform var(--duration-base) var(--ease-out);
+  }
+
+  :global(.js) .timeline:not(.is-visible) .timeline__node {
+    transform: scale(0.4);
+  }
+
+  .timeline__item[data-status='planned'] .timeline__node {
+    border-style: dashed;
+    border-color: var(--color-text-muted);
+  }
+
+  .timeline__item[data-status='in-progress'] .timeline__node {
+    border-color: var(--color-warn);
+  }
+
+  .timeline__entry {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .timeline__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .timeline__date {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+  }
+
+  .timeline__title {
+    font-size: var(--text-lg);
+    line-height: var(--leading-lg);
+  }
+
+  .timeline__narrative {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .timeline__related {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+  }
+
+  .timeline__related-label {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    font-weight: 600;
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+  }
+
+  .timeline__related-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+
+  .timeline__evidence-count {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-eyebrow);
+  }
+
+  .timeline__evidence {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .timeline__evidence-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 var(--space-2);
+    background-color: var(--color-surface-raised);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    text-decoration: none;
+  }
+
+  .timeline__evidence-link:hover {
+    background-color: color-mix(in srgb, var(--color-accent) 16%, transparent);
+  }
+
+  .timeline__preview-note {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .timeline__preview-note a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+</style>
