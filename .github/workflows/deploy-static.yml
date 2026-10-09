@@ -75,7 +75,6 @@ jobs:
 
   cloudflare-worker:
     needs: validate
-    if: github.event_name == 'workflow_dispatch' && inputs.pipeline == 'legacy'
     runs-on: ubuntu-latest
     environment:
       name: cloudflare-worker
@@ -87,10 +86,21 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Build Cloudflare Worker artifact
+      - name: Build Cloudflare Worker artifact (legacy)
+        if: env.PIPELINE == 'legacy'
         env:
           RELEASE_TARGET: cloudflare-worker
         run: npm run build:release
+      - name: Build Cloudflare Worker artifact (web)
+        if: env.PIPELINE == 'web'
+        env:
+          ASTRO_BASE: /
+          ASTRO_SITE: ${{ vars.CLOUDFLARE_PRODUCTION_URL }}
+        run: |
+          npm --prefix web ci
+          npm --prefix web run build
+          RELEASE_TARGET=cloudflare-worker node scripts/web-release-manifest.mjs
+          mv web/dist dist
       - name: Deploy to Cloudflare Worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

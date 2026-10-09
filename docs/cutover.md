@@ -1,9 +1,10 @@
 # Cutover — legacy `site/` → new `web/` app
 
-Status: **documentation only.** No workflow, host, or data change is applied by
-this document. The deploy pipeline described under "Deployment today" is the one
-that is live; the dual-path workflow is a *proposal* awaiting a separate,
-reviewed change (and the gated deploy, T11).
+Status: **applied.** The dual-path workflow described below is live in
+`.github/workflows/deploy-static.yml`. Both the `web` (canonical) and `legacy`
+(rollback) paths publish to GitHub Pages **and** the Cloudflare Worker mirror.
+Last updated 2026-10-09: the web pipeline was extended to the Cloudflare mirror
+(worker parity), so both hosts serve the Astro build.
 
 ## Current state
 
@@ -15,8 +16,9 @@ reviewed change (and the gated deploy, T11).
   `npm run check:all`.
 - **Web pipeline green.** `web/` (Astro 5, static) builds independently with
   `npm --prefix web run build` → `web/dist`, emitting **18 pages** and an
-  18-URL `web/dist/sitemap.xml` (`scripts/sitemap-generate.mjs`). It is not yet
-  deployed by any workflow.
+  18-URL `web/dist/sitemap.xml` (`scripts/sitemap-generate.mjs`). It is now
+  deployed by `.github/workflows/deploy-static.yml` on push (pipeline `web`) to
+  both GitHub Pages and the Cloudflare Worker mirror.
 - **Parity matrix 13/13.** Every legacy homepage section has a `web/`
   counterpart (1 ported, 7 improved, 5 superseded). See
   [parity-matrix.md](parity-matrix.md).
@@ -24,22 +26,26 @@ reviewed change (and the gated deploy, T11).
 Both trees coexist in one repository; neither build writes into the other's
 output directory.
 
-## Deployment today (unchanged)
+## Deployment today (applied)
 
 `.github/workflows/deploy-static.yml` has a `validate` job and two publishing
-jobs (`github-pages`, `cloudflare-worker`). Both publishing jobs build the
-**legacy** artifact with `npm run build:release` (`RELEASE_TARGET` selects the
-destination) into `dist/` and then deploy it. The `web/` build is not part of
-this workflow. See [dual-deployment.md](dual-deployment.md) for the host
+jobs (`github-pages`, `cloudflare-worker`). On push (pipeline `web`) both
+publishing jobs build the **Astro** artifact and deploy it: GitHub Pages uses
+the project-site base `/professional-evolution-portfolio/`, the Cloudflare
+Worker builds with `ASTRO_BASE=/` (root base) and the mirror origin. On a
+`legacy` dispatch both jobs build the **legacy** artifact with
+`npm run build:release` (`RELEASE_TARGET` selects the destination) into `dist/`
+and deploy it. Each artifact carries a `release-manifest.json` with the same
+`source_commit` / `snapshot_id` and its own `deployment_id` / `site_origin` /
+`base_path`. See [dual-deployment.md](dual-deployment.md) for the host
 roles, the Cloudflare mirror parity rule, and the no-duplicate-deploy rule.
 
-## Proposed dual-path workflow (NOT applied)
+## Dual-path workflow (applied)
 
-The intended cutover is a **dual-path** workflow so the legacy build remains an
-immediately available rollback. It is a change to
-`.github/workflows/deploy-static.yml` only; it is **not** applied by this task.
+The workflow is **dual-path** so the legacy build remains an immediately
+available rollback. Both paths live in `.github/workflows/deploy-static.yml`.
 
-Add a `workflow_dispatch` input `pipeline` with values `legacy` (default) and
+A `workflow_dispatch` input `pipeline` selects the build; pushes default to
 `web`:
 
 ```yaml
@@ -52,33 +58,38 @@ on:
         description: Which build to publish
         type: choice
         options: [legacy, web]
-        default: legacy
+        default: web
 ```
 
-- **`legacy` path — unchanged.** `npm run build:release` → `dist/`, published to
-  both `github-pages` and `cloudflare-worker` exactly as today. This is the
-  rollback path.
+- **`legacy` path.** `npm run build:release` → `dist/`, published to
+  both `github-pages` and `cloudflare-worker`. This is the rollback path.
 - **`web` path.** Build the Astro app with
   `npm --prefix web ci && npm --prefix web run build`, then publish
-  `web/dist` to GitHub Pages and to the Cloudflare Worker.
-- **Cloudflare mirror parity is kept in both paths.** The Worker job must remain
+  `web/dist` to GitHub Pages and to the Cloudflare Worker. The Worker build
+  uses `ASTRO_BASE=/` and `ASTRO_SITE=<mirror origin>` so the same app is
+  served at the root path; `scripts/web-release-manifest.mjs` writes the
+  per-target manifest (`RELEASE_TARGET=cloudflare-worker`).
+- **Cloudflare mirror parity is kept in both paths.** The Worker job remains
   a second destination of the same run (same `source_commit` / `snapshot_id`
-  identity), per [dual-deployment.md](dual-deployment.md). Do not add a second
-  Cloudflare trigger.
+  identity), per [dual-deployment.md](dual-deployment.md). There is no second
+  Cloudflare trigger, and the `cloudflare-worker` job no longer carries a
+  job-level `if:` — it always runs and branches its build step on
+  `env.PIPELINE` (job-level `if` cannot read the `env` context).
 
-Prerequisites for the `web` path that must be satisfied before it is applied:
+Both prerequisites below were satisfied when the `web` path was applied:
 
-1. `web/package-lock.json` must be committed (untracked today) so
-   `npm --prefix web ci` has a lockfile to install from.
-2. The Astro build must emit a `release-manifest.json` with `source_commit` and
-   `snapshot_id` so the dual-host parity check in
-   [dual-deployment.md](dual-deployment.md) can compare both hosts. The legacy
-   `site/release-build.mjs` already writes this; the `web` build does not yet.
+1. `web/package-lock.json` is committed so `npm --prefix web ci` has a
+   lockfile to install from.
+2. The Astro build emits a `release-manifest.json` with `source_commit` and
+   `snapshot_id` (`scripts/web-release-manifest.mjs`), so the dual-host parity
+   check in [dual-deployment.md](dual-deployment.md) can compare both hosts.
 
 ## Rollback
 
 Re-run the workflow with `pipeline=legacy`. The legacy artifact is rebuilt from
-the same reviewed commit and republished to both hosts. No data loss: the legacy
+the same reviewed commit and republished to **both** hosts — GitHub Pages and
+the Cloudflare Worker mirror are restored together, so the rollback is
+symmetric with the web deploy. No data loss: the legacy
 and `web` trees coexist in the repository, the legacy output is reproducible
 from `site/`, and the switch is a workflow input, not a destructive migration.
 Follow the incident/rollback steps in
@@ -118,8 +129,21 @@ revert PR; never force-push or `git reset --hard`).
 - [ ] Mirror parity: both hosts expose the same `source_commit` and
       `snapshot_id` in `release-manifest.json`.
 
+## Completed
+
+- **Web pipeline → Cloudflare Worker mirror parity (2026-10-09).** The web
+  pipeline now deploys both hosts from the same run. The Worker build uses
+  `ASTRO_BASE=/` and emits its own `release-manifest.json`
+  (`RELEASE_TARGET=cloudflare-worker`) with the same `source_commit` /
+  `snapshot_id` as the Pages artifact. A `legacy` dispatch restores both hosts
+  (see [Rollback](#rollback)).
+
 ## Deferred (explicitly out of scope)
 
+- **Worker sitemap origin** — `scripts/sitemap-generate.mjs` still hardcodes the
+  canonical GitHub Pages `SITE`/`BASE`, so the Worker mirror's
+  `sitemap.xml` lists Pages URLs even though the Worker is served at `/`.
+  Harmless for a non-indexable mirror (`indexable: false`), tracked here.
 - **Spanish case-study bodies remain English** — the site's translation
   contract keeps canonical data English-only; `/es/` case-study bodies are the
   English text with localized chrome.
