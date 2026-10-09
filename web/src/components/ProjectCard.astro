@@ -11,12 +11,18 @@
  * or hide this card. Without JavaScript the attribute is inert and the card
  * stays visible.
  *
+ * Two outbound controls per card: the repository link (external, new tab) and
+ * the "Case study" link, which points at this site's own `/work/<slug>/` page
+ * in the card's locale — the case study is rendered from the same canonical
+ * data the page reads, so there is no reason to send a reader to raw markdown
+ * on GitHub.
+ *
  * Status colours (tokens doc §2): live -> success, mvp/demo -> accent,
  * prototype -> warn (draft-like), lab/planned -> neutral.
  */
 import type { Copy, Locale } from '../i18n/copy';
 import type { Project } from '../lib/data';
-import { profile, relatedProjects } from '../lib/data';
+import { caseStudyFor, relatedProjects } from '../lib/data';
 import { route } from '../lib/urls';
 
 interface Props {
@@ -30,10 +36,17 @@ interface Props {
 
 const { copy, project, locale = 'en', revealIndex = 0 } = Astro.props;
 
-/* Case studies are markdown inside the portfolio repository itself, so the
-   owner comes from the data layer and the repository name is fixed here. */
-const siteRepo = `https://github.com/${profile.reposOwner}/professional-evolution-portfolio`;
-const caseStudyUrl = project.caseStudy ? `${siteRepo}/blob/main/${project.caseStudy}` : null;
+/**
+ * The "Case study" control points at this site's own case-study page, in the
+ * language of the page rendering the card (`/work/<slug>/`, `/es/work/<slug>/`).
+ * The repository link beside it stays on GitHub, so both artifacts remain one
+ * click away.
+ *
+ * The link is shown only when a case study actually documents the project:
+ * `caseStudyFor` is the same lookup the detail page uses, so a card can never
+ * advertise a write-up that would render as an empty state.
+ */
+const caseStudyHref = caseStudyFor(project.slug) ? route(locale, `work/${project.slug}/`) : null;
 
 const statusVariant: Record<Project['status'], string> = {
   live: 'chip--success',
@@ -127,12 +140,12 @@ const initials = project.name
         <span class="visually-hidden">({copy.a11y.opensInNewTab})</span>
       </a>
       {
-        caseStudyUrl && (
-          <a class="project-card__link" href={caseStudyUrl} target="_blank" rel="noopener noreferrer">
+        caseStudyHref && (
+          <a class="project-card__link project-card__link--internal" href={caseStudyHref}>
             {copy.work.caseStudy}
             <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
               <path
-                d="M14 4h6v6M20 4l-8.5 8.5M18 14v4.5A1.5 1.5 0 0 1 16.5 20h-11A1.5 1.5 0 0 1 4 18.5v-11A1.5 1.5 0 0 1 5.5 6H10"
+                d="M5 12h14M13 6l6 6-6 6"
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2"
@@ -140,7 +153,6 @@ const initials = project.name
                 stroke-linejoin="round"
               />
             </svg>
-            <span class="visually-hidden">({copy.a11y.opensInNewTab})</span>
           </a>
         )
       }
@@ -310,6 +322,12 @@ const initials = project.name
   .project-card__link svg {
     width: 13px;
     height: 13px;
+  }
+
+  /* The case-study link navigates inside the site, so it is styled like the
+     site's own navigation rather than like the external repository link. */
+  .project-card__link--internal {
+    color: var(--color-accent);
   }
 
   .project-card__related {

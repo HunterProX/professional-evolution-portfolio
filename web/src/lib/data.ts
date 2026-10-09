@@ -22,6 +22,19 @@ export type MilestoneStatus = (typeof MILESTONE_STATUSES)[number];
 export const MILESTONE_SOURCES = ['curated', 'git'] as const;
 export type MilestoneSource = (typeof MILESTONE_SOURCES)[number];
 
+/**
+ * Roadmap phase, in the order the roadmap reads. Optional on a milestone: an
+ * entry without one simply does not appear in the roadmap, so a dataset that
+ * predates the phases still renders.
+ *
+ * The split is chronological rather than aspirational — `foundation` and
+ * `transition` describe what already happened, `frontier` is the only phase a
+ * `planned` milestone may sit in, because frontier means "direction ahead".
+ * `data-validate.mjs` enforces that pairing.
+ */
+export const MILESTONE_PHASES = ['foundation', 'transition', 'frontier'] as const;
+export type MilestonePhase = (typeof MILESTONE_PHASES)[number];
+
 export interface Profile {
   name: string;
   headline: string;
@@ -52,6 +65,10 @@ export interface Milestone {
   evidence: string[];
   status: MilestoneStatus;
   source: MilestoneSource;
+  /** Roadmap phase; absent when the milestone is not part of the roadmap. */
+  phase?: MilestonePhase;
+  /** Project slugs this milestone belongs to; absent means "no project link". */
+  projects?: string[];
 }
 
 export interface EvidenceItem {
@@ -103,6 +120,56 @@ export const caseStudies: CaseStudy[] = narrow(caseStudiesJson.caseStudies);
 export const milestonesByDateDesc: Milestone[] = [...milestones].sort((a, b) =>
   a.date === b.date ? a.id.localeCompare(b.id) : a.date < b.date ? 1 : -1,
 );
+
+/**
+ * Milestones a human wrote and reviewed. The home preview uses this set only:
+ * an unreviewed git candidate is not the first thing a visitor should read as
+ * "what happened most recently".
+ */
+export const curatedMilestonesByDateDesc: Milestone[] = milestonesByDateDesc.filter(
+  (milestone) => milestone.source === 'curated',
+);
+
+/** Projects a milestone links to, in `projects.json` order, unknown slugs dropped. */
+export function milestoneProjects(milestone: Milestone): Project[] {
+  if (!milestone.projects || milestone.projects.length === 0) return [];
+  return milestone.projects
+    .map((slug) => getProjectBySlug(slug))
+    .filter((value): value is Project => value !== undefined);
+}
+
+/** One row of the roadmap table on `/evolution/`. */
+export interface RoadmapRow {
+  phase: MilestonePhase;
+  /** Milestones carrying this phase, newest first. */
+  milestones: Milestone[];
+  /** Union of the milestones' project slugs, deduplicated and kept in order. */
+  projects: Project[];
+}
+
+/**
+ * Roadmap rows derived from the milestones themselves — no hand-written list.
+ *
+ * Only phases that at least one milestone declares are returned, so the table
+ * never shows an empty row, and the phase order is fixed by `MILESTONE_PHASES`
+ * so a data edit can add a phase but cannot reorder the narrative.
+ */
+export function roadmapRows(entries: Milestone[] = milestones): RoadmapRow[] {
+  return MILESTONE_PHASES.map((phase) => {
+    const inPhase = entries
+      .filter((milestone) => milestone.phase === phase)
+      .sort((a, b) =>
+        a.date === b.date ? a.id.localeCompare(b.id) : a.date < b.date ? 1 : -1,
+      );
+    const slugs = [...new Set(inPhase.flatMap((milestone) => milestone.projects ?? []))];
+    return {
+      phase,
+      milestones: inPhase,
+      // Dataset order, not mention order, so the supporting list is stable.
+      projects: projects.filter((project) => slugs.includes(project.slug)),
+    };
+  }).filter((row) => row.milestones.length > 0);
+}
 
 export function getProjectBySlug(slug: string): Project | undefined {
   return projects.find((project) => project.slug === slug);

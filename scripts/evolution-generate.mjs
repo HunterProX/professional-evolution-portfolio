@@ -7,11 +7,18 @@
  *
  * Rules:
  *   - only conventional-commit subjects (ai(...), docs(...), feat(...), ...) are used
- *   - merge commits are ignored
+ *   - merge commits are ignored (they have no conventional subject)
+ *   - maintenance-only commits are ignored: see MAINTENANCE_TYPES and
+ *     MAINTENANCE_PATTERNS below, which encode the curation policy applied to
+ *     `data/evolution.json`. They are declared here rather than only in the data
+ *     so that re-running this script against the curated dataset is a no-op
+ *     instead of re-proposing every filtered-out commit.
  *   - candidate ids are `git-<date>-<slug>`; commits sharing a subject and date
  *     collapse into one candidate whose evidence lists every matching commit
  *   - candidates whose id already exists are skipped, so curated entries always
  *     win and the script is idempotent
+ *   - generated candidates never carry `phase` or `projects`: those are curation
+ *     decisions, and this script only knows how to read commit subjects
  *   - output is pretty-printed JSON with a trailing newline
  */
 import { execFileSync } from 'node:child_process';
@@ -26,6 +33,53 @@ const REPO_URL = 'https://github.com/cristian-cardona-dev/professional-evolution
 const ALLOWED_TYPES = new Set([
   'ai', 'docs', 'doc', 'feat', 'fix', 'perf', 'refactor', 'release', 'ci', 'config', 'chore', 'test', 'build', 'style',
 ]);
+
+/**
+ * Commit types that describe maintenance of the delivery machinery rather than
+ * a change a reader of the timeline would call progress.
+ *
+ *   - `ci` / `config` / `chore` / `build` / `style`: the pipeline, not the work.
+ *   - `fix`: a correction to something already published is not new progress.
+ *     (Its evidence lives in the history the corrected milestone links to.)
+ *   - `release`: describes how the artifact is shipped, not what the artifact
+ *     does, so the deploy pipeline is not a professional-evolution milestone.
+ *
+ * Types that carry reader-visible or published content (`ai`, `docs`, `feat`,
+ * `perf`, `refactor`, `test`) stay eligible.
+ */
+const MAINTENANCE_TYPES = new Set(['ci', 'config', 'chore', 'build', 'style', 'fix', 'release']);
+
+/**
+ * Subject patterns that mark a maintenance pass inside an otherwise eligible
+ * type. Each entry is a maintenance concern that adds no new capability, so
+ * the commit stays in the history but is not a timeline milestone.
+ *
+ * The list is deliberately explicit instead of heuristic: a reviewer can see
+ * exactly which wording is treated as noise, and the curation in
+ * `data/evolution.json` is reproducible from this list alone.
+ *
+ * Two of these are judgement calls a reviewer may reasonably reverse:
+ *   - `initialize` also covers project scaffolding, which would exclude a
+ *     genuine "first version" commit — here the first-version narrative is
+ *     already carried by the curated `2026-10-03-initial-portfolio-build`.
+ *   - `clarify` only ever rewords text that already exists, whereas `document`
+ *     introduces new reference material and stays eligible.
+ */
+const MAINTENANCE_PATTERNS = [
+  { pattern: /\bcorrect\b/i, why: 'a correction to something already published is not new progress' },
+  { pattern: /\bpolish\b/i, why: 'cosmetic refinement of shipped work' },
+  { pattern: /\bharden\b/i, why: 'defensive work on an existing path' },
+  { pattern: /\bguard\b/i, why: 'validation added to an existing path' },
+  { pattern: /\brequire\b/i, why: 'a runtime pin, not a capability' },
+  { pattern: /\baccept\b/i, why: 'tolerating an input format, not building one' },
+  { pattern: /\bcentralize\b/i, why: 'internal refactor' },
+  { pattern: /\balign\b/i, why: 'internal refactor between two internal pieces' },
+  { pattern: /\bseparate\b/i, why: 'a routing change with no visible capability' },
+  { pattern: /\binclude\b/i, why: 'packaging a change that already exists as its own milestone' },
+  { pattern: /\binitialize\b/i, why: 'scaffolding an empty project, not a published capability' },
+  { pattern: /\bclarify\b/i, why: 'rewording existing text; no new artifact' },
+];
+
 const SUBJECT_PATTERN = /^([a-z]+)(?:\([^)]*\))?!?:\s*(.+)$/;
 const MAX_SLUG_LENGTH = 80;
 
@@ -62,11 +116,17 @@ function readGitLog() {
     .filter((entry) => entry.hash !== '' && entry.date !== '' && entry.subject !== '');
 }
 
+function isMaintenance(type, description) {
+  if (MAINTENANCE_TYPES.has(type)) return true;
+  return MAINTENANCE_PATTERNS.some((rule) => rule.pattern.test(description));
+}
+
 function toCandidate(commit) {
   const match = SUBJECT_PATTERN.exec(commit.subject);
   if (!match) return null; // not a conventional-commit subject (e.g. "Merge pull request ...")
   const [, type, description] = match;
   if (!ALLOWED_TYPES.has(type)) return null;
+  if (isMaintenance(type, description)) return null;
   const id = `git-${commit.date}-${slugify(commit.subject)}`;
   if (id === `git-${commit.date}-`) return null;
   return {
@@ -78,6 +138,11 @@ function toCandidate(commit) {
   };
 }
 
+/**
+ * A generated candidate is the neutral base shape: no `phase`, no `projects`.
+ * Both are curation decisions that cannot be derived from a commit subject, so
+ * only hand-written entries carry them.
+ */
 function toMilestone(candidate, hashes) {
   return {
     id: candidate.id,

@@ -1,18 +1,25 @@
 ---
 /**
- * Evolution composition — the complete timeline plus the legend that makes
- * each source badge readable.
+ * Evolution composition — roadmap, source legend, and the complete timeline.
  *
- * The legend is not decoration: it explains the three badges the timeline can
+ * The roadmap table is derived from the milestones themselves
+ * (`roadmapRows` in `lib/data.ts`), not from a hand-written list: a phase only
+ * appears if at least one milestone declares it, and its "supporting projects"
+ * are the union of the projects those milestones link to. Editing the data
+ * changes the roadmap; editing this file never would.
+ *
+ * The legend is not decoration: it explains the three badges a milestone can
  * carry (curated, derived from git, snapshot), so a visitor knows that a
  * git-derived entry is an unreviewed candidate rather than curated history.
- * All four strings come from the catalog, in both locales.
+ * All strings come from the catalog, in both locales.
  *
- * Heading order: h1 (page) → h2 (source legend, h2 timeline) → h3 (year) →
- * h4 (milestone), so no level is skipped.
+ * Heading order: h1 (page) → h2 (roadmap, source legend, timeline) →
+ * h3 (roadmap phase, timeline section) → h4 (milestone), so no level is skipped.
  */
 import type { Copy, Locale } from '../i18n/copy';
 import EvolutionTimeline from '../components/EvolutionTimeline.astro';
+import { roadmapRows } from '../lib/data';
+import { route } from '../lib/urls';
 
 interface Props {
   locale: Locale;
@@ -22,6 +29,8 @@ interface Props {
 const { locale, copy } = Astro.props;
 
 const SOURCES = ['curated', 'git', 'snapshot'] as const;
+
+const roadmap = roadmapRows();
 ---
 
 <section class="section" id="evolution" aria-labelledby="evolution-heading">
@@ -31,6 +40,47 @@ const SOURCES = ['curated', 'git', 'snapshot'] as const;
       <h1 id="evolution-heading">{copy.evolution.heading}</h1>
       <p class="lead">{copy.evolution.summary}</p>
     </header>
+
+    {
+      roadmap.length > 0 && (
+        <section class="roadmap reveal" aria-labelledby="roadmap-heading">
+          <header class="roadmap__head">
+            <h2 id="roadmap-heading">{copy.evolution.roadmapHeading}</h2>
+            <p class="roadmap__note">{copy.evolution.roadmapNote}</p>
+          </header>
+
+          <ol class="roadmap__rows">
+            {roadmap.map((row) => (
+              <li class="roadmap__row" data-phase={row.phase}>
+                <div class="roadmap__phase">
+                  <h3 class="roadmap__phase-name">{copy.evolution.phaseLabel[row.phase]}</h3>
+                  <p class="roadmap__phase-count tabular">
+                    {copy.evolution.roadmapMilestones(row.milestones.length)}
+                  </p>
+                </div>
+
+                <p class="roadmap__focus">{copy.evolution.phaseFocus[row.phase]}</p>
+
+                <div class="roadmap__projects">
+                  <p class="roadmap__projects-label">{copy.evolution.roadmapProjectsLabel}</p>
+                  {row.projects.length > 0 ? (
+                    <ul class="roadmap__project-list">
+                      {row.projects.map((project) => (
+                        <li>
+                          <a href={route(locale, `work/${project.slug}/`)}>{project.name}</a>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p class="roadmap__projects-empty">{copy.evolution.roadmapNoProjects}</p>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )
+    }
 
     <div class="source-key reveal">
       <h2 class="source-key__heading" id="source-key-heading">
@@ -70,6 +120,118 @@ const SOURCES = ['curated', 'git', 'snapshot'] as const;
     margin-block: var(--space-2) var(--space-3);
   }
 
+  /* --- Roadmap --------------------------------------------------------------
+   * Rows rather than a `<table>`: the three columns are prose and links, not
+   * numbers to compare, and a stacked row survives a narrow viewport without
+   * horizontal scrolling.
+   * --------------------------------------------------------------------- */
+  /* The rows span the shell (a three-column grid at 68ch would wrap every
+     project name); the prose is what gets the measure cap. */
+  .roadmap {
+    margin-bottom: var(--space-10);
+  }
+
+  .roadmap__head h2 {
+    font-size: var(--text-xl);
+    line-height: var(--leading-xl);
+  }
+
+  .roadmap__note {
+    max-width: var(--measure);
+    margin-top: var(--space-2);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .roadmap__rows {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin-top: var(--space-6);
+    padding: 0;
+    list-style: none;
+    max-width: none;
+  }
+
+  .roadmap__row {
+    display: grid;
+    gap: var(--space-3) var(--space-6);
+    /* Overrides the global `li { max-width: var(--measure) }` readability cap:
+       this `<li>` is a layout row, not prose. The prose inside it keeps the
+       cap via `.roadmap__focus` and the inherited `p` rule. */
+    max-width: none;
+    padding: var(--space-5);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  /* The frontier row carries the same "promised, not drawn" treatment as the
+     direction-ahead timeline: dashed border, no filled surface. */
+  .roadmap__row[data-phase='frontier'] {
+    background-color: transparent;
+    border-style: dashed;
+  }
+
+  .roadmap__phase {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .roadmap__phase-name {
+    font-size: var(--text-lg);
+    line-height: var(--leading-lg);
+  }
+
+  .roadmap__phase-count,
+  .roadmap__projects-label {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+  }
+
+  .roadmap__focus {
+    max-width: var(--measure);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .roadmap__project-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    margin: var(--space-1) 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--text-sm);
+  }
+
+  .roadmap__project-list a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+
+  .roadmap__projects-empty {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  @media (min-width: 768px) {
+    .roadmap__row {
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.6fr) minmax(0, 1.3fr);
+      align-items: start;
+    }
+  }
+
+  /* --- Source legend -------------------------------------------------------- */
   .source-key {
     max-width: 68ch;
     padding: var(--space-4);

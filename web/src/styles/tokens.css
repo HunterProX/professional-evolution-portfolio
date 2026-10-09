@@ -153,10 +153,12 @@
 
   /* Component-level transforms (reveal, timeline rail, timeline nodes) are
      neutralised here so both tokens and components agree on the final state.
-     `!important` also outranks the scoped `transform` rules in components. */
+     `!important` also outranks the scoped `transform` rules in components.
+     The rail is the `.timeline__track::before` pseudo-element: it is drawn, not
+     an element, so the selector has to name the pseudo-element too. */
   .reveal,
-  .timeline__rail,
-  .timeline__node {
+  .timeline__node,
+  .timeline__track::before {
     transform: none !important;
   }
 }

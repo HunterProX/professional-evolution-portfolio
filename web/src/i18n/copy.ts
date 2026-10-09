@@ -115,6 +115,35 @@ export interface Copy {
     /** Heading above the complete timeline (the preview uses `summary`). */
     timelineHeading: string;
     evidenceLinks: (count: number) => string;
+    /** Heading of the timeline half that covers what already happened. */
+    completedHeading: string;
+    /** One line under `completedHeading`. */
+    completedNote: string;
+    /** Heading of the timeline half that covers planned, not-yet-delivered work. */
+    directionAheadHeading: string;
+    /**
+     * One line under `directionAheadHeading`. This is load-bearing copy: it is
+     * the sentence that stops a reader treating a planned entry as a result.
+     */
+    directionAheadNote: string;
+    /** Label before the project links of a milestone. */
+    relatedLabel: string;
+    /** Preview note used when the subset is "curated entries only". */
+    curatedPreviewNote: string;
+    /** Heading of the roadmap table on the evolution page. */
+    roadmapHeading: string;
+    /** One line under the roadmap heading. */
+    roadmapNote: string;
+    /** Label above the supporting-project links of one roadmap row. */
+    roadmapProjectsLabel: string;
+    /** Shown when a phase declares milestones but none of them link a project. */
+    roadmapNoProjects: string;
+    /** Roadmap phase names, in roadmap order. */
+    phaseLabel: Record<'foundation' | 'transition' | 'frontier', string>;
+    /** One line per phase, describing what that phase was about. */
+    phaseFocus: Record<'foundation' | 'transition' | 'frontier', string>;
+    /** Milestone count inside one roadmap row. */
+    roadmapMilestones: (count: number) => string;
   };
   evidence: {
     eyebrow: string;
@@ -282,6 +311,35 @@ export const en: Copy = {
     },
     timelineHeading: 'Full timeline',
     evidenceLinks: (count) => (count === 1 ? '1 evidence link' : `${count} evidence links`),
+    completedHeading: 'Completed & ongoing',
+    completedNote:
+      'Work that is published or in flight. Every entry links to the commits and artifacts behind it.',
+    directionAheadHeading: 'Direction ahead',
+    directionAheadNote:
+      'Not achievements. These entries record intent only: no artifact exists yet, and the links point at what would be extended.',
+    relatedLabel: 'Related',
+    curatedPreviewNote:
+      'Showing the most recent hand-written milestones; unreviewed git candidates are on the full timeline.',
+    roadmapHeading: 'Roadmap by phase',
+    roadmapNote:
+      'Derived from the milestones themselves: each phase lists the focus it covered and the projects that supported it. Phases describe what happened; only "Direction ahead" describes what is intended.',
+    roadmapProjectsLabel: 'Supporting projects',
+    roadmapNoProjects:
+      'No milestone in this phase links a project, so no supporting project is listed.',
+    phaseLabel: {
+      foundation: 'Foundation',
+      transition: 'Transition',
+      frontier: 'Direction ahead',
+    },
+    phaseFocus: {
+      foundation:
+        'Making the evidence contract real: a published snapshot, bilingual locales, and an explicit boundary statement for every public reproduction.',
+      transition:
+        'Rebuilding on Astro over a validated data layer, keeping the legacy site live until the cutover gate passes.',
+      frontier:
+        'Intended, not started. Each row points at the repositories the next work would extend; none of it is built yet.',
+    },
+    roadmapMilestones: (count) => (count === 1 ? '1 milestone' : `${count} milestones`),
   },
   evidence: {
     eyebrow: 'Evidence',
@@ -464,6 +522,35 @@ export const es: Copy = {
     timelineHeading: 'Línea de tiempo completa',
     evidenceLinks: (count) =>
       count === 1 ? '1 enlace de evidencia' : `${count} enlaces de evidencia`,
+    completedHeading: 'Completado y en curso',
+    completedNote:
+      'Trabajo publicado o en marcha. Cada entrada enlaza con los commits y artefactos que lo respaldan.',
+    directionAheadHeading: 'Dirección por delante',
+    directionAheadNote:
+      'No son logros. Estas entradas solo registran intención: todavía no existe ningún artefacto y los enlaces apuntan a lo que se ampliaría.',
+    relatedLabel: 'Relacionado',
+    curatedPreviewNote:
+      'Se muestran los hitos escritos a mano más recientes; los candidatos de git sin revisar están en la línea de tiempo completa.',
+    roadmapHeading: 'Hoja de ruta por fase',
+    roadmapNote:
+      'Derivada de los propios hitos: cada fase muestra el foco que cubrió y los proyectos que lo respaldaron. Las fases describen lo que ocurrió; solo «Dirección por delante» describe lo que se pretende.',
+    roadmapProjectsLabel: 'Proyectos de apoyo',
+    roadmapNoProjects:
+      'Ningún hito de esta fase enlaza un proyecto, así que no se lista ninguno.',
+    phaseLabel: {
+      foundation: 'Fundación',
+      transition: 'Transición',
+      frontier: 'Dirección por delante',
+    },
+    phaseFocus: {
+      foundation:
+        'Hacer real el contrato de evidencia: una instantánea publicada, dos locales revisados y una declaración de límites explícita para cada reproducción pública.',
+      transition:
+        'Reconstruir sobre Astro con una capa de datos validada, manteniendo el sitio anterior en línea hasta que la puerta de corte se supere.',
+      frontier:
+        'Intencionado, no iniciado. Cada fila apunta a los repositorios que el próximo trabajo ampliaría; nada de eso está construido todavía.',
+    },
+    roadmapMilestones: (count) => (count === 1 ? '1 hito' : `${count} hitos`),
   },
   evidence: {
     eyebrow: 'Evidencia',
