@@ -46,3 +46,16 @@ export function sectionHref(locale: Locale, id: string, pathname: string): strin
   const root = localeRoot(locale);
   return pathname === root ? `#${id}` : `${root}#${id}`;
 }
+
+/**
+ * Locale implied by a built pathname (`Astro.url.pathname`).
+ *
+ * Used by components that render on every route but do not receive the
+ * `locale` prop (the footer), so they can still link to the matching-language
+ * route without a second source of truth. Spanish routes live under `<base>es/`
+ * (see `localeRoot`), so the `es` segment is the only signal needed; anything
+ * else is English.
+ */
+export function localeFromPathname(pathname: string): Locale {
+  return pathname.includes('/es/') ? 'es' : 'en';
+}

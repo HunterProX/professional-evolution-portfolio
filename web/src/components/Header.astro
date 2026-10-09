@@ -24,6 +24,7 @@
 import type { Copy, Locale } from '../i18n/copy';
 import { profile } from '../lib/data';
 import { localeRoot, route, sectionHref } from '../lib/urls';
+import CommandPalette from './CommandPalette.astro';
 import LangSwitch from './LangSwitch.astro';
 import ThemeToggle from './ThemeToggle.astro';
 
@@ -89,12 +90,25 @@ const links: { id: NonNullable<Props['active']>; href: string; label: string }[]
       </nav>
 
       <div class="site-header__controls">
+        <button
+          type="button"
+          class="site-header__palette"
+          data-palette-open
+          aria-haspopup="dialog"
+          aria-expanded="false"
+          aria-controls="pep-palette-dialog"
+          aria-label={copy.palette.open}
+        >
+          <kbd class="site-header__palette-keys" aria-hidden="true">⌘K</kbd>
+        </button>
         <LangSwitch copy={copy} locale={locale} />
         <ThemeToggle copy={copy} />
       </div>
     </div>
   </div>
 </header>
+
+<CommandPalette copy={copy} locale={locale} />
 
 <script>
   // Disclosure state for the mobile menu: `aria-expanded` on the button and a
@@ -301,6 +315,46 @@ const links: { id: NonNullable<Props['active']>; href: string; label: string }[]
     gap: var(--space-2);
     padding-top: var(--space-2);
     border-top: 1px solid var(--color-border);
+  }
+
+  /* --- Command palette trigger --------------------------------------------
+   * Hidden without JavaScript (the `html.js` gate) because the palette cannot
+   * open without a script, and hidden below 768px where a keyboard shortcut
+   * hint adds little on touch devices. */
+  .site-header__palette {
+    display: none;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 44px;
+    padding: var(--space-2) var(--space-3);
+    background-color: transparent;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition:
+      color var(--duration-fast) var(--ease-standard),
+      border-color var(--duration-fast) var(--ease-standard),
+      background-color var(--duration-fast) var(--ease-standard);
+  }
+
+  .site-header__palette:hover {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+    background-color: var(--color-surface-raised);
+  }
+
+  .site-header__palette-keys {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    letter-spacing: 0.04em;
+  }
+
+  @media (min-width: 768px) {
+    html.js .site-header__palette {
+      display: inline-flex;
+    }
   }
 
   /* --- Wide viewport: one always-visible nav, no disclosure control -------- */

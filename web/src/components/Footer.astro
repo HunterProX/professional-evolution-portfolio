@@ -9,6 +9,7 @@
  */
 import type { Copy } from '../i18n/copy';
 import { profile } from '../lib/data';
+import { localeFromPathname, route } from '../lib/urls';
 
 interface Props {
   copy: Copy;
@@ -16,6 +17,12 @@ interface Props {
 }
 
 const { copy, snapshotId } = Astro.props;
+
+/* The footer renders on every route but receives no `locale` prop, so it reads
+   the locale from the built pathname — the same `<base>es/` signal the URL
+   helpers use — and links the printable profile of the current language. */
+const locale = localeFromPathname(Astro.url.pathname);
+const printHref = route(locale, 'print/');
 
 const SOURCE_REPO = `https://github.com/${profile.reposOwner}/professional-evolution-portfolio`;
 const year = new Date().getUTCFullYear();
@@ -26,6 +33,9 @@ const year = new Date().getUTCFullYear();
     <div class="site-footer__identity">
       <p class="site-footer__name">{profile.name}</p>
       <p class="site-footer__tagline">{copy.footer.tagline}</p>
+      <p class="site-footer__print">
+        <a href={printHref}>{copy.footer.printProfile}</a>
+      </p>
     </div>
 
     <dl class="site-footer__meta">
@@ -78,6 +88,17 @@ const year = new Date().getUTCFullYear();
     color: var(--color-accent);
     font-size: var(--text-sm);
     line-height: var(--leading-sm);
+  }
+
+  .site-footer__print {
+    margin-top: var(--space-2);
+  }
+
+  .site-footer__print a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-size: var(--text-sm);
   }
 
   .site-footer__meta {

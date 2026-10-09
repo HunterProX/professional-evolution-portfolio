@@ -361,12 +361,21 @@ html.js .reveal.is-visible {
 @media print {
   .site-header,
   .site-footer,
-  .skip-link {
+  .skip-link,
+  .assistant,
+  .palette {
     display: none;
   }
 
   body {
     background: #fff;
     color: #000;
+  }
+
+  /* No reveal animation may hide content on paper: the `.js` gate exists for
+     the screen, so print always renders the final state. */
+  html.js .reveal {
+    opacity: 1;
+    transform: none;
   }
 }

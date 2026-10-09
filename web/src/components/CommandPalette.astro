@@ -1,0 +1,507 @@
+---
+/**
+ * Command palette — Cmd/Ctrl+K destination switcher.
+ *
+ * A modal dialog (role=dialog, aria-modal, Esc and click-outside close, focus
+ * moves into the search input on open and back to the trigger on close) over a
+ * flat `role=listbox` of every destination the site publishes: the six page
+ * entries (Home / Work / Evolution / Evidence / Print / the Contact anchor),
+ * the five projects and the four evidence links. The list is built at render
+ * from the canonical `data/*.json`, so a data edit changes the palette without
+ * touching this file; labels come from the locale catalog and hrefs from
+ * `lib/urls`, so the palette speaks the page's language under the deployment
+ * base path.
+ *
+ * Matching is client-side only and reuses `lib/assistant-search.ts` — the same
+ * accent-folding `fold` and the same `tokenize`, which already applies the
+ * documented Spanish→English synonym map. Nothing is scored or invented here;
+ * a token that matches nothing leaves the honest empty state.
+ *
+ * Progressive enhancement: the dialog is hidden and the header trigger is
+ * hidden by CSS until the pre-paint `html.js` gate runs (the same contract as
+ * the mobile nav and the assistant), so a no-JS visit loses no content — every
+ * palette destination is already a published page or an existing link.
+ *
+ * The dialog is rendered once per page (Header includes it) and the script
+ * binds to the `[data-palette-open]` trigger the header renders, so the two
+ * halves stay decoupled.
+ */
+import type { ClaimStatus, Copy, Locale } from '../i18n/copy';
+import { evidence, projects } from '../lib/data';
+import { fold } from '../lib/assistant-search';
+import { route, sectionHref } from '../lib/urls';
+
+interface Props {
+  copy: Copy;
+  locale: Locale;
+}
+
+const { copy, locale } = Astro.props;
+const pathname = Astro.url.pathname;
+
+interface PaletteItem {
+  /** Visible label of the option. */
+  label: string;
+  /** Right-hand hint: the page kind, a project status or a claim status. */
+  hint: string;
+  /** Locale- and base-aware destination, or an external evidence URL. */
+  href: string;
+  /** External links open in a new tab instead of navigating in place. */
+  external: boolean;
+  /** Accent-folded haystack the client filter matches against. */
+  search: string;
+}
+
+const CLAIM_STATUSES: readonly ClaimStatus[] = [
+  'demonstrated',
+  'developing',
+  'aspirational',
+  'insufficient',
+];
+
+/** Claim label for an evidence item, or the generic kind when unrecognised. */
+function evidenceHint(status: string): string {
+  return CLAIM_STATUSES.includes(status as ClaimStatus)
+    ? copy.evidence.statusLabel[status as ClaimStatus]
+    : copy.palette.kind.evidence;
+}
+
+const pageItem = (label: string, href: string, keywords: string): PaletteItem => ({
+  label,
+  hint: copy.palette.kind.page,
+  href,
+  external: false,
+  search: fold(`${label} ${keywords} page navigate pagina`),
+});
+
+const navItems: PaletteItem[] = [
+  pageItem(copy.palette.home, route(locale), 'home inicio start'),
+  pageItem(copy.nav.work, route(locale, 'work/'), 'work projects trabajo proyectos'),
+  pageItem(copy.nav.evolution, route(locale, 'evolution/'), 'evolution timeline roadmap evolucion'),
+  pageItem(copy.nav.evidence, route(locale, 'evidence/'), 'evidence proof evidencia'),
+  pageItem(copy.palette.print, route(locale, 'print/'), 'print pdf save cv resume imprimir guardar'),
+  pageItem(copy.nav.contact, sectionHref(locale, 'contact', pathname), 'contact email contacto correo'),
+];
+
+const projectItems: PaletteItem[] = projects.map((project) => ({
+  label: project.name,
+  hint: copy.projectStatus.label[project.status],
+  href: route(locale, `work/${project.slug}/`),
+  external: false,
+  search: fold(
+    `project projects trabajo ${project.name} ${project.slug} ${project.status} ${project.tags.join(' ')}`,
+  ),
+}));
+
+const evidenceItems: PaletteItem[] = evidence.items.map((item) => ({
+  label: item.label,
+  hint: evidenceHint(item.status),
+  href: item.url,
+  external: true,
+  search: fold(`evidence proof evidencia ${item.label} ${item.url} ${item.status}`),
+}));
+
+const items: PaletteItem[] = [...navItems, ...projectItems, ...evidenceItems];
+---
+
+<div class="palette" data-palette hidden>
+  <div class="palette__backdrop" data-palette-backdrop aria-hidden="true"></div>
+
+  <div
+    class="palette__dialog"
+    id="pep-palette-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="pep-palette-title"
+    data-palette-dialog
+    tabindex="-1"
+  >
+    <div class="palette__head">
+      <h2 class="palette__title" id="pep-palette-title">{copy.palette.title}</h2>
+      <button
+        type="button"
+        class="palette__close"
+        data-palette-close
+        aria-label={copy.palette.close}
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path
+            d="M6 6l12 12M18 6 6 18"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+        </svg>
+      </button>
+    </div>
+
+    <label class="visually-hidden" for="pep-palette-input">{copy.palette.title}</label>
+    <input
+      class="palette__input"
+      id="pep-palette-input"
+      data-palette-input
+      type="text"
+      role="combobox"
+      aria-expanded="true"
+      aria-controls="pep-palette-list"
+      aria-autocomplete="list"
+      autocomplete="off"
+      spellcheck="false"
+      placeholder={copy.palette.placeholder}
+    />
+
+    <ul
+      class="palette__list"
+      id="pep-palette-list"
+      role="listbox"
+      aria-label={copy.palette.title}
+      data-palette-list
+    >
+      {
+        items.map((item, index) => (
+          <li
+            class="palette__option"
+            id={`pep-palette-opt-${index}`}
+            role="option"
+            aria-selected="false"
+            data-palette-option
+            data-href={item.href}
+            data-external={item.external ? 'true' : undefined}
+            data-search={item.search}
+          >
+            <span class="palette__option-label">{item.label}</span>
+            <span class="palette__option-hint">{item.hint}</span>
+          </li>
+        ))
+      }
+    </ul>
+
+    <p class="palette__empty" data-palette-empty hidden>{copy.palette.empty}</p>
+    <p class="palette__hint">{copy.palette.hint}</p>
+  </div>
+</div>
+
+<script>
+  import { tokenize } from '../lib/assistant-search';
+
+  (() => {
+    const root = document.querySelector<HTMLElement>('[data-palette]');
+    const dialog = document.querySelector<HTMLElement>('[data-palette-dialog]');
+    if (!root || !dialog) return;
+
+    const input = dialog.querySelector<HTMLInputElement>('[data-palette-input]');
+    const list = dialog.querySelector<HTMLElement>('[data-palette-list]');
+    const empty = dialog.querySelector<HTMLElement>('[data-palette-empty]');
+    const closeButton = dialog.querySelector<HTMLButtonElement>('[data-palette-close]');
+    const triggers = Array.from(document.querySelectorAll<HTMLElement>('[data-palette-open]'));
+    if (!input || !list || !empty || !closeButton) return;
+
+    const options = Array.from(list.querySelectorAll<HTMLElement>('[role="option"]'));
+    let opener: HTMLElement | null = null;
+    let active: HTMLElement | null = null;
+
+    const visibleOptions = () => options.filter((option) => !option.hidden);
+
+    const setActive = (option: HTMLElement | null) => {
+      for (const candidate of options) {
+        candidate.setAttribute('aria-selected', String(candidate === option));
+      }
+      active = option;
+      if (option) {
+        input.setAttribute('aria-activedescendant', option.id);
+        option.scrollIntoView({ block: 'nearest' });
+      } else {
+        input.removeAttribute('aria-activedescendant');
+      }
+    };
+
+    // Accent-folded, all-terms matching through the shared tokenizer: an empty
+    // query shows every destination, and a query whose tokens match nothing
+    // leaves the honest empty state rather than a guessed result.
+    const filter = (query: string) => {
+      const tokens = tokenize(query);
+      let firstVisible: HTMLElement | null = null;
+      for (const option of options) {
+        const haystack = option.dataset.search ?? '';
+        const matches = tokens.length === 0 || tokens.every((token) => haystack.includes(token));
+        option.hidden = !matches;
+        if (matches && !firstVisible) firstVisible = option;
+      }
+      const count = visibleOptions().length;
+      empty.hidden = count > 0;
+      list.hidden = count === 0;
+      setActive(count > 0 ? firstVisible : null);
+    };
+
+    const go = (option: HTMLElement | null) => {
+      if (!option) return;
+      const href = option.dataset.href;
+      if (!href) return;
+      const external = option.dataset.external === 'true';
+      close();
+      if (external) window.open(href, '_blank', 'noopener');
+      else window.location.assign(href);
+    };
+
+    const open = () => {
+      if (!root.hidden) return;
+      opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      root.hidden = false;
+      for (const trigger of triggers) trigger.setAttribute('aria-expanded', 'true');
+      input.value = '';
+      filter('');
+      input.focus();
+    };
+
+    const close = () => {
+      if (root.hidden) return;
+      root.hidden = true;
+      for (const trigger of triggers) trigger.setAttribute('aria-expanded', 'false');
+      (opener ?? triggers[0] ?? input).focus();
+      opener = null;
+    };
+
+    for (const trigger of triggers) {
+      trigger.addEventListener('click', () => (root.hidden ? open() : close()));
+    }
+    closeButton.addEventListener('click', close);
+
+    input.addEventListener('input', () => filter(input.value));
+
+    input.addEventListener('keydown', (event) => {
+      const items = visibleOptions();
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        if (items.length === 0) return;
+        const index = active ? items.indexOf(active) : -1;
+        const next =
+          event.key === 'ArrowDown'
+            ? (index + 1) % items.length
+            : index <= 0
+              ? items.length - 1
+              : index - 1;
+        setActive(items[next] ?? null);
+        return;
+      }
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        go(active ?? items[0] ?? null);
+      }
+    });
+
+    list.addEventListener('click', (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const option = target.closest<HTMLElement>('[role="option"]');
+      if (option) go(option);
+    });
+
+    document.addEventListener('keydown', (event) => {
+      // Cmd+K (Mac) / Ctrl+K (everywhere else) toggles the palette.
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        if (root.hidden) open();
+        else close();
+        return;
+      }
+      if (root.hidden) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        close();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      // Minimal focus containment for the modal: wrap at both ends.
+      const focusables = Array.from(
+        dialog.querySelectorAll<HTMLElement>('button, input'),
+      ).filter((el) => el.offsetParent !== null);
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const current = document.activeElement;
+      if (event.shiftKey && (current === first || !dialog.contains(current))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && current === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    });
+
+    document.addEventListener('pointerdown', (event) => {
+      if (root.hidden) return;
+      const target = event.target;
+      const onTrigger = triggers.some((trigger) => trigger.contains(target as Node));
+      if (target instanceof Node && !dialog.contains(target) && !onTrigger) close();
+    });
+  })();
+</script>
+
+<style>
+  /* No-JS: the dialog needs scripting to open, so it stays hidden until the
+     pre-paint `html.js` gate ran. The trigger is hidden in Header by the same
+     gate; nothing else on the page changes. */
+  .palette {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: min(12vh, var(--space-24)) var(--space-4) var(--space-4);
+  }
+
+  /* Author `display` rules outrank the UA `[hidden]` rule, so every toggled
+     element re-asserts hiding explicitly. */
+  .palette[hidden],
+  .palette__list[hidden],
+  .palette__option[hidden],
+  .palette__empty[hidden] {
+    display: none;
+  }
+
+  .palette__backdrop {
+    position: absolute;
+    inset: 0;
+    background-color: color-mix(in srgb, #000 55%, transparent);
+  }
+
+  .palette__dialog {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    width: min(560px, 100%);
+    max-height: min(72vh, 560px);
+    overflow: hidden;
+    padding: var(--space-4);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .palette__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+
+  .palette__title {
+    margin: 0;
+    font-size: var(--text-md);
+    line-height: var(--leading-md);
+  }
+
+  .palette__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background-color: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    cursor: pointer;
+  }
+
+  .palette__close:hover {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+
+  .palette__close svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .palette__input {
+    width: 100%;
+    padding: var(--space-3);
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    font-size: var(--text-sm);
+  }
+
+  .palette__input:hover {
+    border-color: var(--color-accent);
+  }
+
+  .palette__input:focus-visible {
+    border-color: var(--color-accent);
+    box-shadow: var(--ring-focus);
+  }
+
+  .palette__list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1 1 auto;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    overflow-y: auto;
+  }
+
+  .palette__option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    min-height: 44px;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+
+  .palette__option[aria-selected='true'] {
+    background-color: color-mix(in srgb, var(--color-accent) 14%, transparent);
+  }
+
+  .palette__option-label {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--color-text);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .palette__option[aria-selected='true'] .palette__option-label {
+    color: var(--color-accent);
+  }
+
+  .palette__option-hint {
+    flex: none;
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    white-space: nowrap;
+  }
+
+  .palette__empty {
+    margin: 0;
+    padding: var(--space-3);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  .palette__hint {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+  }
+
+  @media print {
+    .palette {
+      display: none !important;
+    }
+  }
+</style>

@@ -1,0 +1,324 @@
+---
+/**
+ * Print profile (en) — a printable, document-style view of the published data.
+ *
+ * Content comes entirely from `data/*.json` through `lib/print.ts`: name and
+ * headline, all five projects with their status, summary and repository URL as
+ * text, the evolution milestones split into delivered/in-flight and planned,
+ * the evidence links, and the contact channels. Nothing is invented and the
+ * copy says plainly that this is a generated view, not an approved CV document.
+ *
+ * The page is also a real route on screen, with a "Print / Save as PDF" button
+ * that only works with JavaScript (hidden behind the same `html.js` gate as the
+ * rest of the site). The print stylesheet turns the dark-first theme into black
+ * on white, hides the site chrome (already done globally for header/footer/
+ * assistant/palette) and keeps entries from splitting across pages.
+ */
+import type { Locale } from '../i18n/copy';
+import { getCopy } from '../i18n/copy';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { printModel } from '../lib/print';
+
+const locale: Locale = 'en';
+const copy = getCopy(locale);
+const model = printModel(copy, locale);
+
+const dateFormat = new Intl.DateTimeFormat('en-GB', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+const formatDate = (iso: string) => dateFormat.format(new Date(`${iso}T00:00:00Z`));
+---
+
+<BaseLayout locale={locale} title={copy.print.title} description={copy.print.note} path="print/">
+  <section class="print">
+    <div class="shell shell--narrow">
+      <header class="print__head">
+        <p class="eyebrow">{copy.print.eyebrow}</p>
+        <h1>{copy.print.heading}</h1>
+        <p class="print__note">{copy.print.note}</p>
+        <p class="print__generated">{copy.print.generatedNote}</p>
+        <button type="button" class="button button--primary print__action" data-print-button>
+          {copy.print.printButton}
+        </button>
+      </header>
+
+      <section class="print__section" aria-labelledby="print-profile-heading">
+        <h2 id="print-profile-heading">{copy.print.profileHeading}</h2>
+        <p class="print__entry-title">{model.name}</p>
+        <p class="print__summary">{model.headline}</p>
+      </section>
+
+      <section class="print__section" aria-labelledby="print-projects-heading">
+        <h2 id="print-projects-heading">{copy.print.projectsHeading}</h2>
+        <ul class="print__list">
+          {
+            model.projects.map((project) => (
+              <li class="print__entry">
+                <p class="print__entry-title">
+                  {project.name}
+                  <span class="print__status">{project.statusLabel}</span>
+                </p>
+                <p class="print__summary">{project.summary}</p>
+                <p class="print__repo">
+                  <span class="print__label">{copy.print.repoLabel}</span>{' '}
+                  <a class="print__url" href={project.repo}>{project.repo}</a>
+                </p>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <section class="print__section" aria-labelledby="print-evolution-heading">
+        <h2 id="print-evolution-heading">{copy.print.evolutionHeading}</h2>
+
+        <h3 class="print__subheading">{copy.print.shippedHeading}</h3>
+        <ul class="print__list">
+          {
+            model.shipped.map((milestone) => (
+              <li class="print__entry print__entry--milestone">
+                <time class="print__date" datetime={milestone.date}>
+                  {formatDate(milestone.date)}
+                </time>
+                <span class="print__entry-title">{milestone.title}</span>
+                <span class="print__status">{milestone.statusLabel}</span>
+              </li>
+            ))
+          }
+        </ul>
+
+        <h3 class="print__subheading">{copy.print.plannedHeading}</h3>
+        <ul class="print__list">
+          {
+            model.planned.map((milestone) => (
+              <li class="print__entry print__entry--milestone">
+                <time class="print__date" datetime={milestone.date}>
+                  {formatDate(milestone.date)}
+                </time>
+                <span class="print__entry-title">{milestone.title}</span>
+                <span class="print__status">{milestone.statusLabel}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <section class="print__section" aria-labelledby="print-evidence-heading">
+        <h2 id="print-evidence-heading">{copy.print.evidenceHeading}</h2>
+        <ul class="print__list">
+          {
+            model.evidence.map((item) => (
+              <li class="print__entry">
+                <p class="print__entry-title">
+                  {item.label}
+                  {item.statusLabel ? <span class="print__status">{item.statusLabel}</span> : null}
+                </p>
+                <a class="print__url" href={item.url} target="_blank" rel="noopener noreferrer">
+                  {item.url}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <section class="print__section" aria-labelledby="print-contact-heading">
+        <h2 id="print-contact-heading">{copy.print.contactHeading}</h2>
+        <dl class="print__contact">
+          <dt>{copy.print.emailLabel}</dt>
+          <dd><a class="print__url" href={`mailto:${model.email}`}>{model.email}</a></dd>
+          <dt>{copy.print.githubLabel}</dt>
+          <dd><a class="print__url" href={model.github}>{model.github}</a></dd>
+          <dt>{copy.print.linkedinLabel}</dt>
+          <dd><a class="print__url" href={model.linkedin}>{model.linkedin}</a></dd>
+        </dl>
+      </section>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  // The button only prints; it is hidden without JavaScript (the `.js` gate),
+  // so a no-JS visit loses no content and sees no dead control.
+  const button = document.querySelector('[data-print-button]');
+  if (button instanceof HTMLButtonElement) {
+    button.addEventListener('click', () => window.print());
+  }
+</script>
+
+<style>
+  .print {
+    padding-block: var(--space-16) var(--space-24);
+  }
+
+  .print__head {
+    max-width: 68ch;
+    margin-bottom: var(--space-12);
+  }
+
+  .print__head h1 {
+    margin-block: var(--space-2) var(--space-3);
+  }
+
+  .print__note {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .print__generated {
+    margin-top: var(--space-2);
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+  }
+
+  /* Screen-only control: hidden until BaseLayout sets `.js`. */
+  .print__action {
+    display: none;
+    margin-top: var(--space-6);
+  }
+
+  html.js .print__action {
+    display: inline-flex;
+  }
+
+  .print__section {
+    margin-top: var(--space-12);
+  }
+
+  .print__section > h2 {
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .print__subheading {
+    margin-top: var(--space-6);
+    font-size: var(--text-lg);
+    line-height: var(--leading-lg);
+  }
+
+  .print__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin: var(--space-4) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Rows, not prose: the global `li { max-width: var(--measure) }` cap would
+     truncate a milestone row, and the prose inside keeps its own cap. */
+  .print__entry {
+    max-width: none;
+  }
+
+  .print__entry--milestone {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-2);
+  }
+
+  .print__entry-title {
+    font-size: var(--text-md);
+    font-weight: 700;
+    line-height: var(--leading-md);
+  }
+
+  .print__date {
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+  }
+
+  .print__status {
+    margin-left: var(--space-2);
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    font-weight: 600;
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+  }
+
+  .print__summary {
+    max-width: 68ch;
+    margin-top: var(--space-1);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .print__repo {
+    margin-top: var(--space-1);
+    font-size: var(--text-xs);
+  }
+
+  .print__label {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+  }
+
+  .print__url {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    overflow-wrap: anywhere;
+  }
+
+  .print__contact {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: var(--space-1) var(--space-4);
+    margin-top: var(--space-4);
+  }
+
+  .print__contact dt {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+  }
+
+  .print__contact dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  @page {
+    margin: 16mm;
+  }
+
+  @media print {
+    .print {
+      padding: 0;
+    }
+
+    .print__action {
+      display: none !important;
+    }
+
+    .print__section {
+      margin-top: var(--space-8);
+    }
+
+    /* Keep an entry or a contact block from splitting across two sheets. */
+    .print__entry,
+    .print__contact,
+    .print__section > h2 {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .print__url,
+    .print__url:visited {
+      color: #000;
+      text-decoration: none;
+    }
+  }
+</style>

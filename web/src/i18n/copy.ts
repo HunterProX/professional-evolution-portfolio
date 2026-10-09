@@ -233,6 +233,27 @@ export interface Copy {
     /** Subject line of the prefilled `mailto:` compose. */
     emailSubject: string;
   };
+  /** Command palette (`components/CommandPalette.astro`). */
+  palette: {
+    /** Accessible name of the header trigger button. */
+    open: string;
+    /** Dialog heading, referenced by the dialog's `aria-labelledby`. */
+    title: string;
+    /** Accessible name of the close button. */
+    close: string;
+    /** Search input placeholder. */
+    placeholder: string;
+    /** Footer keyboard hint line. */
+    hint: string;
+    /** Honest empty state when the filter matches nothing. */
+    empty: string;
+    /** Nav item label for the locale home. */
+    home: string;
+    /** Nav item label for the printable profile. */
+    print: string;
+    /** Kind hint shown on the right of each option. */
+    kind: { page: string; project: string; evidence: string };
+  };
   /** Branded 404 page (`/404.html` and `/es/404.html`). */
   notFound: {
     eyebrow: string;
@@ -242,12 +263,39 @@ export interface Copy {
     work: string;
     evidence: string;
   };
+  /** Printable profile (`/print/` and `/es/print/`). */
+  print: {
+    eyebrow: string;
+    /** Page `<title>` and the visible `h1`. */
+    title: string;
+    /** Honesty note: this is generated, not an approved CV document. */
+    note: string;
+    /** Label of the screen-only print button. */
+    printButton: string;
+    /** Source of the document, shown under the heading. */
+    generatedNote: string;
+    profileHeading: string;
+    projectsHeading: string;
+    evolutionHeading: string;
+    /** Group heading for shipped + in-progress milestones. */
+    shippedHeading: string;
+    /** Group heading for planned milestones. */
+    plannedHeading: string;
+    evidenceHeading: string;
+    contactHeading: string;
+    repoLabel: string;
+    emailLabel: string;
+    githubLabel: string;
+    linkedinLabel: string;
+  };
   footer: {
     tagline: string;
     sourceRepository: string;
     snapshotLabel: string;
     themeNote: string;
     buildNote: string;
+    /** Link to the printable profile of the current locale. */
+    printProfile: string;
   };
 }
 
@@ -481,6 +529,17 @@ export const en: Copy = {
     askByEmail: 'Ask by email',
     emailSubject: 'Question about the portfolio',
   },
+  palette: {
+    open: 'Open the command palette',
+    title: 'Command palette',
+    close: 'Close the command palette',
+    placeholder: 'Go to a page, project or evidence item…',
+    hint: '↑↓ to move · Enter to open · Esc to close',
+    empty: 'No destination matches that.',
+    home: 'Home',
+    print: 'Print profile',
+    kind: { page: 'Page', project: 'Project', evidence: 'Evidence' },
+  },
   notFound: {
     eyebrow: 'Not found',
     heading: 'Page not found',
@@ -490,12 +549,31 @@ export const en: Copy = {
     work: 'See the work',
     evidence: 'Inspect the evidence',
   },
+  print: {
+    eyebrow: 'Generated view',
+    title: 'Print profile',
+    note: 'This is a generated view of the published data, not an approved CV document.',
+    printButton: 'Print / Save as PDF',
+    generatedNote: 'Generated from the published data at build time.',
+    profileHeading: 'Profile',
+    projectsHeading: 'Selected projects',
+    evolutionHeading: 'Evolution',
+    shippedHeading: 'Shipped & in progress',
+    plannedHeading: 'Planned',
+    evidenceHeading: 'Evidence links',
+    contactHeading: 'Contact',
+    repoLabel: 'Repository',
+    emailLabel: 'Email',
+    githubLabel: 'GitHub',
+    linkedinLabel: 'LinkedIn',
+  },
   footer: {
     tagline: 'Evidence before confidence.',
     sourceRepository: 'Source repository',
     snapshotLabel: 'Snapshot',
     themeNote: 'The theme is stored in your own browser; no server controls it.',
     buildNote: 'Static site built with Astro. No tracking and no third-party scripts.',
+    printProfile: 'Print profile',
   },
 };
 
@@ -732,6 +810,17 @@ export const es: Copy = {
     askByEmail: 'Preguntar por correo',
     emailSubject: 'Pregunta sobre el portafolio',
   },
+  palette: {
+    open: 'Abrir la paleta de comandos',
+    title: 'Paleta de comandos',
+    close: 'Cerrar la paleta de comandos',
+    placeholder: 'Ir a una página, proyecto o evidencia…',
+    hint: '↑↓ para moverte · Enter para abrir · Esc para cerrar',
+    empty: 'Ningún destino coincide con eso.',
+    home: 'Inicio',
+    print: 'Perfil imprimible',
+    kind: { page: 'Página', project: 'Proyecto', evidence: 'Evidencia' },
+  },
   notFound: {
     eyebrow: 'No encontrado',
     heading: 'Página no encontrada',
@@ -741,12 +830,31 @@ export const es: Copy = {
     work: 'Ver el trabajo',
     evidence: 'Inspeccionar la evidencia',
   },
+  print: {
+    eyebrow: 'Vista generada',
+    title: 'Perfil imprimible',
+    note: 'Esta es una vista generada a partir de los datos publicados, no un documento de CV aprobado.',
+    printButton: 'Imprimir / Guardar como PDF',
+    generatedNote: 'Generado a partir de los datos publicados en tiempo de compilación.',
+    profileHeading: 'Perfil',
+    projectsHeading: 'Proyectos seleccionados',
+    evolutionHeading: 'Evolución',
+    shippedHeading: 'Entregado y en curso',
+    plannedHeading: 'Planificado',
+    evidenceHeading: 'Enlaces de evidencia',
+    contactHeading: 'Contacto',
+    repoLabel: 'Repositorio',
+    emailLabel: 'Correo electrónico',
+    githubLabel: 'GitHub',
+    linkedinLabel: 'LinkedIn',
+  },
   footer: {
     tagline: 'Evidencia antes que confianza.',
     sourceRepository: 'Repositorio fuente',
     snapshotLabel: 'Instantánea',
     themeNote: 'El tema se guarda en tu propio navegador; ningún servidor lo controla.',
     buildNote: 'Sitio estático construido con Astro. Sin rastreo y sin scripts de terceros.',
+    printProfile: 'Perfil imprimible',
   },
 };
 
