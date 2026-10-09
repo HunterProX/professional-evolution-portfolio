@@ -1,0 +1,57 @@
+[
+  {
+    "slug": "professional-evolution-portfolio",
+    "name": "Professional Evolution Portfolio",
+    "summary": "This site: an evidence-first bilingual portfolio that lists shipped work and planned work separately, with every capability statement pointing at an inspectable artifact. The static site is live; it is currently being rebuilt on Astro over a validated data layer.",
+    "status": "live",
+    "repo": "https://github.com/cristian-cardona-dev/professional-evolution-portfolio",
+    "caseStudy": null,
+    "tags": ["astro", "bilingual", "evidence-first", "accessibility"],
+    "related": ["ai-chat-app", "cloud-dashboard", "saas-mvp", "ai-automation-workflow-lab"],
+    "screenshots": []
+  },
+  {
+    "slug": "ai-chat-app",
+    "name": "AI Chat API Lab",
+    "summary": "Public reliability reproduction of an AI chat API: deterministic representative responses, bounded citation identifiers and explicit insufficient-evidence answers, with request-size and conversation-history limits covered by contract tests. It makes no model-provider call and runs no retrieval or indexing pipeline.",
+    "status": "prototype",
+    "repo": "https://github.com/cristian-cardona-dev/ai-chat-app",
+    "caseStudy": "case-studies/ai-reliability-lab.md",
+    "tags": ["node", "contract-tests", "bounded-citations", "deterministic"],
+    "related": ["ai-automation-workflow-lab", "professional-evolution-portfolio"],
+    "screenshots": []
+  },
+  {
+    "slug": "cloud-dashboard",
+    "name": "Cloud Dashboard",
+    "summary": "Public reproduction of an observability dashboard UI: responsive charts over deterministic synthetic telemetry, configurable CPU and memory thresholds, and unit, browser-flow, typecheck, build and privacy-scan checks. It runs on synthetic data only and is not connected to live infrastructure or real cloud costs.",
+    "status": "prototype",
+    "repo": "https://github.com/cristian-cardona-dev/cloud-dashboard",
+    "caseStudy": "case-studies/cloud-dashboard.md",
+    "tags": ["typescript", "dashboard", "synthetic-telemetry", "testing"],
+    "related": ["saas-mvp", "professional-evolution-portfolio"],
+    "screenshots": []
+  },
+  {
+    "slug": "saas-mvp",
+    "name": "SaaS MVP",
+    "summary": "Planned product work. It is not built, not deployed and not public: there is no billing or subscription handling, authentication, multi-tenant data model or admin dashboard yet. It is listed to keep the boundary between planned and delivered work visible.",
+    "status": "lab",
+    "repo": "https://github.com/cristian-cardona-dev/saas-mvp",
+    "caseStudy": null,
+    "tags": ["planned", "not-yet-public"],
+    "related": ["cloud-dashboard", "professional-evolution-portfolio"],
+    "screenshots": []
+  },
+  {
+    "slug": "ai-automation-workflow-lab",
+    "name": "AI Automation Workflow Lab",
+    "summary": "Public reproduction of an approval-gated workflow: explicit proposal, approval, rejection and execution states, allowlisted deterministic actions, an idempotency key with replay-safe execution and an audit event for every transition, covered by invalid-input and approval-bypass tests. It is synthetic only and performs no autonomous production actions.",
+    "status": "lab",
+    "repo": "https://github.com/cristian-cardona-dev/ai-automation-workflow-lab",
+    "caseStudy": "case-studies/ai-automation-workflow-lab.md",
+    "tags": ["state-machine", "human-in-the-loop", "idempotency", "audit-trail"],
+    "related": ["ai-chat-app", "professional-evolution-portfolio"],
+    "screenshots": []
+  }
+]

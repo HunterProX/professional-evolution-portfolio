@@ -1,0 +1,398 @@
+{
+  "milestones": [
+    {
+      "id": "2026-10-03-initial-portfolio-build",
+      "date": "2026-10-03",
+      "title": "Evidence-first portfolio published",
+      "narrative": "First public version of the portfolio, built as a static site from a public snapshot contract: claims are stored separately from evidence, and every capability statement points at something a reader can inspect.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/631cf84",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/ac25f54"
+      ],
+      "status": "shipped",
+      "source": "curated"
+    },
+    {
+      "id": "2026-10-03-evidence-boundary-contract",
+      "date": "2026-10-03",
+      "title": "Evidence boundaries written down",
+      "narrative": "Each public reproduction gained an explicit boundary: what it demonstrates and, in the same list, what it does not. Documented for the cloud dashboard reproduction, the AI reliability lab and the automation workflow lab, together with deployment ownership notes and a documented products quickstart.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/120f3bf",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/27612cf",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/36cff4a",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/992c25e",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/b840cc3"
+      ],
+      "status": "shipped",
+      "source": "curated"
+    },
+    {
+      "id": "2026-10-07-dark-first-theme-foundation",
+      "date": "2026-10-07",
+      "title": "Dark-first theme foundation",
+      "narrative": "Theme assets were split out of the pages into a shared foundation and the homepage was recomposed around evidence rather than marketing copy, keeping the dark-first default.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/6f40b2d",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/6dca28d"
+      ],
+      "status": "shipped",
+      "source": "curated"
+    },
+    {
+      "id": "2026-10-08-bilingual-accessibility-release",
+      "date": "2026-10-08",
+      "title": "Bilingual EN/ES release and accessibility parity",
+      "narrative": "Reviewed English and Spanish locales shipped across the site, followed by homepage parity and accessibility polish so both languages expose the same content and the same interactive affordances.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/6d445ef",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/94c56fc"
+      ],
+      "status": "shipped",
+      "source": "curated"
+    },
+    {
+      "id": "2026-10-09-portfolio-10x-rebuild",
+      "date": "2026-10-09",
+      "title": "Portfolio 10x rebuild starts",
+      "narrative": "Redesign kicked off with a research artifact covering dark-first dual-theme tokens, type scale, motion rules and an accessibility checklist, replacing the previous text-heavy layout. The Astro scaffold and canonical data layer follow in this task; the legacy static site stays live until the cutover gate.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/7a60cce"
+      ],
+      "status": "in-progress",
+      "source": "curated"
+    },
+    {
+      "id": "git-2026-10-03-ai-snapshot-initialize-public-snapshot",
+      "date": "2026-10-03",
+      "title": "Initialize public snapshot",
+      "narrative": "Derived from commit 631cf84: \"ai(snapshot): initialize public snapshot\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/631cf840568e80df8fafafca724f82f46021ac11"
+      ],
+      "status": "shipped",
+      "source": "git"
+    },
+    {
+      "id": "git-2026-10-03-ai-snapshot-add-public-snapshot-contract",
+      "date": "2026-10-03",
+      "title": "Add public snapshot contract",
+      "narrative": "Derived from commit 10e5325: \"ai(snapshot): add public snapshot contract\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/10e5325c15b407842b20a36894fa98c7d9b8b113",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/bbbc75e742a9b0c90f89c6da93ad222e6696b151",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/ac20ae98e2e173c11519642eaf829b55ee38b5fe",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/9e0d03a9cd6858400ca01536665ed232b2336261"
+      ],
+      "status": "shipped",
+      "source": "git"
+    },
+    {
+      "id": "git-2026-10-03-ai-ui-add-evidence-first-static-portfolio",
+      "date": "2026-10-03",
+      "title": "Add evidence-first static portfolio",
+      "narrative": "Derived from commit ac25f54: \"ai(ui): add evidence-first static portfolio\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/ac25f544d105905a90ea04ff94fd990cbcacd2f0",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/0245cfaa1e00934d232ee082eaac1bfeac420207",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/f0e12b212a3d6ac5ac881ba71d045312938cd82d",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/8cbd8d77591ef207d5ddae8be59ca8dfa4910974",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/19856464b048bc33556039803415cea44a1d4958"
+      ],
+      "status": "shipped",
+      "source": "git"
+    },
+    {
+      "id": "git-2026-10-03-ai-i18n-add-reviewed-english-and-spanish-locales",
+      "date": "2026-10-03",
+      "title": "Add reviewed English and Spanish locales",
+      "narrative": "Derived from commit 6d445ef: \"ai(i18n): add reviewed English and Spanish locales\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/6d445efb691f044ff9712a1e2f791ae42811f31c",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/4018d37f2423e38cfaa9eda3f7fae3531dcf5208",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/e60842e4a5a037edfc5fba4e55b2d21c9feba065",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/d55fb4f83dc59bb0b4f795ef562aef814ca28bb8",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/9eed97a9a29f57d118615ac298ccc0368a1016ff",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/0512465aab3da6c076a60acbc906fbbcc48fb7f2"
+      ],
+      "status": "shipped",
+      "source": "git"
+    },
+    {
+      "id": "git-2026-10-03-ai-evidence-align-portfolio-with-public-cloud-reproduction",
+      "date": "2026-10-03",
+      "title": "Align portfolio with public cloud reproduction",
+      "narrative": "Derived from commit 120f3bf: \"ai(evidence): align portfolio with public cloud reproduction\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/120f3bf6c41ce32a569c041d462c49bb5eb65c3e"
+      ],
+      "status": "shipped",
+      "source": "git"
+    },
+    {
+      "id": "git-2026-10-03-ai-evidence-add-ai-reliability-lab-evidence",
+      "date": "2026-10-03",
+      "title": "Add AI reliability lab evidence",
+      "narrative": "Derived from commit 27612cf: \"ai(evidence): add AI reliability lab evidence\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/27612cf4a7f599c27261bb105b590988abbfa324"
+      ],
+      "status": "shipped",
+      "source": "git"
+    },
+    {
+      "id": "git-2026-10-03-docs-quickstart-document-portfolio-products-and-verification",
+      "date": "2026-10-03",
+      "title": "Document portfolio products and verification",
+      "narrative": "Derived from commit 992c25e: \"docs(quickstart): document portfolio products and verification\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/992c25e81d893185410048350bd4c5bd2a9ebbcf"
+      ],
+      "status": "shipped",
+      "source": "git"
+    },
+    {
+      "id": "git-2026-10-03-ai-evidence-add-automation-workflow-evidence",
+      "date": "2026-10-03",
+      "title": "Add automation workflow evidence",
+      "narrative": "Derived from commit 36cff4a: \"ai(evidence): add automation workflow evidence\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/36cff4a2f3eccc2a3886cd69e19e3277f880dcbc"
+      ],
+      "status": "shipped",
+      "source": "git"
+    },
+    {
+      "id": "git-2026-10-03-release-portfolio-add-gated-release-candidate-checks",
+      "date": "2026-10-03",
+      "title": "Add gated release candidate checks",
+      "narrative": "Derived from commit cadedb6: \"release(portfolio): add gated release candidate checks\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/cadedb68033210d2e86c16f736476e065bf2ed8a"
+      ],
+      "status": "shipped",
+      "source": "git"
+    },
+    {
+      "id": "git-2026-10-03-fix-release-support-github-pages-project-paths",
+      "date": "2026-10-03",
+      "title": "Support GitHub Pages project paths",
+      "narrative": "Derived from commit 6f42454: \"fix(release): support GitHub Pages project paths\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/6f424544ed53f2015914270402b355930962c6b2"
+      ],
+      "status": "shipped",
+      "source": "git"
+    },
+    {
+      "id": "git-2026-10-03-release-portfolio-build-isolated-deployment-artifact",
+      "date": "2026-10-03",
+      "title": "Build isolated deployment artifact",
+      "narrative": "Derived from commit e985005: \"release(portfolio): build isolated deployment artifact\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/e985005e96c7ddcee53d32f4506e71f098d2542c"
+      ],
+      "status": "shipped",
+      "source": "git"
+    },
+    {
+      "id": "git-2026-10-03-ci-deploy-add-dual-static-host-workflow",
+      "date": "2026-10-03",
+      "title": "Add dual static host workflow",
+      "narrative": "Derived from commit a08ce9c: \"ci(deploy): add dual static host workflow\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/a08ce9c0f89b8ee73ce8a37e76d4e45a490cbae0"
+      ],
+      "status": "shipped",
+      "source": "git"
+    },
+    {
+      "id": "git-2026-10-03-fix-cloudflare-scope-worker-assets-to-dist",
+      "date": "2026-10-03",
+      "title": "Scope worker assets to dist",
+      "narrative": "Derived from commit 8e24bc7: \"fix(cloudflare): scope worker assets to dist\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/8e24bc79b02c08f868e2b3c185584117606baea4"
+      ],
+      "status": "shipped",
+      "source": "git"
+    },
+    {
+      "id": "git-2026-10-03-config-urls-centralize-deployment-registry",
+      "date": "2026-10-03",
+      "title": "Centralize deployment registry",
+      "narrative": "Derived from commit bb64307: \"config(urls): centralize deployment registry\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/bb643075088d1e13217a994823f904ef6f63b8f6"
+      ],
+      "status": "shipped",
+      "source": "git"
+    },
+    {
+      "id": "git-2026-10-03-fix-ci-align-cloudflare-deployment-with-worker-runtime",
+      "date": "2026-10-03",
+      "title": "Align Cloudflare deployment with Worker runtime",
+      "narrative": "Derived from commit 404f091: \"fix(ci): align Cloudflare deployment with Worker runtime\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/404f091d6f4a73d09d82d2816b0f82c3c1390bd3"
+      ],
+      "status": "shipped",
+      "source": "git"
+    },
+    {
+      "id": "git-2026-10-03-ai-portfolio-add-public-github-activity-snapshot",
+      "date": "2026-10-03",
+      "title": "Add public github activity snapshot",
+      "narrative": "Derived from commit 8402487: \"ai(portfolio): add public github activity snapshot\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/840248795ed8921a55e045e73c2be3cc47fbad8b"
+      ],
+      "status": "shipped",
+      "source": "git"
+    },
+    {
+      "id": "git-2026-10-03-ai-portfolio-harden-github-activity-validation",
+      "date": "2026-10-03",
+      "title": "Harden github activity validation",
+      "narrative": "Derived from commit 651453d: \"ai(portfolio): harden github activity validation\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/651453dbbcd674459331444fdd8d4d8900a29250"
+      ],
+      "status": "shipped",
+      "source": "git"
+    },
+    {
+      "id": "git-2026-10-03-ai-portfolio-harden-github-activity-edge-cases",
+      "date": "2026-10-03",
+      "title": "Harden github activity edge cases",
+      "narrative": "Derived from commit ee45c96: \"ai(portfolio): harden github activity edge cases\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/ee45c96e2446a4f66388c556913180e4034cef70"
+      ],
+      "status": "shipped",
+      "source": "git"
+    },
+    {
+      "id": "git-2026-10-03-ai-portfolio-guard-github-activity-url-validation",
+      "date": "2026-10-03",
+      "title": "Guard github activity url validation",
+      "narrative": "Derived from commit d4772fe: \"ai(portfolio): guard github activity url validation\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/d4772fe50b2d640e7cdba72137ac90b4ec28fafc"
+      ],
+      "status": "shipped",
+      "source": "git"
+    },
+    {
+      "id": "git-2026-10-03-ai-portfolio-accept-checked-in-activity-line-endings",
+      "date": "2026-10-03",
+      "title": "Accept checked-in activity line endings",
+      "narrative": "Derived from commit c271cf5: \"ai(portfolio): accept checked-in activity line endings\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/c271cf5e4bb79088632b80e35a1a6e47b6dd0cf7"
+      ],
+      "status": "shipped",
+      "source": "git"
+    },
+    {
+      "id": "git-2026-10-03-ai-ci-require-node-22-for-wrangler-deployment",
+      "date": "2026-10-03",
+      "title": "Require node 22 for wrangler deployment",
+      "narrative": "Derived from commit 840c97b: \"ai(ci): require node 22 for wrangler deployment\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/840c97b9664dfad9c275e4f4d9e8967a2f3fc576"
+      ],
+      "status": "shipped",
+      "source": "git"
+    },
+    {
+      "id": "git-2026-10-03-ai-docs-clarify-deployment-verification-boundaries",
+      "date": "2026-10-03",
+      "title": "Clarify deployment verification boundaries",
+      "narrative": "Derived from commit b840cc3: \"ai(docs): clarify deployment verification boundaries\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/b840cc38a299dd290d4096b00e8d4436284229ab"
+      ],
+      "status": "shipped",
+      "source": "git"
+    },
+    {
+      "id": "git-2026-10-07-ai-portfolio-separate-professional-and-services-paths",
+      "date": "2026-10-07",
+      "title": "Separate professional and services paths",
+      "narrative": "Derived from commit 3071e49: \"ai(portfolio): separate professional and services paths\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/3071e49be03fd428b7b6c9ab3b36293829795a34"
+      ],
+      "status": "shipped",
+      "source": "git"
+    },
+    {
+      "id": "git-2026-10-07-ai-portfolio-add-dark-first-theme-foundation",
+      "date": "2026-10-07",
+      "title": "Add dark-first theme foundation",
+      "narrative": "Derived from commit 6f40b2d: \"ai(portfolio): add dark-first theme foundation\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/6f40b2d707f8f5f553a1b5d4925dc9f0ee19c2f7"
+      ],
+      "status": "shipped",
+      "source": "git"
+    },
+    {
+      "id": "git-2026-10-07-ai-portfolio-include-theme-assets-in-release-build",
+      "date": "2026-10-07",
+      "title": "Include theme assets in release build",
+      "narrative": "Derived from commit c710dbb: \"ai(portfolio): include theme assets in release build\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/c710dbbcbb8fa2daa2a45bd10be9065e83efe674"
+      ],
+      "status": "shipped",
+      "source": "git"
+    },
+    {
+      "id": "git-2026-10-07-ai-portfolio-redesign-evidence-led-homepage",
+      "date": "2026-10-07",
+      "title": "Redesign evidence-led homepage",
+      "narrative": "Derived from commit 6dca28d: \"ai(portfolio): redesign evidence-led homepage\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/6dca28dae0a34459a565793f2a453f457c42a7c5"
+      ],
+      "status": "shipped",
+      "source": "git"
+    },
+    {
+      "id": "git-2026-10-08-ai-portfolio-polish-homepage-parity-and-accessibility",
+      "date": "2026-10-08",
+      "title": "Polish homepage parity and accessibility",
+      "narrative": "Derived from commit 94c56fc: \"ai(portfolio): polish homepage parity and accessibility\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/94c56fc753287301c6f73342089581eeb8606e97",
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/f0800d12b9fbda8a57e20a05f13920a26d000166"
+      ],
+      "status": "shipped",
+      "source": "git"
+    },
+    {
+      "id": "git-2026-10-08-ai-portfolio-include-activity-snapshot-in-release",
+      "date": "2026-10-08",
+      "title": "Include activity snapshot in release",
+      "narrative": "Derived from commit 8731f9b: \"ai(portfolio): include activity snapshot in release\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/8731f9b128bbbade6002303897676ae14a9e6fe9"
+      ],
+      "status": "shipped",
+      "source": "git"
+    },
+    {
+      "id": "git-2026-10-09-ai-portfolio-document-design-research-and-tokens",
+      "date": "2026-10-09",
+      "title": "Document design research and tokens",
+      "narrative": "Derived from commit 7a60cce: \"ai(portfolio): document design research and tokens\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/7a60cce468f08666e2646f373e7f074178dcb981"
+      ],
+      "status": "shipped",
+      "source": "git"
+    }
+  ]
+}

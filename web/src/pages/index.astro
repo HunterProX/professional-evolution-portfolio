@@ -1,0 +1,112 @@
+---
+/**
+ * Placeholder landing page for the Astro scaffold (T1).
+ * Purpose: prove config + canonical data layer build. Components in T2, pages in T3.
+ */
+import { evidence, milestonesByDateDesc, profile, projects } from '../lib/data';
+
+const projectCount = projects.length;
+const milestoneCount = milestonesByDateDesc.length;
+const evidenceCount = evidence.items.length;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Portfolio 10x scaffold</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0a192f;
+        --surface: #112240;
+        --text: #e6f1ff;
+        --muted: #8892b0;
+        --border: #233554;
+        --accent: #64ffda;
+        font-family: Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+      }
+      main {
+        max-width: 46rem;
+        margin: 0 auto;
+        padding: 4rem 1.5rem;
+      }
+      h1 {
+        font-size: 2rem;
+        letter-spacing: -0.01em;
+        margin: 0 0 0.5rem;
+      }
+      p { margin: 0 0 1.5rem; max-width: 42rem; }
+      .muted { color: var(--muted); font-size: 0.9375rem; }
+      section { margin-top: 2.5rem; }
+      h2 {
+        font-size: 1.125rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        margin: 0 0 0.75rem;
+      }
+      ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; }
+      li {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        padding: 0.875rem 1rem;
+      }
+      a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+      a:hover { text-decoration-thickness: 2px; }
+      .name { display: block; font-weight: 600; }
+      .summary { display: block; color: var(--muted); font-size: 0.9375rem; margin-top: 0.25rem; }
+      code { font-size: 0.875em; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Portfolio 10x scaffold</h1>
+      <p>
+        Astro scaffold for the evidence-first portfolio rebuild. Configuration, i18n routing and the canonical
+        <code>data/</code> layer build cleanly; components and pages arrive in later tasks.
+      </p>
+      <p class="muted">
+        {profile.name} · repos owner <code>{profile.reposOwner}</code> · {projectCount} projects · {milestoneCount}{' '}
+        milestones · {evidenceCount} evidence items · contact endpoint pending (T4).
+      </p>
+
+      <section aria-labelledby="projects-heading">
+        <h2 id="projects-heading">Projects</h2>
+        <ul>
+          {
+            projects.map((project) => (
+              <li>
+                <a class="name" href={project.repo} rel="noopener noreferrer" target="_blank">
+                  {project.name}
+                </a>
+                <span class="summary">{project.summary}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+
+      <section aria-labelledby="links-heading">
+        <h2 id="links-heading">Links</h2>
+        <ul>
+          <li>
+            <a href={profile.socials.github} rel="noopener noreferrer" target="_blank">GitHub</a>
+          </li>
+          <li>
+            <a href={profile.socials.linkedin} rel="noopener noreferrer" target="_blank">LinkedIn</a>
+          </li>
+        </ul>
+      </section>
+    </main>
+  </body>
+</html>
