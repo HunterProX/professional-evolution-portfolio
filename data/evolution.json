@@ -380,6 +380,28 @@
       "projects": [
         "professional-evolution-portfolio"
       ]
+    },
+    {
+      "id": "git-2026-10-09-ai-portfolio-curate-evolution-timeline-and-roadmap",
+      "date": "2026-10-09",
+      "title": "Curate evolution timeline and roadmap",
+      "narrative": "Derived from commit ed06595: \"ai(portfolio): curate evolution timeline and roadmap\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/ed0659564f372ed53833f99c25e5e53b4b05c26b"
+      ],
+      "status": "shipped",
+      "source": "git"
+    },
+    {
+      "id": "git-2026-10-09-ai-portfolio-add-honest-search-based-portfolio-assistant",
+      "date": "2026-10-09",
+      "title": "Add honest search-based portfolio assistant",
+      "narrative": "Derived from commit 46fd67b: \"ai(portfolio): add honest search-based portfolio assistant\". Candidate entry — review the narrative before promoting it to a curated milestone.",
+      "evidence": [
+        "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/46fd67b3682b15dd8ef232b95b51a5b24fe402fa"
+      ],
+      "status": "shipped",
+      "source": "git"
     }
   ]
 }
