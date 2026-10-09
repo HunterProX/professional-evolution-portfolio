@@ -4,6 +4,12 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      pipeline:
+        description: "Pipeline: legacy (rollback, static site/) or web (Astro redesign, GitHub Pages only)"
+        type: choice
+        options: [legacy, web]
+        default: legacy
 
 permissions:
   contents: read
@@ -13,6 +19,9 @@ permissions:
 concurrency:
   group: static-portfolio-production
   cancel-in-progress: false
+
+env:
+  PIPELINE: ${{ github.event.inputs.pipeline || 'legacy' }}
 
 jobs:
   validate:
@@ -24,8 +33,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Validate portfolio
+      - name: Validate portfolio (legacy)
+        if: env.PIPELINE == 'legacy'
         run: npm run check
+      - name: Validate portfolio (web)
+        if: env.PIPELINE == 'web'
+        run: npm run check:all
 
   github-pages:
     needs: validate
@@ -40,10 +53,18 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Build GitHub Pages artifact
+      - name: Build GitHub Pages artifact (legacy)
+        if: env.PIPELINE == 'legacy'
         env:
           RELEASE_TARGET: github-pages
         run: npm run build:release
+      - name: Build GitHub Pages artifact (web)
+        if: env.PIPELINE == 'web'
+        run: |
+          npm --prefix web ci
+          npm --prefix web run build
+          node scripts/web-release-manifest.mjs
+          mv web/dist dist
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
@@ -54,6 +75,7 @@ jobs:
 
   cloudflare-worker:
     needs: validate
+    if: env.PIPELINE == 'legacy'
     runs-on: ubuntu-latest
     environment:
       name: cloudflare-worker
