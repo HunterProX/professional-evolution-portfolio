@@ -1,0 +1,17 @@
+---
+/**
+ * Ruta de inicio (es) — comparte la composición con `/` a través de
+ * `src/views/Home.astro`; solo cambia el catálogo y el idioma del documento.
+ */
+import type { Locale } from '../../i18n/copy';
+import { getCopy } from '../../i18n/copy';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Home from '../../views/Home.astro';
+
+const locale: Locale = 'es';
+const copy = getCopy('es');
+---
+
+<BaseLayout locale={locale} lang="es" activeNav="projects">
+  <Home locale={locale} copy={copy} />
+</BaseLayout>

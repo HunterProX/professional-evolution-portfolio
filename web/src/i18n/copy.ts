@@ -89,6 +89,12 @@ export interface Copy {
     inProgress: string;
     planned: string;
     sourceLabel: Record<'curated' | 'git' | 'snapshot', string>;
+    /** Heading of the legend that explains what each source badge means. */
+    sourcesNote: string;
+    /** One line per source badge, shown next to its label in that legend. */
+    sourceHint: Record<'curated' | 'git' | 'snapshot', string>;
+    /** Heading above the complete timeline (the preview uses `summary`). */
+    timelineHeading: string;
     evidenceLinks: (count: number) => string;
   };
   evidence: {
@@ -225,6 +231,14 @@ export const en: Copy = {
       git: 'Derived from git',
       snapshot: 'Snapshot',
     },
+    sourcesNote: 'How to read the source badge',
+    sourceHint: {
+      curated: 'Written by hand and reviewed before it is published.',
+      git: 'Generated from the commit history and not yet reviewed: treat it as a candidate, not curated history.',
+      snapshot:
+        'Read from the public snapshot when the site builds; the next build picks up any change.',
+    },
+    timelineHeading: 'Full timeline',
     evidenceLinks: (count) => (count === 1 ? '1 evidence link' : `${count} evidence links`),
   },
   evidence: {
@@ -377,6 +391,14 @@ export const es: Copy = {
       git: 'Derivado de git',
       snapshot: 'Instantánea',
     },
+    sourcesNote: 'Cómo leer la insignia de origen',
+    sourceHint: {
+      curated: 'Escrito a mano y revisado antes de publicarse.',
+      git: 'Generado a partir del historial de commits y todavía sin revisar: se trata de un candidato, no de historia curada.',
+      snapshot:
+        'Leído de la instantánea pública cuando se construye el sitio; la siguiente compilación recoge cualquier cambio.',
+    },
+    timelineHeading: 'Línea de tiempo completa',
     evidenceLinks: (count) =>
       count === 1 ? '1 enlace de evidencia' : `${count} enlaces de evidencia`,
   },

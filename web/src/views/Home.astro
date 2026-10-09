@@ -1,0 +1,167 @@
+---
+/**
+ * Home composition — hero → selected work → evolution preview → evidence
+ * teaser → contact → suggestions.
+ *
+ * The markup is shared by `/` and `/es/`: `locale` picks the catalog and the
+ * URL helpers build every internal link, so both routes render the exact same
+ * structure with copy from `i18n/copy.ts`. That is what keeps the two homes
+ * from drifting — there is one file to edit, not two.
+ *
+ * Section ids keep the preserved anchors: #projects, #evolution, #evidence and
+ * #contact (the header nav uses them while it is not pointing at a route).
+ * The reveal observer itself lives in BaseLayout, so it is not repeated here.
+ */
+import type { Copy, Locale } from '../i18n/copy';
+import type { Project } from '../lib/data';
+import { evidence, getProjectBySlug, milestonesByDateDesc } from '../lib/data';
+import { route } from '../lib/urls';
+import Hero from '../components/Hero.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import EvolutionTimeline from '../components/EvolutionTimeline.astro';
+import ContactForm from '../components/ContactForm.astro';
+import SuggestionsPanel from '../components/SuggestionsPanel.astro';
+
+interface Props {
+  locale: Locale;
+  copy: Copy;
+}
+
+const { locale, copy } = Astro.props;
+
+const FEATURED_SLUGS = [
+  'professional-evolution-portfolio',
+  'ai-automation-workflow-lab',
+  'ai-chat-app',
+];
+
+const featured = FEATURED_SLUGS.map((slug) => getProjectBySlug(slug)).filter(
+  (project): project is Project => project !== undefined,
+);
+
+/** Honest by construction: zero published items renders the explanation. */
+const evidenceCount = evidence.items.length;
+---
+
+<Hero copy={copy} locale={locale} />
+
+<section class="section" id="projects" aria-labelledby="projects-heading">
+  <div class="shell">
+    <header class="section__head reveal">
+      <p class="eyebrow">{copy.work.eyebrow}</p>
+      <h2 id="projects-heading">{copy.work.heading}</h2>
+      <p class="lead">{copy.work.summary}</p>
+    </header>
+
+    <ul class="project-grid">
+      {
+        featured.map((project, index) => (
+          <li class="project-grid__item">
+            <ProjectCard copy={copy} locale={locale} project={project} revealIndex={index} />
+          </li>
+        ))
+      }
+    </ul>
+
+    <p class="section__more reveal">
+      <a class="button button--ghost" href={route(locale, 'work/')}>{copy.work.viewAll}</a>
+    </p>
+  </div>
+</section>
+
+<section class="section" id="evolution" aria-labelledby="evolution-heading">
+  <div class="shell">
+    <header class="section__head reveal">
+      <p class="eyebrow">{copy.evolution.eyebrow}</p>
+      <h2 id="evolution-heading">{copy.evolution.heading}</h2>
+      <p class="lead">{copy.evolution.summary}</p>
+    </header>
+
+    <EvolutionTimeline copy={copy} locale={locale} milestones={milestonesByDateDesc} limit={4} />
+  </div>
+</section>
+
+<section class="section section--teaser" id="evidence" aria-labelledby="evidence-heading">
+  <div class="shell evidence-teaser reveal">
+    <p class="eyebrow">{copy.evidence.eyebrow}</p>
+    <h2 id="evidence-heading">{copy.evidence.heading}</h2>
+    <p class="lead">{copy.evidence.summary}</p>
+
+    <p class="evidence-teaser__count tabular">{copy.evidence.count(evidenceCount)}</p>
+
+    {evidenceCount === 0 && <p class="evidence-teaser__empty">{copy.evidence.empty}</p>}
+
+    <p>
+      <a class="button button--ghost" href={route(locale, 'evidence/')}>{copy.evidence.viewAll}</a>
+    </p>
+  </div>
+</section>
+
+<ContactForm copy={copy} />
+
+<SuggestionsPanel copy={copy} />
+
+<style>
+  .section {
+    padding-block: var(--space-24);
+    scroll-margin-top: var(--header-height);
+  }
+
+  .section--teaser {
+    background-color: var(--color-surface);
+    border-block: 1px solid var(--color-border);
+  }
+
+  .section__head {
+    max-width: 68ch;
+    margin-bottom: var(--space-8);
+  }
+
+  .section__head h2 {
+    margin-block: var(--space-2) var(--space-3);
+  }
+
+  .project-grid {
+    display: grid;
+    gap: var(--space-6);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .project-grid__item {
+    display: flex;
+  }
+
+  .section__more {
+    margin-top: var(--space-8);
+  }
+
+  .evidence-teaser__count {
+    margin-top: var(--space-6);
+    color: var(--color-accent);
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    letter-spacing: var(--tracking-tight);
+    line-height: var(--leading-2xl);
+  }
+
+  .evidence-teaser__empty {
+    margin-top: var(--space-2);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  @media (min-width: 768px) {
+    .project-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .project-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>

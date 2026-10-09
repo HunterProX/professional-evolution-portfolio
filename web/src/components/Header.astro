@@ -11,6 +11,7 @@
  */
 import type { Copy, Locale } from '../i18n/copy';
 import { profile } from '../lib/data';
+import { localeRoot, route, sectionHref } from '../lib/urls';
 import LangSwitch from './LangSwitch.astro';
 import ThemeToggle from './ThemeToggle.astro';
 
@@ -22,20 +23,24 @@ interface Props {
 }
 
 const { copy, locale, active } = Astro.props;
-const base = import.meta.env.BASE_URL;
+const pathname = Astro.url.pathname;
+const root = localeRoot(locale);
 
-/* Section ids follow the preserved anchors: #projects, #evidence. */
+/* Work and Evolution are routes and stay absolute from every page; Evidence
+   and Contact are home sections, so they are plain fragments on the home page
+   itself and point at the same-language home section everywhere else.
+   Section ids keep the preserved anchors: #projects, #evidence, #contact. */
 const links: { id: NonNullable<Props['active']>; href: string; label: string }[] = [
-  { id: 'projects', href: `${base}#projects`, label: copy.nav.work },
-  { id: 'evolution', href: `${base}#evolution`, label: copy.nav.evolution },
-  { id: 'evidence', href: `${base}#evidence`, label: copy.nav.evidence },
-  { id: 'contact', href: `${base}#contact`, label: copy.nav.contact },
+  { id: 'projects', href: route(locale, 'work/'), label: copy.nav.work },
+  { id: 'evolution', href: route(locale, 'evolution/'), label: copy.nav.evolution },
+  { id: 'evidence', href: sectionHref(locale, 'evidence', pathname), label: copy.nav.evidence },
+  { id: 'contact', href: sectionHref(locale, 'contact', pathname), label: copy.nav.contact },
 ];
 ---
 
 <header class="site-header">
   <div class="shell site-header__inner">
-    <a class="site-header__brand" href={base}>
+    <a class="site-header__brand" href={root}>
       <span class="site-header__mark" aria-hidden="true"></span>
       <span class="site-header__name">{profile.name}</span>
     </a>
