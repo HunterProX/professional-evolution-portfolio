@@ -132,7 +132,60 @@ test("release artifact includes theme assets referenced by root and localized HT
   await run(process.execPath, [resolve(root, "github-activity/validate.mjs"), activityPath], { cwd: root });
 });
 
-test("GitHub activity contract is public, allowlisted, and empty without inventing activity", () => { assert.equal(activitySchema.properties.schema_version.const, "1.0.0"); assert.equal(activity.source.mode, "checked_in_fixture"); assert.equal(activity.status.availability, "empty"); assert.equal(activity.repositories.length, 0); assert.ok(activity.allowed_repositories.every((url) => /^https:\/\/github\.com\/[^/]+\/[^/]+$/.test(url))); assert.match(app, /github-activity\/snapshot\.json/); assert.doesNotMatch(JSON.stringify(activity), /private|token|localhost|Users[\\/]/i); });
+const activitySourceModes = activitySchema.properties.source.properties.mode.enum;
+const activityAvailabilityValues = activitySchema.properties.status.properties.availability.enum;
+const activityRecordKinds = ["pull_requests", "commits", "releases", "deployments"];
+function assertActivitySnapshotConsistency(doc) {
+  assert.ok(doc && typeof doc === "object" && !Array.isArray(doc), "activity snapshot must be an object");
+  assert.equal(doc.schema_version, activitySchema.properties.schema_version.const);
+  assert.ok(activitySourceModes.includes(doc.source.mode), `activity source mode ${doc.source.mode} is not an allowed value`);
+  assert.ok(activityAvailabilityValues.includes(doc.status.availability), `activity availability ${doc.status.availability} is not an allowed value`);
+  assert.ok(Array.isArray(doc.allowed_repositories) && doc.allowed_repositories.length > 0);
+  assert.ok(doc.allowed_repositories.every((url) => /^https:\/\/github\.com\/[^/]+\/[^/]+$/.test(url)));
+  assert.ok(Array.isArray(doc.repositories), "activity repositories must be an array");
+  for (const repository of doc.repositories) {
+    assert.equal(typeof repository.id, "string", "activity repository needs a string id");
+    assert.match(repository.url, /^https:\/\/github\.com\/cristian-cardona-dev\/[^/]+$/, `activity repository ${repository.id} must live under the canonical owner`);
+    for (const kind of activityRecordKinds) {
+      assert.ok(Array.isArray(repository[kind]), `activity repository ${repository.id} needs a well-formed ${kind} array`);
+      for (const record of repository[kind]) {
+        assert.equal(typeof record.id, "string");
+        assert.match(record.url, /^https:\/\/github\.com\/cristian-cardona-dev\/[^/]+\//);
+        assert.match(record.captured_at, /^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$/);
+        assert.equal(typeof record.title, "string");
+      }
+    }
+    if ("open_pull_requests" in repository) assert.ok(Number.isInteger(repository.open_pull_requests) && repository.open_pull_requests >= 0, "open_pull_requests must be a non-negative integer");
+    if ("error" in repository) assert.ok(typeof repository.error === "string" && repository.error.length >= 1, "error marker must be a non-empty string");
+  }
+}
+function makeRefreshedActivitySnapshot() {
+  const capturedAt = new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
+  const slug = "cristian-cardona-dev/professional-evolution-portfolio";
+  const url = `https://github.com/${slug}`;
+  return { schema_version: "1.0.0", snapshot_id: "public-github-activity-refreshed", captured_at: capturedAt, status: { availability: "available", stale: false, message: "Public GitHub activity captured from the GitHub REST API at build time." }, source: { provider: "github", mode: "checked_in_fixture", url: "https://github.com/" }, allowed_repositories: [url], repositories: [{ id: slug, url, visibility: "public", open_pull_requests: 2, pull_requests: [], commits: [{ id: "abcdef1", url: `${url}/commit/abcdef1`, captured_at: capturedAt, title: "Refresh public activity" }], releases: [], deployments: [] }] };
+}
+test("GitHub activity contract is public, allowlisted, and schema-consistent", () => {
+  assertActivitySnapshotConsistency(activity);
+  assert.match(app, /github-activity\/snapshot\.json/);
+  assert.doesNotMatch(JSON.stringify(activity), /private|token|localhost|Users[\\/]/i);
+});
+test("GitHub activity contract tolerates a refreshed non-empty snapshot", async () => {
+  const refreshed = makeRefreshedActivitySnapshot();
+  assertActivitySnapshotConsistency(refreshed);
+  assert.ok(refreshed.repositories.length > 0, "the simulated refresh is non-empty");
+  const directory = await mkdtemp(resolve(tmpdir(), "github-activity-refresh-"));
+  try {
+    const file = resolve(directory, "refreshed.json");
+    await writeFile(file, `${JSON.stringify(refreshed, null, 2)}\n`);
+    await run(process.execPath, [resolve(root, "github-activity/validate.mjs"), file], { cwd: root });
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});
+test("GitHub activity empty fixtures stay empty without inventing activity", async () => {
+  const emptyFixture = JSON.parse(await readFile(resolve(root, "github-activity/fixtures/stale.json"), "utf8"));
+  assert.equal(emptyFixture.status.availability, "empty");
+  assert.equal(emptyFixture.repositories.length, 0);
+});
 test("GitHub activity rendering is offline and bilingual", () => { assert.match(app, /renderGithubActivity/); assert.match(app, /github_activity_empty/); assert.match(enPage, /github-activity/); assert.match(esPage, /github-activity/); });
 test("rendered navigation uses stable keys and complete English/Spanish labels", async () => {
   for (const page of [html, enPage, esPage]) {
