@@ -220,6 +220,15 @@ export interface Copy {
     /** Subject line of the prefilled `mailto:` compose. */
     emailSubject: string;
   };
+  /** Branded 404 page (`/404.html` and `/es/404.html`). */
+  notFound: {
+    eyebrow: string;
+    heading: string;
+    summary: string;
+    home: string;
+    work: string;
+    evidence: string;
+  };
   footer: {
     tagline: string;
     sourceRepository: string;
@@ -448,6 +457,15 @@ export const en: Copy = {
       'No published entry matches those words. The pages below hold the same content, and a question by email is answered from what is public.',
     askByEmail: 'Ask by email',
     emailSubject: 'Question about the portfolio',
+  },
+  notFound: {
+    eyebrow: 'Not found',
+    heading: 'Page not found',
+    summary:
+      'The address you requested is not published here. Nothing was moved without a record: the links below lead to the pages that do exist.',
+    home: 'Go to the home page',
+    work: 'See the work',
+    evidence: 'Inspect the evidence',
   },
   footer: {
     tagline: 'Evidence before confidence.',
@@ -680,6 +698,15 @@ export const es: Copy = {
       'Ninguna entrada publicada coincide con esas palabras. Las páginas de abajo contienen el mismo contenido, y una pregunta por correo se responde con lo que es público.',
     askByEmail: 'Preguntar por correo',
     emailSubject: 'Pregunta sobre el portafolio',
+  },
+  notFound: {
+    eyebrow: 'No encontrado',
+    heading: 'Página no encontrada',
+    summary:
+      'La dirección que has solicitado no está publicada aquí. Nada se movió sin dejar constancia: los enlaces de abajo llevan a las páginas que sí existen.',
+    home: 'Ir a la página de inicio',
+    work: 'Ver el trabajo',
+    evidence: 'Inspeccionar la evidencia',
   },
   footer: {
     tagline: 'Evidencia antes que confianza.',

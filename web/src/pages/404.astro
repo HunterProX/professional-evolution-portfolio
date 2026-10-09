@@ -1,0 +1,68 @@
+---
+/**
+ * 404 route (en) — branded not-found page.
+ *
+ * Astro renders this to `dist/404.html`, which GitHub Pages serves for any
+ * address that does not resolve. The copy is deliberately honest: it says the
+ * page is not published and points at the routes that do exist, rather than
+ * pretending the content was moved or will appear. It uses the shared layout,
+ * so the header, footer, theme and assistant behave exactly as on any page.
+ */
+import type { Locale } from '../i18n/copy';
+import { getCopy } from '../i18n/copy';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { route } from '../lib/urls';
+
+const locale: Locale = 'en';
+const copy = getCopy(locale);
+const nf = copy.notFound;
+---
+
+<BaseLayout locale={locale} title={nf.heading} description={nf.summary}>
+  <section class="section">
+    <div class="shell shell--narrow">
+      <p class="notfound__code" aria-hidden="true">404</p>
+      <header class="notfound__head reveal">
+        <p class="eyebrow">{nf.eyebrow}</p>
+        <h1>{nf.heading}</h1>
+        <p class="lead">{nf.summary}</p>
+      </header>
+      <div class="notfound__actions">
+        <a class="button button--primary" href={route(locale)}>{nf.home}</a>
+        <a class="button button--ghost" href={route(locale, 'work/')}>{nf.work}</a>
+        <a class="button button--ghost" href={route(locale, 'evidence/')}>{nf.evidence}</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .section {
+    padding-block: var(--space-16) var(--space-24);
+    scroll-margin-top: var(--header-height);
+  }
+
+  .notfound__code {
+    margin: 0;
+    color: var(--color-accent);
+    font-family: var(--font-mono);
+    font-size: var(--text-4xl);
+    line-height: var(--leading-4xl);
+    font-weight: 700;
+    letter-spacing: var(--tracking-tight);
+  }
+
+  .notfound__head {
+    margin-block: var(--space-4) var(--space-8);
+  }
+
+  .notfound__head h1 {
+    margin-block: var(--space-2) var(--space-3);
+  }
+
+  .notfound__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+</style>
