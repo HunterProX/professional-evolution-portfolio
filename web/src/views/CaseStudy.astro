@@ -147,7 +147,7 @@ const contactHref = sectionHref(locale, 'contact', Astro.url.pathname);
           )}
         </>
       ) : (
-        <div class="case-study__empty">
+        <div class="state-panel">
           <p>{copy.caseStudy.empty}</p>
           <p>
             <a class="button button--ghost" href={project.repo} target="_blank" rel="noopener noreferrer">
@@ -373,23 +373,8 @@ const contactHref = sectionHref(locale, 'contact', Astro.url.pathname);
     border-top: 1px solid var(--color-border);
   }
 
-  /* --- Empty state ---------------------------------------------------------- */
-  .case-study__empty {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-    align-items: flex-start;
-    padding: var(--space-6);
-    background-color: var(--color-surface);
-    border: 1px dashed var(--color-border);
-    border-radius: var(--radius-lg);
-  }
-
-  .case-study__empty p {
-    color: var(--color-text-muted);
-    font-size: var(--text-sm);
-    line-height: var(--leading-sm);
-  }
+  /* --- Empty state ----------------------------------------------------------
+   * The shape comes from the shared `.state-panel` class in global.css. */
 
   /* --- Related work --------------------------------------------------------- */
   .case-study__related {

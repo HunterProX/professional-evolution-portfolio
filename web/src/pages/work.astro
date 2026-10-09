@@ -11,10 +11,10 @@ import Work from '../views/Work.astro';
 const locale: Locale = 'en';
 const copy = getCopy(locale);
 
-const title = `${copy.nav.work} — ${copy.meta.title}`;
+const title = copy.nav.work;
 const description = copy.work.summary;
 ---
 
-<BaseLayout locale={locale} title={title} description={description} activeNav="projects">
+<BaseLayout locale={locale} title={title} description={description} path="work/" activeNav="projects">
   <Work locale={locale} copy={copy} />
 </BaseLayout>

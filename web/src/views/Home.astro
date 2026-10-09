@@ -13,7 +13,7 @@
  * The reveal observer itself lives in BaseLayout, so it is not repeated here.
  */
 import type { Copy, Locale } from '../i18n/copy';
-import type { Project } from '../lib/data';
+import type { Milestone, Project } from '../lib/data';
 import { curatedMilestonesByDateDesc, evidence, getProjectBySlug } from '../lib/data';
 import { route } from '../lib/urls';
 import Hero from '../components/Hero.astro';
@@ -43,12 +43,28 @@ const featured = FEATURED_SLUGS.map((slug) => getProjectBySlug(slug)).filter(
 const evidenceCount = evidence.items.length;
 
 /**
- * Home preview: the three most recent *curated* milestones. A git-derived
- * entry is an unreviewed candidate (its own badge says so), so it must not be
- * the first thing a visitor reads as "what happened most recently". The
- * timeline component's own note tells the reader the preview is curated.
+ * Home preview: three curated milestones, status-first. A git-derived entry is
+ * an unreviewed candidate (its own badge says so), so it is never in the
+ * preview; and within the curated set, delivered work leads: shipped →
+ * in-progress → planned, newest first inside each status. Sorting happens on a
+ * copy in this view — `data/evolution.json` stays the canonical ordering and
+ * is not mutated — so the preview never opens on a stated intention when a
+ * shipped milestone exists. The timeline component's own note tells the
+ * reader the preview is curated.
  */
-const evolutionPreview = curatedMilestonesByDateDesc.slice(0, 3);
+const STATUS_ORDER: Record<Milestone['status'], number> = {
+  shipped: 0,
+  'in-progress': 1,
+  planned: 2,
+};
+
+const evolutionPreview = [...curatedMilestonesByDateDesc]
+  .sort((a, b) => {
+    const byStatus = STATUS_ORDER[a.status] - STATUS_ORDER[b.status];
+    if (byStatus !== 0) return byStatus;
+    return a.date === b.date ? a.id.localeCompare(b.id) : a.date < b.date ? 1 : -1;
+  })
+  .slice(0, 3);
 ---
 
 <Hero copy={copy} locale={locale} />

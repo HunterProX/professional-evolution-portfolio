@@ -11,10 +11,10 @@ import Evolution from '../views/Evolution.astro';
 const locale: Locale = 'en';
 const copy = getCopy(locale);
 
-const title = `${copy.nav.evolution} — ${copy.meta.title}`;
+const title = copy.nav.evolution;
 const description = copy.evolution.summary;
 ---
 
-<BaseLayout locale={locale} title={title} description={description} activeNav="evolution">
+<BaseLayout locale={locale} title={title} description={description} path="evolution/" activeNav="evolution">
   <Evolution locale={locale} copy={copy} />
 </BaseLayout>

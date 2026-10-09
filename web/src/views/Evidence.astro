@@ -58,7 +58,7 @@ const itemCount = groups.reduce((total, group) => total + group.items.length, 0)
 
     {
       itemCount === 0 ? (
-        <p class="evidence__empty">{copy.evidence.empty}</p>
+        <p class="state-panel evidence__empty">{copy.evidence.empty}</p>
       ) : (
         <div class="evidence__list">
           <h2 class="evidence__list-heading" id="evidence-list-heading">
@@ -121,11 +121,11 @@ const itemCount = groups.reduce((total, group) => total + group.items.length, 0)
     line-height: var(--leading-sm);
   }
 
+  /* The panel shape comes from the shared `.state-panel` class in global.css,
+     so the empty state is visually identical to the other honest-empty states
+     on the site; only the measure cap is scoped here. */
   .evidence__empty {
     max-width: 68ch;
-    color: var(--color-text-muted);
-    font-size: var(--text-sm);
-    line-height: var(--leading-sm);
   }
 
   .evidence__list-heading {

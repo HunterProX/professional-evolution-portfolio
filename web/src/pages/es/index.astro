@@ -2,16 +2,22 @@
 /**
  * Ruta de inicio (es) — comparte la composición con `/` a través de
  * `src/views/Home.astro`; solo cambia el catálogo y el idioma del documento.
+ *
+ * Sin `activeNav`: el inicio no es la página de Trabajo, así que ningún
+ * enlace de navegación puede afirmar que está activo.
  */
 import type { Locale } from '../../i18n/copy';
 import { getCopy } from '../../i18n/copy';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Home from '../../views/Home.astro';
+import { personJsonLd } from '../../lib/seo';
 
 const locale: Locale = 'es';
 const copy = getCopy('es');
+
+const person = personJsonLd(Astro.site);
 ---
 
-<BaseLayout locale={locale} lang="es" activeNav="projects">
+<BaseLayout locale={locale} lang="es" path="" jsonLd={person ? [person] : []}>
   <Home locale={locale} copy={copy} />
 </BaseLayout>

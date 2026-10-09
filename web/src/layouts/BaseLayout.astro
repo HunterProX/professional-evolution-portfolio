@@ -1,6 +1,14 @@
 ---
 /**
- * Base layout — document shell, pre-paint theme script, landmarks and styles.
+ * Base layout — document shell, SEO metadata, pre-paint theme script,
+ * landmarks and styles.
+ *
+ * Every page passes its locale-relative `path` (e.g. `work/`) so the canonical
+ * URL, the Open Graph URL and the hreflang alternates are derived from the
+ * same source: `site` + base path + locale + path. That is what keeps the
+ * metadata honest on a GitHub Pages project site, where no URL may omit the
+ * base path. All values come from `data/profile.json` or the copy catalog —
+ * nothing is invented here.
  *
  * FOUC is avoided by resolving the theme in `<head>` before first paint: an
  * explicit choice from localStorage wins, otherwise `prefers-color-scheme`
@@ -12,14 +20,24 @@
  */
 import type { Copy, Locale } from '../i18n/copy';
 import { getCopy } from '../i18n/copy';
+import { profile } from '../lib/data';
+import { route } from '../lib/urls';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import '../styles/tokens.css';
 import '../styles/global.css';
 
 interface Props {
+  /**
+   * Page part of the `<title>`; the layout appends " — <profile name>".
+   * Omitted on home, which uses the full default title from the catalog.
+   */
   title?: string;
   description?: string;
+  /** Open Graph content type; `article` for case studies, `website` elsewhere. */
+  ogType?: 'website' | 'article';
+  /** Locale-relative path of this page, e.g. `work/` or `work/<slug>/`. */
+  path?: string;
   /** Copy locale; also the document language unless `lang` overrides it. */
   locale?: Locale;
   /** `<html lang>`; defaults to the copy locale, i.e. `en` on English pages. */
@@ -28,21 +46,34 @@ interface Props {
   snapshotId?: string;
   /** Marks the currently visible home section for the nav indicator. */
   activeNav?: 'projects' | 'evolution' | 'evidence' | 'contact';
+  /** JSON-LD blocks; the home pages pass the Person entity (see lib/seo.ts). */
+  jsonLd?: Record<string, unknown>[];
 }
 
 const {
   title,
   description,
+  ogType = 'website',
+  path = '',
   locale = 'en',
   lang,
   snapshotId,
   activeNav,
+  jsonLd = [],
 } = Astro.props;
 
 const copy: Copy = getCopy(locale);
-const documentTitle = title ?? copy.meta.title;
+const documentTitle = title ? `${title} — ${profile.name}` : copy.meta.title;
 const metaDescription = description ?? copy.meta.description;
-const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site) : undefined;
+
+/* Canonical and alternates: `site` + base + locale + path, never the bare
+   path — the deployment lives under a base path. Both locales have every
+   route, so the alternates always resolve; `x-default` points at English. */
+const canonical = Astro.site ? new URL(route(locale, path), Astro.site) : undefined;
+const alternateEn = Astro.site ? new URL(route('en', path), Astro.site) : undefined;
+const alternateEs = Astro.site ? new URL(route('es', path), Astro.site) : undefined;
+const ogLocale = locale === 'es' ? 'es_ES' : 'en_US';
+const faviconHref = `${import.meta.env.BASE_URL}favicon.svg`;
 ---
 
 <!doctype html>
@@ -52,13 +83,36 @@ const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site) : undefin
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{documentTitle}</title>
     <meta name="description" content={metaDescription} />
+    <link rel="icon" type="image/svg+xml" href={faviconHref} />
     {canonical && <link rel="canonical" href={canonical.href} />}
-    <meta property="og:type" content="website" />
+    {
+      alternateEn && alternateEs && (
+        <>
+          <link rel="alternate" hreflang="en" href={alternateEn.href} />
+          <link rel="alternate" hreflang="es" href={alternateEs.href} />
+          <link rel="alternate" hreflang="x-default" href={alternateEn.href} />
+        </>
+      )
+    }
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content={profile.name} />
     <meta property="og:title" content={documentTitle} />
     <meta property="og:description" content={metaDescription} />
     {canonical && <meta property="og:url" content={canonical.href} />}
-    <meta property="og:locale" content={locale} />
+    <meta property="og:locale" content={ogLocale} />
+    <meta
+      property="og:locale:alternate"
+      content={locale === 'es' ? 'en_US' : 'es_ES'}
+    />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={documentTitle} />
+    <meta name="twitter:description" content={metaDescription} />
     <meta name="generator" content={Astro.generator} />
+    {
+      jsonLd.map((block) => (
+        <script type="application/ld+json" set:html={JSON.stringify(block)} />
+      ))
+    }
 
     <script is:inline>
       (() => {

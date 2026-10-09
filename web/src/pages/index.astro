@@ -5,16 +5,22 @@
  *
  * The reveal observer is no longer in this file: it is hoisted into
  * `BaseLayout.astro`, where every route picks it up once.
+ *
+ * No `activeNav`: home is not the Work page, so no nav link may claim to be
+ * current (the contact anchor is a section, not the page).
  */
 import type { Locale } from '../i18n/copy';
 import { getCopy } from '../i18n/copy';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Home from '../views/Home.astro';
+import { personJsonLd } from '../lib/seo';
 
 const locale: Locale = 'en';
 const copy = getCopy(locale);
+
+const person = personJsonLd(Astro.site);
 ---
 
-<BaseLayout locale={locale} activeNav="projects">
+<BaseLayout locale={locale} path="" jsonLd={person ? [person] : []}>
   <Home locale={locale} copy={copy} />
 </BaseLayout>

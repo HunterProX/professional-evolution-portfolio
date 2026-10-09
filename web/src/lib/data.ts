@@ -19,7 +19,7 @@ export type ProjectStatus = (typeof PROJECT_STATUSES)[number];
 export const MILESTONE_STATUSES = ['shipped', 'in-progress', 'planned'] as const;
 export type MilestoneStatus = (typeof MILESTONE_STATUSES)[number];
 
-export const MILESTONE_SOURCES = ['curated', 'git'] as const;
+export const MILESTONE_SOURCES = ['curated', 'git', 'snapshot'] as const;
 export type MilestoneSource = (typeof MILESTONE_SOURCES)[number];
 
 /**

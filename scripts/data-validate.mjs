@@ -35,7 +35,12 @@ const FORBIDDEN_SUBSTRINGS = ['personal-os'];
 
 const PROJECT_STATUSES = new Set(['prototype', 'demo', 'mvp', 'lab', 'live']);
 const MILESTONE_STATUSES = new Set(['shipped', 'in-progress', 'planned']);
-const MILESTONE_SOURCES = new Set(['curated', 'git']);
+/**
+ * A milestone may name the public snapshot as its source (the site's source
+ * legend and badge catalog already advertise the `snapshot` badge); the gate
+ * accepts the same three values the legend renders.
+ */
+const MILESTONE_SOURCES = new Set(['curated', 'git', 'snapshot']);
 /**
  * Roadmap phase of a milestone. Optional: an entry without a `phase` simply
  * does not appear in the roadmap, so older data stays valid. `frontier` is the

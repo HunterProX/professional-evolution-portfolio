@@ -268,6 +268,28 @@ a:hover {
   transform: translateY(1px);
 }
 
+/* --- State panel ---------------------------------------------------------
+ * One shape for every honest empty / unavailable / error state on the site
+ * (evidence empty list, case-study missing write-up, future form errors).
+ * Dashed border + muted text reads as "nothing here yet" rather than as an
+ * error, and reusing one class keeps the states visually identical across
+ * pages and locales.
+ * ----------------------------------------------------------------------- */
+.state-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+  max-width: 68ch;
+  padding: var(--space-6);
+  background-color: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+}
+
 /* --- Chips ---------------------------------------------------------------
  * One status primitive for every claim on the site. The label text carries the
  * meaning (never colour alone) and the colour only reinforces it.

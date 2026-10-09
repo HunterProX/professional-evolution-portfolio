@@ -11,10 +11,10 @@ import Evidence from '../views/Evidence.astro';
 const locale: Locale = 'en';
 const copy = getCopy(locale);
 
-const title = `${copy.nav.evidence} — ${copy.meta.title}`;
+const title = copy.nav.evidence;
 const description = copy.evidence.summary;
 ---
 
-<BaseLayout locale={locale} title={title} description={description} activeNav="evidence">
+<BaseLayout locale={locale} title={title} description={description} path="evidence/" activeNav="evidence">
   <Evidence locale={locale} copy={copy} />
 </BaseLayout>

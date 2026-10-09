@@ -39,8 +39,6 @@ export interface Copy {
     evolution: string;
     evidence: string;
     contact: string;
-    openMenu: string;
-    closeMenu: string;
     menuLabel: string;
   };
   theme: {
@@ -220,8 +218,6 @@ export const en: Copy = {
     evolution: 'Evolution',
     evidence: 'Evidence',
     contact: 'Contact',
-    openMenu: 'Open menu',
-    closeMenu: 'Close menu',
     menuLabel: 'Menu',
   },
   theme: {
@@ -319,7 +315,7 @@ export const en: Copy = {
       'Not achievements. These entries record intent only: no artifact exists yet, and the links point at what would be extended.',
     relatedLabel: 'Related',
     curatedPreviewNote:
-      'Showing the most recent hand-written milestones; unreviewed git candidates are on the full timeline.',
+      'Showing the most recent hand-written milestones, delivered work first; unreviewed git candidates are on the full timeline.',
     roadmapHeading: 'Roadmap by phase',
     roadmapNote:
       'Derived from the milestones themselves: each phase lists the focus it covered and the projects that supported it. Phases describe what happened; only "Direction ahead" describes what is intended.',
@@ -430,8 +426,6 @@ export const es: Copy = {
     evolution: 'Evolución',
     evidence: 'Evidencia',
     contact: 'Contacto',
-    openMenu: 'Abrir menú',
-    closeMenu: 'Cerrar menú',
     menuLabel: 'Menú',
   },
   theme: {
@@ -530,7 +524,7 @@ export const es: Copy = {
       'No son logros. Estas entradas solo registran intención: todavía no existe ningún artefacto y los enlaces apuntan a lo que se ampliaría.',
     relatedLabel: 'Relacionado',
     curatedPreviewNote:
-      'Se muestran los hitos escritos a mano más recientes; los candidatos de git sin revisar están en la línea de tiempo completa.',
+      'Se muestran los hitos escritos a mano más recientes, con lo entregado primero; los candidatos de git sin revisar están en la línea de tiempo completa.',
     roadmapHeading: 'Hoja de ruta por fase',
     roadmapNote:
       'Derivada de los propios hitos: cada fase muestra el foco que cubrió y los proyectos que lo respaldaron. Las fases describen lo que ocurrió; solo «Dirección por delante» describe lo que se pretende.',

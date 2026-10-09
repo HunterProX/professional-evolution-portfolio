@@ -27,10 +27,17 @@ const { project } = Astro.props;
 const locale: Locale = 'en';
 const copy = getCopy(locale);
 
-const title = `${project.name} — ${copy.caseStudy.eyebrow} — ${copy.meta.title}`;
+const title = `${project.name} — ${copy.caseStudy.eyebrow}`;
 const description = project.summary;
 ---
 
-<BaseLayout locale={locale} title={title} description={description} activeNav="projects">
+<BaseLayout
+  locale={locale}
+  title={title}
+  description={description}
+  ogType="article"
+  path={`work/${project.slug}/`}
+  activeNav="projects"
+>
   <CaseStudy locale={locale} copy={copy} project={project} />
 </BaseLayout>

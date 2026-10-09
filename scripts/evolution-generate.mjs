@@ -17,6 +17,9 @@
  *     collapse into one candidate whose evidence lists every matching commit
  *   - candidates whose id already exists are skipped, so curated entries always
  *     win and the script is idempotent
+ *   - a candidate that duplicates a curated milestone on the same date is also
+ *     skipped (see `duplicatesCurated`): the curated narrative is the reviewed
+ *     record, and a second entry for the same day reads as a second event
  *   - generated candidates never carry `phase` or `projects`: those are curation
  *     decisions, and this script only knows how to read commit subjects
  *   - output is pretty-printed JSON with a trailing newline
@@ -121,6 +124,45 @@ function isMaintenance(type, description) {
   return MAINTENANCE_PATTERNS.some((rule) => rule.pattern.test(description));
 }
 
+/**
+ * Same-day duplicate heuristic (documented, deterministic).
+ *
+ * A curated milestone is the reviewed record of a day. When a generated
+ * candidate lands on the same date and its title or subject shares at least
+ * `DUPLICATE_OVERLAP` of its words with that curated title, the candidate is
+ * a second entry for an event already told, not new history — so it is
+ * skipped rather than double-counted on the timeline.
+ *
+ * The ratio is |shared words| / min(|candidate words|, |curated words|):
+ * symmetric containment, so a short candidate fully inside a longer curated
+ * title scores 1.0, and an unrelated candidate scores near 0. The threshold
+ * and the tokenization (lowercase, split on non-alphanumerics) are fixed
+ * constants, so two runs over the same data always agree.
+ */
+const DUPLICATE_OVERLAP = 0.6;
+
+function words(value) {
+  return new Set(value.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean));
+}
+
+function overlapRatio(a, b) {
+  const setA = words(a);
+  const setB = words(b);
+  if (setA.size === 0 || setB.size === 0) return 0;
+  let shared = 0;
+  for (const word of setA) if (setB.has(word)) shared += 1;
+  return shared / Math.min(setA.size, setB.size);
+}
+
+/** True when a curated milestone on the same date already tells this story. */
+function duplicatesCurated(candidate, curatedByDate) {
+  for (const curated of curatedByDate.get(candidate.date) ?? []) {
+    if (overlapRatio(candidate.title, curated.title) >= DUPLICATE_OVERLAP) return true;
+    if (overlapRatio(candidate.subject, curated.title) >= DUPLICATE_OVERLAP) return true;
+  }
+  return false;
+}
+
 function toCandidate(commit) {
   const match = SUBJECT_PATTERN.exec(commit.subject);
   if (!match) return null; // not a conventional-commit subject (e.g. "Merge pull request ...")
@@ -177,6 +219,16 @@ function loadData() {
 function main() {
   const data = loadData();
   const knownIds = new Set(data.milestones.map((milestone) => milestone.id));
+  // Curated milestones grouped by date — the reference set for the same-day
+  // duplicate filter. Only `source: "curated"` counts: a git candidate is an
+  // unreviewed candidate, not the reviewed record a duplicate would shadow.
+  const curatedByDate = new Map();
+  for (const milestone of data.milestones) {
+    if (milestone.source !== 'curated') continue;
+    const bucket = curatedByDate.get(milestone.date);
+    if (bucket) bucket.push(milestone);
+    else curatedByDate.set(milestone.date, [milestone]);
+  }
   const commits = readGitLog();
 
   // Commits sharing a subject and date collapse into one candidate whose
@@ -186,6 +238,7 @@ function main() {
     const candidate = toCandidate(commit);
     if (!candidate) continue;
     if (knownIds.has(candidate.id)) continue; // curated or already generated — curated wins
+    if (duplicatesCurated(candidate, curatedByDate)) continue; // same-day curated record already tells it
     const existing = candidates.get(candidate.id);
     if (existing) {
       existing.hashes.push(commit.hash);
