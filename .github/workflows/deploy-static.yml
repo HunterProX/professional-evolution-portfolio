@@ -6,10 +6,10 @@ on:
   workflow_dispatch:
     inputs:
       pipeline:
-        description: "Pipeline: legacy (rollback, static site/) or web (Astro redesign, GitHub Pages only)"
+        description: "Pipeline: web (canonical, Astro redesign) or legacy (rollback, static site/)"
         type: choice
-        options: [legacy, web]
-        default: legacy
+        options: [web, legacy]
+        default: web
 
 permissions:
   contents: read
@@ -21,7 +21,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  PIPELINE: ${{ github.event.inputs.pipeline || 'legacy' }}
+  PIPELINE: ${{ github.event.inputs.pipeline || 'web' }}
 
 jobs:
   validate:
@@ -75,7 +75,7 @@ jobs:
 
   cloudflare-worker:
     needs: validate
-    if: env.PIPELINE == 'legacy'
+    if: github.event_name == 'workflow_dispatch' && inputs.pipeline == 'legacy'
     runs-on: ubuntu-latest
     environment:
       name: cloudflare-worker
