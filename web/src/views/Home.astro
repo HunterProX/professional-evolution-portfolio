@@ -25,6 +25,7 @@ import { route } from '../lib/urls';
 import Hero from '../components/Hero.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import CareerTimeline from '../components/CareerTimeline.astro';
+import SkillMatrix from '../components/SkillMatrix.astro';
 import EvolutionTimeline from '../components/EvolutionTimeline.astro';
 import ContactForm from '../components/ContactForm.astro';
 import SuggestionsPanel from '../components/SuggestionsPanel.astro';
@@ -111,6 +112,18 @@ const evolutionPreview = [...curatedMilestonesByDateDesc]
     {/* Compact: the same entries, periods, bars, stacks and source badge as
         `/career/`, with the link to the full page instead of the older roles. */}
     <CareerTimeline copy={copy} locale={locale} compact />
+
+    {/* The skill matrix preview lives inside this section rather than as its
+        own top-level block: the categories are the vocabulary of the timeline
+        above them, so splitting them would make the reader scroll past the
+        evidence before seeing what it describes. `aria-labelledby` points at
+        the h3, keeping the outline h2 (section) → h3 (timeline companies from
+        the component) → h3 (skills preview). */}
+    <section class="skills-preview reveal" aria-labelledby="home-skills-heading">
+      <h3 class="skills-preview__heading" id="home-skills-heading">{copy.skills.heading}</h3>
+      <p class="skills-preview__lead">{copy.skills.lead}</p>
+      <SkillMatrix copy={copy} locale={locale} compact />
+    </section>
   </div>
 </section>
 
@@ -237,6 +250,32 @@ const evolutionPreview = [...curatedMilestonesByDateDesc]
 
   .section__head h2 {
     margin-block: var(--space-2) var(--space-3);
+  }
+
+  /* --- Skills preview --------------------------------------------------------
+   * A subsection of the career section, separated by a hairline rather than a
+   * second heading band, so it reads as part of the same story (what was done,
+   * and with what) instead of competing with the timeline above it.
+   * --------------------------------------------------------------------- */
+  .skills-preview {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin-top: var(--space-8);
+    padding-top: var(--space-8);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .skills-preview__heading {
+    font-size: var(--text-xl);
+    line-height: var(--leading-xl);
+  }
+
+  .skills-preview__lead {
+    max-width: var(--measure);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
   }
 
   .project-grid {

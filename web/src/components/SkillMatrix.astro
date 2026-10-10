@@ -1,0 +1,481 @@
+---
+/**
+ * Skill matrix — the skill list with the evidence attached to every row.
+ *
+ * The three-badge contract, from the header of `scripts/data-validate.mjs`:
+ *
+ *   - `employedAt` — an employer that declared the skill. Rendered as a chip
+ *     with the count and the company names in the `title`, plus the same names
+ *     as visually hidden text. **Not a link**: on `/career/` the companies are
+ *     rendered by `CareerTimeline` on the very same page, so a link would point
+ *     nowhere new, and a chip that looks like a link but is not would be a
+ *     broken promise.
+ *   - `projects` — a project slug, rendered as a **link** to that project's
+ *     card on `/work/#<slug>` (every `ProjectCard` carries `id="<slug>"`).
+ *     This is the only badge whose claim ("inspect this repository") is backed
+ *     by something a third party can open.
+ *   - `facts` — the human-declared career facts, for the two skills whose only
+ *     provenance is the declaration. Rendered unlinked, exactly as the
+ *     validator header requires: borrowing a project's credibility would be a
+ *     claim the data does not support.
+ *
+ * There is deliberately no level, score, percentage or rank anywhere in this
+ * component. The dataset carries none, and inventing one would break the
+ * portfolio's first boundary.
+ *
+ * Structure:
+ *   - **Grouped by category**, in the order `data-validate.mjs` fixes the
+ *     `SKILL_CATEGORIES` enum, so a data edit can add a skill but cannot
+ *     reorder the page. Categories with no skills are skipped.
+ *   - **Progressive enhancement.** Every group is visible in the HTML; the
+ *     filter bar only appears under `html.js` (set pre-paint by BaseLayout) and
+ *     the script below only ever *hides* groups. A no-JS visit therefore sees
+ *     the complete matrix and never a control that cannot work — the same
+ *     contract the tag filter on `/work/` honours.
+ *   - **The compact variant** (`compact`, home page) collapses each category to
+ *     a single line of the first `COMPACT_PER_CATEGORY` skills plus a `+N more`
+ *     note, and points at `/career/#skills`. It renders the **same badges** as
+ *     the full matrix: a preview must never show a weaker claim than the page
+ *     it links to.
+ *
+ * Heading order: on `/career/` the category headings are `h3` under the `h2`
+ * of the skills section; on the home page the subsection is an `h3` and the
+ * compact category labels are `<p>` elements — a grouping label, not a section
+ * of the page outline, exactly like `EvolutionTimeline`'s year labels.
+ */
+import type { Copy, Locale, SkillCategory } from '../i18n/copy';
+import { projects } from '../lib/data';
+import { route } from '../lib/urls';
+/* Imported directly rather than through `lib/data.ts`, matching
+   `CareerTimeline.astro`: the career data layer is re-exported from there in a
+   later task, and `lib/data.ts` is outside this task's file scope. */
+import skillsJson from '../../../data/skills.json';
+import experienceJson from '../../../data/experience.json';
+
+interface Skill {
+  name: string;
+  category: SkillCategory;
+  aliases: string[];
+  employedAt: string[];
+  projects: string[];
+  facts?: string;
+}
+
+interface Company {
+  id: string;
+  company: string;
+}
+
+interface Props {
+  copy: Copy;
+  locale: Locale;
+  /**
+   * Compact variant for the home page: one line per category with a `+N more`
+   * note and a CTA to `/career/#skills`. The badges are identical to the full
+   * matrix, so the preview never states less than the page it points at.
+   */
+  compact?: boolean;
+}
+
+const { copy, locale, compact = false } = Astro.props;
+
+/**
+ * Presentation order of the categories. Mirrors the `SKILL_CATEGORIES` enum
+ * the validator gates: a data edit can add a skill, but the page order cannot
+ * drift into an arbitrary one.
+ */
+const CATEGORY_ORDER: readonly SkillCategory[] = [
+  'languages',
+  'frontend',
+  'backend',
+  'cloud',
+  'data',
+  'ai',
+  'devops',
+];
+
+/** Skills a compact category line shows before the `+N more` note. */
+const COMPACT_PER_CATEGORY = 4;
+
+const skills = skillsJson.skills as Skill[];
+const companies = experienceJson.companies as Company[];
+
+/** Company id → name, for the employer badge tooltip. */
+const companyById = new Map(companies.map((entry) => [entry.id, entry.company]));
+
+/** Declared project slugs, so a removed project cannot leave a dead link. */
+const projectSlugs = new Set(projects.map((project) => project.slug));
+
+interface Row {
+  skill: Skill;
+  /** Resolved employer names; an id with no company entry is dropped. */
+  employers: string[];
+  /** Declared project slugs that still resolve to a published project. */
+  slugs: string[];
+  /** The project the badge links to — the first one still on the site. */
+  firstSlug: string | undefined;
+  hasFacts: boolean;
+}
+
+const groups = CATEGORY_ORDER.map((category) => ({
+  category,
+  label: copy.skills.categoryLabel[category],
+  rows: skills
+    .filter((skill) => skill.category === category)
+    .map((skill): Row => {
+      const employers = skill.employedAt
+        .map((id) => companyById.get(id))
+        .filter((name): name is string => name !== undefined);
+      const slugs = skill.projects.filter((slug) => projectSlugs.has(slug));
+      return {
+        skill,
+        employers,
+        slugs,
+        firstSlug: slugs[0],
+        hasFacts: typeof skill.facts === 'string' && skill.facts !== '',
+      };
+    }),
+})).filter((group) => group.rows.length > 0);
+
+/** Categories the filter bar offers, derived from the data like `/work/` does. */
+const filterCategories = groups.map((group) => ({
+  id: group.category,
+  label: group.label,
+}));
+---
+
+<div class="matrix">
+  {/* Category filter: inert without JavaScript, where every group stays visible. */}
+  {
+    !compact && (
+      <div class="matrix__filter" data-skill-filter="" role="group" aria-label={copy.skills.filterLabel}>
+        <button type="button" class="matrix__filter-button" data-filter="all" aria-pressed="true">
+          {copy.skills.filterAll}
+        </button>
+        {filterCategories.map((category) => (
+          <button
+            type="button"
+            class="matrix__filter-button"
+            data-filter={category.id}
+            aria-pressed="false"
+          >
+            {category.label}
+          </button>
+        ))}
+      </div>
+    )
+  }
+
+  {
+    groups.map((group) => {
+      const visible = compact ? group.rows.slice(0, COMPACT_PER_CATEGORY) : group.rows;
+      const overflow = group.rows.length - visible.length;
+      const headingId = `skills-category-${group.category}`;
+      return (
+        <section class="matrix__group" data-category={group.category} aria-labelledby={headingId}>
+          {compact ? (
+            <p class="matrix__group-label" id={headingId}>
+              {group.label}
+            </p>
+          ) : (
+            <h3 class="matrix__group-heading" id={headingId}>
+              {group.label}
+            </h3>
+          )}
+
+          <ul class={compact ? 'matrix__skills matrix__skills--compact' : 'matrix__skills'}>
+            {visible.map((row) => (
+              <li class="matrix__row" data-skill={row.skill.name}>
+                <span class="matrix__name">{row.skill.name}</span>
+
+                <ul class="matrix__badges" aria-label={copy.skills.badge.listLabel(row.skill.name)}>
+                  {row.employers.length > 0 && (
+                    <li class="matrix__badge">
+                      <span
+                        class="chip chip--neutral matrix__badge-chip"
+                        title={copy.skills.badge.companiesTitle(row.employers)}
+                      >
+                        <span aria-hidden="true">🏢</span>
+                        <span class="tabular" aria-hidden="true">
+                          {row.employers.length}
+                        </span>
+                        <span class="visually-hidden">
+                          {copy.skills.badge.companies(row.employers.length)}. {copy.skills.badge.companiesTitle(
+                            row.employers,
+                          )}
+                        </span>
+                      </span>
+                    </li>
+                  )}
+
+                  {row.firstSlug && (
+                    <li class="matrix__badge">
+                      <a
+                        class="chip chip--accent matrix__badge-link"
+                        href={`${route(locale, 'work/')}#${row.firstSlug}`}
+                        title={copy.skills.badge.projectsTitle(row.slugs)}
+                      >
+                        <span aria-hidden="true">📦</span>
+                        {/* The count is noise when a skill has one public
+                            project — the overwhelmingly common case — so it is
+                            only drawn when there is more than one. The
+                            accessible text always states the real count. */}
+                        {row.slugs.length > 1 && (
+                          <span class="tabular" aria-hidden="true">
+                            {row.slugs.length}
+                          </span>
+                        )}
+                        <span class="visually-hidden">
+                          {copy.skills.badge.projects(row.slugs.length)}. {copy.skills.badge.projectsTitle(
+                            row.slugs,
+                          )}
+                        </span>
+                      </a>
+                    </li>
+                  )}
+
+                  {row.hasFacts && (
+                    <li class="matrix__badge">
+                      <span
+                        class="chip chip--warn matrix__badge-chip"
+                        title={copy.skills.badge.factsTitle}
+                      >
+                        <span aria-hidden="true">✓</span>
+                        <span class="matrix__badge-label">{copy.skills.badge.facts}</span>
+                        <span class="visually-hidden">. {copy.skills.badge.factsTitle}</span>
+                      </span>
+                    </li>
+                  )}
+                </ul>
+              </li>
+            ))}
+
+            {overflow > 0 && (
+              <li class="matrix__row matrix__row--more">
+                <span class="matrix__more">+{copy.skills.more(overflow)}</span>
+              </li>
+            )}
+          </ul>
+        </section>
+      );
+    })
+  }
+
+  {
+    compact && (
+      <p class="matrix__cta reveal">
+        <a class="button button--ghost" href={`${route(locale, 'career/')}#skills`}>
+          {copy.skills.viewAll}
+        </a>
+      </p>
+    )
+  }
+</div>
+
+<script>
+  // Category filter for the skill matrix — vanilla, no dependencies, the same
+  // pattern the tag filter on `/work/` uses.
+  //
+  // Groups are visible in the HTML and this script only ever hides them, so a
+  // page without JavaScript (or with this script blocked) still shows every
+  // category; the bar itself is CSS-hidden until BaseLayout sets `.js` on
+  // <html>, so a no-JS visitor never sees a control that cannot work.
+  const bar = document.querySelector('[data-skill-filter]');
+  if (bar instanceof HTMLElement) {
+    const buttons = Array.from(bar.querySelectorAll('button[data-filter]'));
+    const groups = Array.from(document.querySelectorAll('.matrix__group[data-category]'));
+
+    const apply = (category: string) => {
+      for (const group of groups) {
+        if (group instanceof HTMLElement) {
+          group.hidden = !(category === 'all' || group.dataset.category === category);
+        }
+      }
+
+      for (const button of buttons) {
+        if (button instanceof HTMLButtonElement) {
+          button.setAttribute('aria-pressed', String(button.dataset.filter === category));
+        }
+      }
+    };
+
+    for (const button of buttons) {
+      if (button instanceof HTMLButtonElement) {
+        button.addEventListener('click', () => apply(button.dataset.filter ?? 'all'));
+      }
+    }
+  }
+</script>
+
+<style>
+  .matrix {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+  }
+
+  /* --- Category filter -------------------------------------------------------
+   * Hidden until BaseLayout sets `.js`: without JavaScript the buttons could not
+   * do anything, and the matrix must keep working with every group shown.
+   * `:global(.js)` because the gate lives on <html>, outside this component. */
+  .matrix__filter {
+    display: none;
+  }
+
+  :global(.js) .matrix__filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .matrix__filter-button {
+    min-height: 44px;
+    padding: var(--space-2) var(--space-4);
+    background-color: var(--color-surface);
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    cursor: pointer;
+    transition:
+      color var(--duration-fast) var(--ease-standard),
+      background-color var(--duration-fast) var(--ease-standard),
+      border-color var(--duration-fast) var(--ease-standard);
+  }
+
+  .matrix__filter-button:hover {
+    border-color: var(--color-accent);
+    color: var(--color-text);
+  }
+
+  /* The pressed state is carried by aria-pressed, so the visual state can never
+     disagree with the announced one. */
+  .matrix__filter-button[aria-pressed='true'] {
+    background-color: color-mix(in srgb, var(--color-accent) 14%, transparent);
+    border-color: color-mix(in srgb, var(--color-accent) 42%, transparent);
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+
+  /* Author styles outrank the UA `[hidden]` rule, so hiding a flex or grid item
+     needs an explicit declaration of its own. */
+  .matrix__group[hidden] {
+    display: none;
+  }
+
+  .matrix__group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    max-width: 68ch;
+  }
+
+  .matrix__group + .matrix__group {
+    margin-top: var(--space-8);
+  }
+
+  .matrix__group-heading,
+  .matrix__group-label {
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .matrix__group-label {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+  }
+
+  /* --- Rows ----------------------------------------------------------------- */
+  .matrix__skills {
+    display: grid;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* The compact variant is one wrapped line of chips per category rather than a
+     list of rows: the home page previews the shape, not the whole inventory. */
+  .matrix__skills--compact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .matrix__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-4);
+    /* The row is a layout flex item, not prose, so it overrides the global
+       `li { max-width: var(--measure) }` readability cap. */
+    max-width: none;
+  }
+
+  .matrix__skills--compact .matrix__row {
+    padding: var(--space-1) var(--space-3);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+  }
+
+  .matrix__name {
+    font-weight: 600;
+  }
+
+  .matrix__more {
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+  }
+
+  /* --- Badges ---------------------------------------------------------------
+   * One chip per provenance. The employer and career-fact chips are plain
+   * spans: a chip that is not a link must not be styled like one. Only the
+   * project chip carries link affordances, because it is the only claim backed
+   * by something a third party can open. */
+  .matrix__badges {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .matrix__badge {
+    max-width: none;
+  }
+
+  .matrix__badge-chip,
+  .matrix__badge-link {
+    min-height: 44px;
+    letter-spacing: 0;
+    white-space: normal;
+  }
+
+  .matrix__badge-link {
+    text-decoration: none;
+  }
+
+  .matrix__badge-link:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .matrix__badge-label {
+    font-weight: 600;
+  }
+
+  .matrix__cta {
+    margin-top: var(--space-2);
+  }
+</style>

@@ -12,14 +12,16 @@
  * now" — below the fold. The intro is therefore the eyebrow, the page `h1`
  * and the lead, which is also what the `meta` description reuses.
  *
- * The skill matrix that follows the timeline on this route is a separate task;
- * the anchor below marks exactly where it belongs, so the next one is an
- * insertion rather than a re-layout.
+ * The skill matrix that follows the timeline on this route is the complete,
+ * filterable version of the compact preview the home page shows under its
+ * career section; `id="skills"` below is the anchor that preview links to.
  *
- * Heading order: h1 (page) → h2 (timeline) → h3 (company, from the component).
+ * Heading order: h1 (page) → h2 (timeline) → h3 (company, from the component)
+ * → h2 (skills) → h3 (category, from the matrix).
  */
 import type { Copy, Locale } from '../i18n/copy';
 import CareerTimeline from '../components/CareerTimeline.astro';
+import SkillMatrix from '../components/SkillMatrix.astro';
 
 interface Props {
   locale: Locale;
@@ -42,7 +44,16 @@ const { locale, copy } = Astro.props;
       <CareerTimeline copy={copy} locale={locale} />
     </div>
 
-    <!-- skill-matrix-slot -->
+    <!-- Skill matrix — the full, filterable matrix. `id="skills"` is the
+         anchor the compact home preview points at. -->
+    <section class="skills-block" id="skills" aria-labelledby="skills-heading">
+      <div class="skills-block__head reveal">
+        <h2 id="skills-heading">{copy.skills.heading}</h2>
+        <p class="lead">{copy.skills.lead}</p>
+      </div>
+
+      <SkillMatrix copy={copy} locale={locale} />
+    </section>
   </div>
 </section>
 
@@ -63,5 +74,22 @@ const { locale, copy } = Astro.props;
 
   .career-block > h2 {
     margin-bottom: var(--space-4);
+  }
+
+  /* --- Skill matrix ---------------------------------------------------------
+   * The compact home preview links to `#skills`, so this block needs its own
+   * offset from the sticky header (the page `html` rule only covers `:target`). */
+  .skills-block {
+    margin-top: var(--space-16);
+    scroll-margin-top: calc(var(--header-height) + var(--space-6));
+  }
+
+  .skills-block__head {
+    max-width: 68ch;
+    margin-bottom: var(--space-8);
+  }
+
+  .skills-block__head h2 {
+    margin-bottom: var(--space-3);
   }
 </style>

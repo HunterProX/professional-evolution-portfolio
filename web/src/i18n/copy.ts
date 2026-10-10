@@ -20,6 +20,20 @@ export const LOCALES: readonly Locale[] = ['en', 'es'] as const;
 
 export type ClaimStatus = 'demonstrated' | 'developing' | 'aspirational' | 'insufficient';
 
+/**
+ * Categories of `data/skills.json`. Mirrors the `SKILL_CATEGORIES` enum that
+ * `scripts/data-validate.mjs` gates, so the localized headings and the data
+ * contract cannot drift into different vocabularies.
+ */
+export type SkillCategory =
+  | 'languages'
+  | 'frontend'
+  | 'backend'
+  | 'cloud'
+  | 'data'
+  | 'ai'
+  | 'devops';
+
 export interface Copy {
   meta: {
     title: string;
@@ -169,6 +183,48 @@ export interface Copy {
     /** Accessible name of the per-role stack chip list. */
     stackLabel: string;
     /** CTA from the compact home timeline to the full career page. */
+    viewAll: string;
+  };
+  /**
+   * Skill matrix (`data/skills.json`), rendered by
+   * `components/SkillMatrix.astro` on `/career/` (full) and on the home page
+   * (compact preview).
+   *
+   * The matrix is binary evidence: every row names the provenance behind it and
+   * nothing else. There are deliberately no levels, percentages or ranks here,
+   * so the copy may not imply a ranking either.
+   */
+  skills: {
+    /** Section heading: the matrix and the skill section on the home page. */
+    heading: string;
+    /** Lead under the heading: what a badge is allowed to claim. */
+    lead: string;
+    /** Accessible name of the category filter bar on the full matrix. */
+    filterLabel: string;
+    /** The button that clears the category filter. */
+    filterAll: string;
+    /** Localized group heading per `data/skills.json` category. */
+    categoryLabel: Record<SkillCategory, string>;
+    /** Badge label and tooltip text for the three provenances. */
+    badge: {
+      /** Accessible name of the badge list of one skill row. */
+      listLabel: (skill: string) => string;
+      /** Accessible text of the employer badge, e.g. "3 employers". */
+      companies: (count: number) => string;
+      /** Tooltip of the employer badge, naming the employers. */
+      companiesTitle: (names: string[]) => string;
+      /** Accessible text of the project badge, e.g. "1 public project". */
+      projects: (count: number) => string;
+      /** Tooltip of the project badge, naming the projects. */
+      projectsTitle: (names: string[]) => string;
+      /** Visible label of the verified-career-fact badge. */
+      facts: string;
+      /** Tooltip of the verified-career-fact badge. */
+      factsTitle: string;
+    };
+    /** "3 more" overflow note of the compact preview. */
+    more: (count: number) => string;
+    /** CTA from the compact home matrix to `/career/#skills`. */
     viewAll: string;
   };
   evidence: {
@@ -493,6 +549,33 @@ export const en: Copy = {
     stackLabel: 'Declared stack',
     viewAll: 'View the full career',
   },
+  skills: {
+    heading: 'Skills, and what stands behind each one.',
+    lead: 'Every skill names where it was used: the employers that declared it, the public repositories where it can be inspected, or the verified career facts. No levels, no percentages, no ranking — only the evidence that exists.',
+    filterLabel: 'Filter skills by category',
+    filterAll: 'All',
+    categoryLabel: {
+      languages: 'Languages',
+      frontend: 'Frontend',
+      backend: 'Backend',
+      cloud: 'Cloud',
+      data: 'Data',
+      ai: 'AI',
+      devops: 'DevOps',
+    },
+    badge: {
+      listLabel: (skill) => `Evidence behind ${skill}`,
+      companies: (count) => (count === 1 ? '1 employer' : `${count} employers`),
+      companiesTitle: (names) => `Declared at ${names.join(', ')}`,
+      projects: (count) => (count === 1 ? '1 public project' : `${count} public projects`),
+      projectsTitle: (names) => `Inspectable in ${names.join(', ')}`,
+      facts: 'Verified career fact',
+      factsTitle:
+        'Declared in the verified career facts (2026-10-08). There is no public artifact behind it, so this badge is not a link.',
+    },
+    more: (count) => (count === 1 ? '1 more' : `${count} more`),
+    viewAll: 'View all skills',
+  },
   evidence: {
     eyebrow: 'Evidence',
     heading: 'Evidence, not a skill score.',
@@ -795,6 +878,33 @@ export const es: Copy = {
     sourceLabel: 'Declarado por la persona · corroborado en LinkedIn',
     stackLabel: 'Stack declarado',
     viewAll: 'Ver la trayectoria completa',
+  },
+  skills: {
+    heading: 'Habilidades, y qué respalda cada una.',
+    lead: 'Cada habilidad indica dónde se usó: los empleadores que la declararon, los repositorios públicos donde se puede inspeccionar, o los datos verificados de la trayectoria. Sin niveles, sin porcentajes, sin rankings: solo la evidencia que existe.',
+    filterLabel: 'Filtrar habilidades por categoría',
+    filterAll: 'Todas',
+    categoryLabel: {
+      languages: 'Lenguajes',
+      frontend: 'Frontend',
+      backend: 'Backend',
+      cloud: 'Cloud',
+      data: 'Datos',
+      ai: 'IA',
+      devops: 'DevOps',
+    },
+    badge: {
+      listLabel: (skill) => `Evidencia detrás de ${skill}`,
+      companies: (count) => (count === 1 ? '1 empleador' : `${count} empleadores`),
+      companiesTitle: (names) => `Declarado en ${names.join(', ')}`,
+      projects: (count) => (count === 1 ? '1 proyecto público' : `${count} proyectos públicos`),
+      projectsTitle: (names) => `Inspeccionable en ${names.join(', ')}`,
+      facts: 'Dato verificado',
+      factsTitle:
+        'Declarado en los datos verificados de la trayectoria (2026-10-08). No hay ningún artefacto público detrás, así que esta insignia no es un enlace.',
+    },
+    more: (count) => (count === 1 ? '1 más' : `${count} más`),
+    viewAll: 'Ver todas las habilidades',
   },
   evidence: {
     eyebrow: 'Evidencia',
