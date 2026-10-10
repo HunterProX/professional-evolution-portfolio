@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cristian Cardona — Resume</title>
+<style>
+  :root {
+    --bg: #0a192f;
+    --surface: #112240;
+    --text: #e6f1ff;
+    --muted: #8892b0;
+    --accent: #64ffda;
+    --border: #233554;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 2rem; letter-spacing: -0.02em; margin-bottom: 0.25rem; }
+  h2 {
+    font-size: 1.1rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 2rem 0 0.75rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.35rem;
+  }
+  .subtitle { color: var(--muted); font-size: 0.95rem; margin-bottom: 1rem; }
+  .skills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .skills span {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+  }
+  .resume-project { margin-bottom: 1.25rem; }
+  .resume-project-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .resume-badge {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .resume-badge-demonstrated { background: #276749; color: #fff; }
+  .resume-badge-developing { background: #744210; color: #fff; }
+  .resume-badge-aspirational { background: #553c9a; color: #fff; }
+  .resume-badge-insufficient_evidence { background: #742a2a; color: #fff; }
+  .resume-project-meta { color: var(--muted); font-size: 0.8rem; margin-bottom: 4px; }
+  .resume-caps { padding-left: 1.2rem; margin-bottom: 4px; }
+  .resume-caps li { font-size: 0.88rem; color: var(--text); }
+  .resume-evidence { padding-left: 1.2rem; }
+  .resume-evidence li { font-size: 0.8rem; color: var(--muted); }
+  .resume-evidence a, .contact a { color: var(--accent); text-decoration: none; }
+  .contact { font-size: 0.9rem; }
+  .contact a { display: inline-block; margin-right: 1rem; }
+  .footer-note { color: var(--muted); font-size: 0.75rem; margin-top: 2.5rem; border-top: 1px solid var(--border); padding-top: 0.75rem; }
+  @media print {
+    body { background: #fff; color: #000; padding: 0; }
+    h2 { color: #0a192f; border-bottom-color: #ccc; }
+    .resume-badge { border: 1px solid #ccc; color: #000 !important; background: #eee !important; }
+    .skills span { background: #f5f5f5; border-color: #ddd; color: #000; }
+    .resume-project-meta, .footer-note, .resume-evidence { color: #555; }
+    .resume-caps li, .contact { color: #000; }
+    .resume-evidence a, .contact a { color: #0a192f; }
+  }
+</style>
+</head>
+<body>
+<h1>Cristian Cardona</h1>
+<p class="subtitle">Full Stack + Cloud foundation transitioning toward AI Engineering, AI Automation and Agentic Systems</p>
+
+<h2>Core Skills</h2>
+<div class="skills"><span>TypeScript</span><span>JavaScript</span><span>Node.js</span><span>React</span><span>Next.js</span><span>Python</span><span>Full Stack Development</span><span>Cloud Engineering</span><span>CI/CD</span><span>AWS / Azure / GCP</span><span>Docker & Kubernetes</span><span>AI Integration</span><span>System Design</span></div>
+
+<h2>Selected Work</h2>
+
+      <div class="resume-project">
+        <div class="resume-project-header">
+          <strong>Professional Evolution Portfolio</strong>
+          <span class="resume-badge resume-badge-developing">Developing</span>
+        </div>
+        <p class="resume-project-meta">live</p>
+        <p style="font-size:0.88rem;color:var(--text);margin-bottom:4px">This site: an evidence-first bilingual portfolio that lists shipped work and planned work separately, with every capability statement pointing at an inspectable artifact. The static site is live; it is currently being rebuilt on Astro over a validated data layer.</p>
+        <ul class="resume-caps"><li>astro</li><li>bilingual</li><li>evidence-first</li><li>accessibility</li></ul>
+        <ul class="resume-evidence"><li><a href="https://github.com/cristian-cardona-dev/professional-evolution-portfolio">https://github.com/cristian-cardona-dev/professional-evolution-portfolio</a></li></ul>
+      </div>
+
+      <div class="resume-project">
+        <div class="resume-project-header">
+          <strong>AI Chat API Lab</strong>
+          <span class="resume-badge resume-badge-developing">Developing</span>
+        </div>
+        <p class="resume-project-meta">prototype</p>
+        <p style="font-size:0.88rem;color:var(--text);margin-bottom:4px">Public reliability reproduction of an AI chat API: deterministic representative responses, bounded citation identifiers and explicit insufficient-evidence answers, with request-size and conversation-history limits covered by contract tests. It makes no model-provider call and runs no retrieval or indexing pipeline.</p>
+        <ul class="resume-caps"><li>node</li><li>contract-tests</li><li>bounded-citations</li><li>deterministic</li></ul>
+        <ul class="resume-evidence"><li><a href="https://github.com/cristian-cardona-dev/ai-chat-app">https://github.com/cristian-cardona-dev/ai-chat-app</a></li></ul>
+      </div>
+
+      <div class="resume-project">
+        <div class="resume-project-header">
+          <strong>Cloud Dashboard</strong>
+          <span class="resume-badge resume-badge-developing">Developing</span>
+        </div>
+        <p class="resume-project-meta">prototype</p>
+        <p style="font-size:0.88rem;color:var(--text);margin-bottom:4px">Public reproduction of an observability dashboard UI: responsive charts over deterministic synthetic telemetry, configurable CPU and memory thresholds, and unit, browser-flow, typecheck, build and privacy-scan checks. It runs on synthetic data only and is not connected to live infrastructure or real cloud costs.</p>
+        <ul class="resume-caps"><li>typescript</li><li>dashboard</li><li>synthetic-telemetry</li><li>testing</li></ul>
+        <ul class="resume-evidence"><li><a href="https://github.com/cristian-cardona-dev/cloud-dashboard">https://github.com/cristian-cardona-dev/cloud-dashboard</a></li></ul>
+      </div>
+
+      <div class="resume-project">
+        <div class="resume-project-header">
+          <strong>SaaS MVP</strong>
+          <span class="resume-badge resume-badge-developing">Developing</span>
+        </div>
+        <p class="resume-project-meta">lab</p>
+        <p style="font-size:0.88rem;color:var(--text);margin-bottom:4px">Planned product work. It is not built, not deployed and not public: there is no billing or subscription handling, authentication, multi-tenant data model or admin dashboard yet. It is listed to keep the boundary between planned and delivered work visible.</p>
+        <ul class="resume-caps"><li>planned</li><li>not-yet-public</li></ul>
+        <ul class="resume-evidence"><li><a href="https://github.com/cristian-cardona-dev/saas-mvp">https://github.com/cristian-cardona-dev/saas-mvp</a></li></ul>
+      </div>
+
+      <div class="resume-project">
+        <div class="resume-project-header">
+          <strong>AI Automation Workflow Lab</strong>
+          <span class="resume-badge resume-badge-developing">Developing</span>
+        </div>
+        <p class="resume-project-meta">lab</p>
+        <p style="font-size:0.88rem;color:var(--text);margin-bottom:4px">Public reproduction of an approval-gated workflow: explicit proposal, approval, rejection and execution states, allowlisted deterministic actions, an idempotency key with replay-safe execution and an audit event for every transition, covered by invalid-input and approval-bypass tests. It is synthetic only and performs no autonomous production actions.</p>
+        <ul class="resume-caps"><li>state-machine</li><li>human-in-the-loop</li><li>idempotency</li><li>audit-trail</li></ul>
+        <ul class="resume-evidence"><li><a href="https://github.com/cristian-cardona-dev/ai-automation-workflow-lab">https://github.com/cristian-cardona-dev/ai-automation-workflow-lab</a></li></ul>
+      </div>
+
+<h2>Evidence</h2>
+<ul class="resume-evidence"><li><a href="https://www.linkedin.com/in/cristian-cardona-dev/">Public LinkedIn profile</a> — developing</li><li><a href="https://github.com/cristian-cardona-dev/cloud-dashboard">Cloud Dashboard public reproduction repository</a> — demonstrated</li><li><a href="https://github.com/cristian-cardona-dev/ai-chat-app">AI Engineering Reliability Lab repository</a> — demonstrated</li><li><a href="https://github.com/cristian-cardona-dev/ai-automation-workflow-lab">AI Automation Workflow Lab repository</a> — demonstrated</li></ul>
+
+<h2>Contact</h2>
+<div class="contact">
+  <a href="https://www.linkedin.com/in/cristian-cardona-dev/">LinkedIn</a>
+  <a href="https://github.com/cristian-cardona-dev">GitHub</a>
+</div>
+
+<p class="footer-note">Generated from the public evidence snapshot. · 2026</p>
+</body>
+</html>

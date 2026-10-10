@@ -1,0 +1,72 @@
+name: Quality pipeline
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install web dependencies
+        run: npm --prefix web ci
+
+      - name: Build web
+        run: npm --prefix web run build
+
+      - name: Link checker
+        run: node --test web/tests/links.test.mjs
+
+      - name: Accessibility (axe-core WCAG 2.2 AA)
+        run: node --test web/tests/a11y.test.mjs
+
+      - name: Start static server
+        run: |
+          npx --yes serve web/dist -l 4173 --no-clipboard &
+          echo $! > /tmp/serve.pid
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:4173/ > /dev/null && break
+            sleep 1
+          done
+
+      - name: Lighthouse CI
+        run: |
+          npx --yes lighthouse@12 http://localhost:4173/ \
+            --output=json \
+            --output-path=/tmp/lighthouse-report.json \
+            --chrome-flags="--headless --no-sandbox --disable-gpu" \
+            --only-categories=performance,accessibility,best-practices,seo \
+            --budget-path=lighthouse-budget.json || true
+          node -e "
+            const fs=require('fs');
+            const r=JSON.parse(fs.readFileSync('/tmp/lighthouse-report.json','utf8'));
+            const cats=r.categories;
+            const thresholds={performance:0.9,accessibility:0.95,'best-practices':0.9,seo:0.95};
+            let fail=false;
+            for(const[k,v] of Object.entries(thresholds)){
+              const score=cats[k]?.score||0;
+              console.log(k+': '+Math.round(score*100)+'% (min '+Math.round(v*100)+'%)');
+              if(score<v){fail=true;}
+            }
+            if(fail){process.exit(1);}
+            console.log('Lighthouse thresholds passed.');
+          "
+
+      - name: Stop static server
+        if: always()
+        run: |
+          if [ -f /tmp/serve.pid ]; then kill $(cat /tmp/serve.pid) 2>/dev/null || true; fi
