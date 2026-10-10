@@ -77,6 +77,25 @@ export interface Copy {
     github: string;
     linkedin: string;
   };
+  /**
+   * Verified metrics strip on the home page (`views/Home.astro`).
+   *
+   * Every count is computed from the canonical data at build time and passed
+   * into these functions, so a data change can never leave a stale total in
+   * copy. The captions are the honest phrasing of what each figure counts.
+   */
+  metrics: {
+    /** Heading above the strip. */
+    heading: string;
+    /** Companies in `data/experience.json`, plus the earliest declared year. */
+    companies: (count: number, since: number) => string;
+    /** Projects with a public status (`live`, `prototype` or `lab`). */
+    projects: (count: number) => string;
+    /** Milestones in `data/evolution.json`. */
+    milestones: (count: number) => string;
+    /** The published locales, e.g. "EN + ES". */
+    locales: string;
+  };
   work: {
     eyebrow: string;
     heading: string;
@@ -87,6 +106,15 @@ export interface Copy {
     related: string;
     relatedEmpty: string;
     screenshotPlaceholder: string;
+    /**
+     * Localized alt text of a published screenshot, keyed by the screenshot's
+     * file basename (the dataset stores site-root-relative paths such as
+     * `images/site-career.png`). A description lives here rather than in the
+     * data because `screenshots` is a plain path list, and the alt is UI copy.
+     */
+    screenshotAlt: Record<string, string>;
+    /** Fallback alt for a screenshot with no specific description. */
+    screenshotAltFallback: (name: string) => string;
     /** Accessible label of the tag filter bar on the work listing. */
     filterLabel: string;
     /** The button that clears the tag filter and shows every card. */
@@ -474,6 +502,13 @@ export const en: Copy = {
     github: 'GitHub',
     linkedin: 'LinkedIn',
   },
+  metrics: {
+    heading: 'Verified metrics',
+    companies: (count, since) => `${count} companies since ${since}`,
+    projects: (count) => (count === 1 ? '1 public project page' : `${count} public project pages`),
+    milestones: (count) => (count === 1 ? '1 tracked milestone' : `${count} tracked milestones`),
+    locales: 'EN + ES',
+  },
   work: {
     eyebrow: 'Selected work',
     heading: 'Projects with their limits visible.',
@@ -485,6 +520,11 @@ export const en: Copy = {
     related: 'Related work',
     relatedEmpty: 'No related entries in the dataset yet.',
     screenshotPlaceholder: 'No screenshot published for this project yet.',
+    screenshotAlt: {
+      'site-career.png': 'Screenshot of the career and skills page',
+      'site-work.png': 'Screenshot of the work overview page',
+    },
+    screenshotAltFallback: (name) => `Screenshot of ${name}`,
     filterLabel: 'Filter projects by tag',
     filterAll: 'All',
   },
@@ -815,6 +855,14 @@ export const es: Copy = {
     github: 'GitHub',
     linkedin: 'LinkedIn',
   },
+  metrics: {
+    heading: 'Cifras verificadas',
+    companies: (count, since) => `${count} empresas desde ${since}`,
+    projects: (count) =>
+      count === 1 ? '1 página de proyectos públicos' : `${count} páginas de proyectos públicos`,
+    milestones: (count) => (count === 1 ? '1 hito registrado' : `${count} hitos registrados`),
+    locales: 'EN + ES',
+  },
   work: {
     eyebrow: 'Trabajo seleccionado',
     heading: 'Proyectos con sus límites a la vista.',
@@ -826,6 +874,11 @@ export const es: Copy = {
     related: 'Trabajo relacionado',
     relatedEmpty: 'Todavía no hay entradas relacionadas en el conjunto de datos.',
     screenshotPlaceholder: 'Todavía no hay capturas publicadas para este proyecto.',
+    screenshotAlt: {
+      'site-career.png': 'Captura de pantalla de la página de trayectoria y habilidades',
+      'site-work.png': 'Captura de pantalla de la página de resumen de proyectos',
+    },
+    screenshotAltFallback: (name) => `Captura de pantalla de ${name}`,
     filterLabel: 'Filtrar proyectos por etiqueta',
     filterAll: 'Todos',
   },

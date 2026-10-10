@@ -24,7 +24,14 @@
  */
 import type { Copy, Locale } from '../i18n/copy';
 import type { Milestone, Project } from '../lib/data';
-import { curatedMilestonesByDateDesc, evidence, getProjectBySlug } from '../lib/data';
+import {
+  curatedMilestonesByDateDesc,
+  evidence,
+  getProjectBySlug,
+  milestones,
+  projects,
+} from '../lib/data';
+import experienceJson from '../../../data/experience.json';
 import { route } from '../lib/urls';
 import Hero from '../components/Hero.astro';
 import ProjectCard from '../components/ProjectCard.astro';
@@ -77,9 +84,41 @@ const evolutionPreview = [...curatedMilestonesByDateDesc]
     return a.date === b.date ? a.id.localeCompare(b.id) : a.date < b.date ? 1 : -1;
   })
   .slice(0, 3);
+
+/**
+ * Verified metrics — counted from the canonical data at build time, never
+ * hardcoded. `experience.json` is read directly because `lib/data.ts` does not
+ * re-export it; these four figures are all the home page needs from it. The
+ * "public" project count covers the statuses that name an inspectable artifact
+ * (`live`, `prototype`, `lab`), matching the site's own claim vocabulary.
+ */
+const PUBLIC_PROJECT_STATUSES: Project['status'][] = ['live', 'prototype', 'lab'];
+
+const companyCount = experienceJson.companies.length;
+const sinceYear = Math.min(
+  ...experienceJson.companies.map((company) => Number(company.start.slice(0, 4))),
+);
+const publicProjectCount = projects.filter((entry) =>
+  PUBLIC_PROJECT_STATUSES.includes(entry.status),
+).length;
+const milestoneCount = milestones.length;
 ---
 
 <Hero copy={copy} locale={locale} />
+
+{/* Verified metrics — hero-adjacent, and every figure is counted from the
+    canonical data at build time (see the counts in the frontmatter above). */}
+<section class="section section--metrics" aria-labelledby="metrics-heading">
+  <div class="shell">
+    <h2 class="metrics__heading" id="metrics-heading">{copy.metrics.heading}</h2>
+    <ul class="metrics">
+      <li class="metrics__item">{copy.metrics.companies(companyCount, sinceYear)}</li>
+      <li class="metrics__item">{copy.metrics.projects(publicProjectCount)}</li>
+      <li class="metrics__item">{copy.metrics.milestones(milestoneCount)}</li>
+      <li class="metrics__item">{copy.metrics.locales}</li>
+    </ul>
+  </div>
+</section>
 
 <section class="section" id="projects" aria-labelledby="projects-heading">
   <div class="shell">
@@ -93,7 +132,13 @@ const evolutionPreview = [...curatedMilestonesByDateDesc]
       {
         featured.map((project, index) => (
           <li class="project-grid__item">
-            <ProjectCard copy={copy} locale={locale} project={project} revealIndex={index} />
+            <ProjectCard
+              copy={copy}
+              locale={locale}
+              project={project}
+              revealIndex={index}
+              priority={index === 0}
+            />
           </li>
         ))
       }
@@ -207,6 +252,55 @@ const evolutionPreview = [...curatedMilestonesByDateDesc]
   .section--teaser {
     background-color: var(--color-surface);
     border-block: 1px solid var(--color-border);
+  }
+
+  /* --- Verified metrics ------------------------------------------------------
+   * A compact strip directly under the hero: four build-time counts. It is a
+   * plain list of captions, so there is no separate number styling that could
+   * drift from the data behind it. The tighter block padding keeps it reading
+   * as a band attached to the hero rather than as a new section.
+   * --------------------------------------------------------------------- */
+  .section--metrics {
+    padding-block: var(--space-8);
+    background-color: var(--color-surface);
+    border-block: 1px solid var(--color-border);
+  }
+
+  .metrics__heading {
+    margin-bottom: var(--space-4);
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+    font-weight: 600;
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+  }
+
+  .metrics {
+    display: grid;
+    gap: var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .metrics__item {
+    color: var(--color-text);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+    font-weight: 600;
+  }
+
+  @media (min-width: 640px) {
+    .metrics {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .metrics {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
   }
 
   /* --- Boundaries ----------------------------------------------------------

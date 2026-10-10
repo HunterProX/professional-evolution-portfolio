@@ -32,9 +32,15 @@ interface Props {
   locale?: Locale;
   /** Index used for the reveal stagger on listing grids. */
   revealIndex?: number;
+  /**
+   * Set on a card that sits in the first viewport: its screenshot then loads
+   * eagerly instead of lazily. It defaults to lazy, which is correct for the
+   * listing grid on `/work/` where every card is below the fold.
+   */
+  priority?: boolean;
 }
 
-const { copy, project, locale = 'en', revealIndex = 0 } = Astro.props;
+const { copy, project, locale = 'en', revealIndex = 0, priority = false } = Astro.props;
 
 /**
  * The "Case study" control points at this site's own case-study page, in the
@@ -72,6 +78,34 @@ const initials = project.name
   .slice(0, 2)
   .map((word) => word.charAt(0).toUpperCase())
   .join('');
+
+/**
+ * Screenshot wiring. `data/projects.json` stores paths relative to the site
+ * root (`images/site-career.png`), so the deployment base is prepended here:
+ * a bare relative path would otherwise resolve against `/work/` on the listing
+ * and miss the asset.
+ *
+ * `width`/`height` are the real intrinsic sizes, read from each PNG's IHDR
+ * header. They are keyed by file basename because the card is generic; a
+ * screenshot with no recorded size simply omits the attributes (the CSS
+ * `aspect-ratio` still reserves the box, so there is no layout shift).
+ */
+const BASE: string = import.meta.env.BASE_URL;
+
+const SCREENSHOT_SIZES: Record<string, { width: number; height: number }> = {
+  'site-career.png': { width: 1887, height: 2044 },
+  'site-work.png': { width: 1887, height: 2044 },
+};
+
+const firstScreenshot = project.screenshots[0];
+const screenshotName = firstScreenshot ? (firstScreenshot.split('/').pop() ?? '') : '';
+const screenshotSrc = firstScreenshot
+  ? `${BASE}${firstScreenshot.replace(/^\/+/, '')}`
+  : '';
+const screenshotSize = SCREENSHOT_SIZES[screenshotName];
+const screenshotAlt = screenshotName
+  ? (copy.work.screenshotAlt[screenshotName] ?? copy.work.screenshotAltFallback(project.name))
+  : '';
 ---
 
 <article
@@ -83,14 +117,15 @@ const initials = project.name
 >
   <div class="project-card__figure">
     {
-      project.screenshots.length > 0 ? (
+      firstScreenshot ? (
         <img
           class="project-card__image"
-          src={project.screenshots[0]}
-          alt={`Screenshot of ${project.name}`}
-          width="640"
-          height="360"
-          loading="lazy"
+          src={screenshotSrc}
+          alt={screenshotAlt}
+          width={screenshotSize?.width}
+          height={screenshotSize?.height}
+          loading={priority ? 'eager' : 'lazy'}
+          decoding="async"
         />
       ) : (
         <>
