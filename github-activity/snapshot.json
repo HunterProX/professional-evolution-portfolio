@@ -1,11 +1,11 @@
 {
   "schema_version": "1.0.0",
   "snapshot_id": "public-github-activity-fixture-01",
-  "captured_at": "2026-10-09T22:09:23Z",
+  "captured_at": "2026-10-10T05:34:52Z",
   "status": {
-    "availability": "empty",
+    "availability": "available",
     "stale": false,
-    "message": "No verified public GitHub activity records were available for this deterministic first snapshot."
+    "message": "Public GitHub activity captured from the GitHub REST API at build time."
   },
   "source": {
     "provider": "github",
@@ -18,5 +18,122 @@
     "https://github.com/cristian-cardona-dev/ai-chat-app",
     "https://github.com/cristian-cardona-dev/ai-automation-workflow-lab"
   ],
-  "repositories": []
+  "repositories": [
+    {
+      "id": "cristian-cardona-dev/professional-evolution-portfolio",
+      "url": "https://github.com/cristian-cardona-dev/professional-evolution-portfolio",
+      "visibility": "public",
+      "pull_requests": [],
+      "commits": [
+        {
+          "id": "5f35a733c6f5b0624c155906fc1ff72a4a435d96",
+          "url": "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/5f35a733c6f5b0624c155906fc1ff72a4a435d96",
+          "captured_at": "2026-10-10T05:32:46Z",
+          "title": "ai(portfolio): use wrangler 404-page asset mode"
+        },
+        {
+          "id": "88da53535ff00cd2721b8da6a1077bc1f427f607",
+          "url": "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/88da53535ff00cd2721b8da6a1077bc1f427f607",
+          "captured_at": "2026-10-10T05:28:33Z",
+          "title": "ai(portfolio): serve branded localized 404 everywhere"
+        },
+        {
+          "id": "0871dbdd6a34ff1de47d20128349e7b26cb18ad5",
+          "url": "https://github.com/cristian-cardona-dev/professional-evolution-portfolio/commit/0871dbdd6a34ff1de47d20128349e7b26cb18ad5",
+          "captured_at": "2026-10-09T22:29:29Z",
+          "title": "ai(portfolio): add command palette and print profile"
+        }
+      ],
+      "releases": [],
+      "deployments": [],
+      "open_pull_requests": 0
+    },
+    {
+      "id": "cristian-cardona-dev/cloud-dashboard",
+      "url": "https://github.com/cristian-cardona-dev/cloud-dashboard",
+      "visibility": "public",
+      "pull_requests": [],
+      "commits": [
+        {
+          "id": "82b1d54ddf759ed1ed183680d334abad4cb47959",
+          "url": "https://github.com/cristian-cardona-dev/cloud-dashboard/commit/82b1d54ddf759ed1ed183680d334abad4cb47959",
+          "captured_at": "2026-10-09T15:20:51Z",
+          "title": "ai(portfolio): migrate README clone URL to cristian-cardona-dev"
+        },
+        {
+          "id": "549e880f8b42ed7cb94d325af94e5722295fd7a2",
+          "url": "https://github.com/cristian-cardona-dev/cloud-dashboard/commit/549e880f8b42ed7cb94d325af94e5722295fd7a2",
+          "captured_at": "2026-10-03T14:56:34Z",
+          "title": "Merge pull request #2 from HunterProX/ai/quickstart-cloud-dashboard"
+        },
+        {
+          "id": "cbb7bc076342178d25a9bf61d4025b943b530db3",
+          "url": "https://github.com/cristian-cardona-dev/cloud-dashboard/commit/cbb7bc076342178d25a9bf61d4025b943b530db3",
+          "captured_at": "2026-10-03T14:53:28Z",
+          "title": "docs(quickstart): document cloud dashboard setup and boundaries"
+        }
+      ],
+      "releases": [],
+      "deployments": [],
+      "open_pull_requests": 0
+    },
+    {
+      "id": "cristian-cardona-dev/ai-chat-app",
+      "url": "https://github.com/cristian-cardona-dev/ai-chat-app",
+      "visibility": "public",
+      "pull_requests": [],
+      "commits": [
+        {
+          "id": "e2cbfdc57c41aeaf2a627a2f717bfa362b7fe439",
+          "url": "https://github.com/cristian-cardona-dev/ai-chat-app/commit/e2cbfdc57c41aeaf2a627a2f717bfa362b7fe439",
+          "captured_at": "2026-10-03T15:42:20Z",
+          "title": "Merge pull request #6 from HunterProX/ai/provider-sandbox-config"
+        },
+        {
+          "id": "22b3fec8ca03ca296ee3212c8fdd7cbc5f752000",
+          "url": "https://github.com/cristian-cardona-dev/ai-chat-app/commit/22b3fec8ca03ca296ee3212c8fdd7cbc5f752000",
+          "captured_at": "2026-10-03T15:38:29Z",
+          "title": "ai(provider): add disabled sandbox configuration"
+        },
+        {
+          "id": "3e98600b6982cb14445691a9f1aec1261dd28d9b",
+          "url": "https://github.com/cristian-cardona-dev/ai-chat-app/commit/3e98600b6982cb14445691a9f1aec1261dd28d9b",
+          "captured_at": "2026-10-03T15:24:56Z",
+          "title": "Merge pull request #5 from HunterProX/ai/provider-boundary-v2"
+        }
+      ],
+      "releases": [],
+      "deployments": [],
+      "open_pull_requests": 0
+    },
+    {
+      "id": "cristian-cardona-dev/ai-automation-workflow-lab",
+      "url": "https://github.com/cristian-cardona-dev/ai-automation-workflow-lab",
+      "visibility": "public",
+      "pull_requests": [],
+      "commits": [
+        {
+          "id": "57ec0ef4cd28b138b708308e8b9cfd0edbbe913e",
+          "url": "https://github.com/cristian-cardona-dev/ai-automation-workflow-lab/commit/57ec0ef4cd28b138b708308e8b9cfd0edbbe913e",
+          "captured_at": "2026-10-03T15:31:17Z",
+          "title": "Merge pull request #1 from HunterProX/ai/bounded-workflow-v1"
+        },
+        {
+          "id": "e622b1c1972969875a6c22b441d39eb5ce1bfae0",
+          "url": "https://github.com/cristian-cardona-dev/ai-automation-workflow-lab/commit/e622b1c1972969875a6c22b441d39eb5ce1bfae0",
+          "captured_at": "2026-10-03T15:29:30Z",
+          "title": "ai(automation): add bounded approval workflow lab"
+        },
+        {
+          "id": "522770f76cf681b77092c911d1b2b7812cad2b65",
+          "url": "https://github.com/cristian-cardona-dev/ai-automation-workflow-lab/commit/522770f76cf681b77092c911d1b2b7812cad2b65",
+          "captured_at": "2026-10-03T15:29:29Z",
+          "title": "ai(automation): add bounded approval workflow lab"
+        }
+      ],
+      "releases": [],
+      "deployments": [],
+      "open_pull_requests": 0
+    }
+  ]
 }
