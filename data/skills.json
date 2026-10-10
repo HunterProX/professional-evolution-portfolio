@@ -1,0 +1,186 @@
+{
+  "skills": [
+    {
+      "name": "Java",
+      "category": "languages",
+      "aliases": [],
+      "employedAt": ["bits-americas", "talan"],
+      "projects": []
+    },
+    {
+      "name": "TypeScript",
+      "category": "languages",
+      "aliases": [],
+      "employedAt": [],
+      "projects": ["cloud-dashboard"]
+    },
+    {
+      "name": "Angular",
+      "category": "frontend",
+      "aliases": [],
+      "employedAt": ["sincosoft", "itehl", "bits-americas", "siigo"],
+      "projects": []
+    },
+    {
+      "name": "React",
+      "category": "frontend",
+      "aliases": [],
+      "employedAt": ["talan"],
+      "projects": []
+    },
+    {
+      "name": "Vue.js",
+      "category": "frontend",
+      "aliases": [],
+      "employedAt": ["talan"],
+      "projects": []
+    },
+    {
+      "name": "Astro",
+      "category": "frontend",
+      "aliases": [],
+      "employedAt": [],
+      "projects": ["professional-evolution-portfolio"]
+    },
+    {
+      "name": "Accessibility",
+      "category": "frontend",
+      "aliases": [],
+      "employedAt": [],
+      "projects": ["professional-evolution-portfolio"]
+    },
+    {
+      "name": ".NET",
+      "category": "backend",
+      "aliases": [".NET/Java"],
+      "employedAt": ["itehl", "siigo", "bits-americas"],
+      "projects": []
+    },
+    {
+      "name": "ASP",
+      "category": "backend",
+      "aliases": [],
+      "employedAt": ["sincosoft"],
+      "projects": []
+    },
+    {
+      "name": "Node.js",
+      "category": "backend",
+      "aliases": ["Node"],
+      "employedAt": ["talan"],
+      "projects": ["ai-chat-app"]
+    },
+    {
+      "name": "Kosmian",
+      "category": "backend",
+      "aliases": [],
+      "employedAt": ["talan"],
+      "projects": []
+    },
+    {
+      "name": "State machines",
+      "category": "backend",
+      "aliases": [],
+      "employedAt": [],
+      "projects": ["ai-automation-workflow-lab"]
+    },
+    {
+      "name": "Idempotency",
+      "category": "backend",
+      "aliases": [],
+      "employedAt": [],
+      "projects": ["ai-automation-workflow-lab"]
+    },
+    {
+      "name": "Audit trails",
+      "category": "backend",
+      "aliases": [],
+      "employedAt": [],
+      "projects": ["ai-automation-workflow-lab"]
+    },
+    {
+      "name": "Azure",
+      "category": "cloud",
+      "aliases": ["Azure Cloud"],
+      "employedAt": ["sincosoft", "itehl", "bits-americas", "siigo", "talan"],
+      "projects": []
+    },
+    {
+      "name": "SQL",
+      "category": "data",
+      "aliases": [],
+      "employedAt": ["sincosoft", "itehl", "siigo"],
+      "projects": []
+    },
+    {
+      "name": "MySQL",
+      "category": "data",
+      "aliases": [],
+      "employedAt": ["itehl", "bits-americas"],
+      "projects": []
+    },
+    {
+      "name": "MongoDB",
+      "category": "data",
+      "aliases": [],
+      "employedAt": ["talan"],
+      "projects": []
+    },
+    {
+      "name": "PostgreSQL",
+      "category": "data",
+      "aliases": [],
+      "employedAt": ["talan"],
+      "projects": []
+    },
+    {
+      "name": "Terraform",
+      "category": "devops",
+      "aliases": [],
+      "employedAt": ["talan"],
+      "projects": []
+    },
+    {
+      "name": "Testing",
+      "category": "devops",
+      "aliases": [],
+      "employedAt": [],
+      "projects": ["cloud-dashboard"]
+    },
+    {
+      "name": "Contract testing",
+      "category": "devops",
+      "aliases": [],
+      "employedAt": [],
+      "projects": ["ai-chat-app"]
+    },
+    {
+      "name": "Azure AI",
+      "category": "ai",
+      "aliases": [],
+      "employedAt": ["talan"],
+      "projects": []
+    },
+    {
+      "name": "LLM APIs",
+      "category": "ai",
+      "aliases": [],
+      "employedAt": [],
+      "projects": ["ai-chat-app"]
+    },
+    {
+      "name": "Chat & streaming",
+      "category": "ai",
+      "aliases": [],
+      "employedAt": [],
+      "projects": ["ai-chat-app"]
+    },
+    {
+      "name": "Human-in-the-loop",
+      "category": "ai",
+      "aliases": [],
+      "employedAt": [],
+      "projects": ["ai-automation-workflow-lab"]
+    }
+  ]
+}

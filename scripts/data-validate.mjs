@@ -20,6 +20,11 @@
  *     every GitHub URL inside a body is canonical, the source file exists, and
  *     each declared `caseStudy` path has a matching entry that maps back
  *   - evolution `projects` slugs resolve to declared projects
+ *   - experience.json: ISO month periods (end >= start), unique company ids
+ *   - skills.json: category enum, employedAt ⊆ experience ids,
+ *     projects ⊆ projects.json slugs, and at least one evidence badge per skill
+ *   - roadmap.json: skills exist in skills.json, proofs resolve to a project
+ *     slug or an evolution milestone id
  *
  * Exits non-zero, one line per problem, on failure.
  */
@@ -51,7 +56,15 @@ const MILESTONE_SOURCES = new Set(['curated', 'git', 'snapshot']);
  */
 const MILESTONE_PHASES = new Set(['foundation', 'transition', 'frontier']);
 
+/** Skill categories of the career data layer (`data/skills.json`). */
+const SKILL_CATEGORIES = new Set(['languages', 'frontend', 'backend', 'cloud', 'data', 'ai', 'devops']);
+/** Roadmap milestone statuses (`data/roadmap.json`). */
+const ROADMAP_STATUSES = new Set(['planned', 'in-progress', 'shipped']);
+/** The only declared provenance accepted for a career entry. */
+const EXPERIENCE_SOURCE = 'human-declared-2026-10-08';
+
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const ISO_MONTH = /^\d{4}-\d{2}$/;
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 const errors = [];
@@ -90,6 +103,13 @@ function isIsoDate(value) {
   if (!ISO_DATE.test(value)) return false;
   const parsed = new Date(`${value}T00:00:00Z`);
   return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+}
+
+/** An ISO calendar month (`YYYY-MM`), the precision the career data declares. */
+function isIsoMonth(value) {
+  if (typeof value !== 'string' || !ISO_MONTH.test(value)) return false;
+  const month = Number(value.slice(5, 7));
+  return month >= 1 && month <= 12;
 }
 
 function isHttpUrl(value) {
@@ -227,11 +247,11 @@ function validateProjects(data) {
 function validateEvolution(data, projectSlugs) {
   if (!data || typeof data !== 'object' || Array.isArray(data)) {
     fail('evolution.json: expected an object with a "milestones" array');
-    return;
+    return new Set();
   }
   if (!Array.isArray(data.milestones)) {
     fail('evolution.json: "milestones" must be an array');
-    return;
+    return new Set();
   }
   const ids = new Set();
   data.milestones.forEach((milestone, index) => {
@@ -290,6 +310,8 @@ function validateEvolution(data, projectSlugs) {
       });
     }
   });
+
+  return ids;
 }
 
 /**
@@ -422,12 +444,189 @@ function validateEvidence(data) {
   });
 }
 
+/**
+ * Career data layer — `data/experience.json`. Returns the set of company ids so
+ * `data/skills.json` can be checked against it.
+ */
+function validateExperience(data) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    fail('experience.json: expected an object with a "companies" array');
+    return new Set();
+  }
+  if (!Array.isArray(data.companies)) {
+    fail('experience.json: "companies" must be an array');
+    return new Set();
+  }
+  const ids = new Set();
+  data.companies.forEach((entry, index) => {
+    const label = `experience.json companies[${index}]${isNonEmptyString(entry?.id) ? ` (${entry.id})` : ''}`;
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+      fail(`${label}: expected an object`);
+      return;
+    }
+    for (const field of ['id', 'company', 'role', 'source']) {
+      if (!isNonEmptyString(entry[field])) fail(`${label}: "${field}" must be a non-empty string`);
+    }
+    if (isNonEmptyString(entry.id)) {
+      if (!SLUG.test(entry.id)) fail(`${label}: "id" must be lowercase kebab-case: ${entry.id}`);
+      if (ids.has(entry.id)) fail(`${label}: duplicate company id "${entry.id}"`);
+      ids.add(entry.id);
+    }
+    if (!isIsoMonth(entry.start)) {
+      fail(`${label}: "start" must be an ISO month (YYYY-MM): ${entry.start}`);
+    }
+    if (entry.end !== null) {
+      if (!isIsoMonth(entry.end)) {
+        fail(`${label}: "end" must be an ISO month (YYYY-MM) or null: ${entry.end}`);
+      } else if (isIsoMonth(entry.start) && entry.end < entry.start) {
+        fail(`${label}: "end" (${entry.end}) must not be earlier than "start" (${entry.start})`);
+      }
+    }
+    if (!isStringArray(entry.stack) || entry.stack.length === 0) {
+      fail(`${label}: "stack" must be a non-empty array of non-empty strings`);
+    }
+    if (isNonEmptyString(entry.source) && entry.source !== EXPERIENCE_SOURCE) {
+      fail(`${label}: "source" must be "${EXPERIENCE_SOURCE}"`);
+    }
+  });
+  return ids;
+}
+
+/**
+ * `data/skills.json`. Every `employedAt` id must resolve to a company and every
+ * `projects` slug to a declared project; a skill with neither badge would be an
+ * unsupported claim, so it is rejected too.
+ */
+function validateSkills(data, companyIds, projectSlugs) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    fail('skills.json: expected an object with a "skills" array');
+    return new Set();
+  }
+  if (!Array.isArray(data.skills) || data.skills.length === 0) {
+    fail('skills.json: "skills" must be a non-empty array');
+    return new Set();
+  }
+  const names = new Set();
+  data.skills.forEach((skill, index) => {
+    const label = `skills.json skills[${index}]${isNonEmptyString(skill?.name) ? ` (${skill.name})` : ''}`;
+    if (!skill || typeof skill !== 'object' || Array.isArray(skill)) {
+      fail(`${label}: expected an object`);
+      return;
+    }
+    if (!isNonEmptyString(skill.name)) {
+      fail(`${label}: "name" must be a non-empty string`);
+    } else if (names.has(skill.name)) {
+      fail(`${label}: duplicate skill name "${skill.name}"`);
+    } else {
+      names.add(skill.name);
+    }
+    if (!SKILL_CATEGORIES.has(skill.category)) {
+      fail(`${label}: "category" must be one of ${[...SKILL_CATEGORIES].join(', ')}`);
+    }
+    if (!Array.isArray(skill.aliases) || !skill.aliases.every(isNonEmptyString)) {
+      fail(`${label}: "aliases" must be an array of non-empty strings`);
+    }
+    if (!Array.isArray(skill.employedAt) || !skill.employedAt.every(isNonEmptyString)) {
+      fail(`${label}: "employedAt" must be an array of company ids`);
+    } else {
+      for (const id of skill.employedAt) {
+        if (!companyIds.has(id)) {
+          fail(`${label}: "employedAt" id "${id}" does not match any experience company`);
+        }
+      }
+    }
+    if (!Array.isArray(skill.projects) || !skill.projects.every(isNonEmptyString)) {
+      fail(`${label}: "projects" must be an array of project slugs`);
+    } else {
+      for (const slug of skill.projects) {
+        if (!projectSlugs.has(slug)) {
+          fail(`${label}: "projects" slug "${slug}" does not match any project`);
+        }
+      }
+    }
+    const hasEmployment = Array.isArray(skill.employedAt) && skill.employedAt.length > 0;
+    const hasProject = Array.isArray(skill.projects) && skill.projects.length > 0;
+    if (!hasEmployment && !hasProject) {
+      fail(`${label}: must have at least one "employedAt" company or "projects" slug`);
+    }
+  });
+  return names;
+}
+
+/**
+ * `data/roadmap.json`. Skills must exist in `skills.json`; each proof must
+ * resolve to a declared project slug or a declared evolution milestone id, so a
+ * roadmap row never points at a page the site does not publish.
+ */
+function validateRoadmap(data, skillNames, projectSlugs, evolutionIds) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    fail('roadmap.json: expected an object with a "milestones" array');
+    return;
+  }
+  if (!Array.isArray(data.milestones) || data.milestones.length === 0) {
+    fail('roadmap.json: "milestones" must be a non-empty array');
+    return;
+  }
+  const ids = new Set();
+  data.milestones.forEach((milestone, index) => {
+    const label = `roadmap.json milestones[${index}]${isNonEmptyString(milestone?.id) ? ` (${milestone.id})` : ''}`;
+    if (!milestone || typeof milestone !== 'object' || Array.isArray(milestone)) {
+      fail(`${label}: expected an object`);
+      return;
+    }
+    for (const field of ['id', 'goal']) {
+      if (!isNonEmptyString(milestone[field])) fail(`${label}: "${field}" must be a non-empty string`);
+    }
+    if (isNonEmptyString(milestone.id)) {
+      if (!SLUG.test(milestone.id)) fail(`${label}: "id" must be lowercase kebab-case: ${milestone.id}`);
+      if (ids.has(milestone.id)) fail(`${label}: duplicate roadmap id "${milestone.id}"`);
+      ids.add(milestone.id);
+    }
+    if (!ROADMAP_STATUSES.has(milestone.status)) {
+      fail(`${label}: "status" must be one of ${[...ROADMAP_STATUSES].join(', ')}`);
+    }
+    if (!Array.isArray(milestone.skills) || !isStringArray(milestone.skills)) {
+      fail(`${label}: "skills" must be an array of skill names`);
+    } else {
+      if (milestone.skills.length === 0) fail(`${label}: "skills" must list at least one skill`);
+      for (const name of milestone.skills) {
+        if (!skillNames.has(name)) fail(`${label}: skill "${name}" does not exist in skills.json`);
+      }
+    }
+    if (!Array.isArray(milestone.proofs) || milestone.proofs.length === 0) {
+      fail(`${label}: "proofs" must be a non-empty array`);
+    } else {
+      milestone.proofs.forEach((proof, position) => {
+        const proofLabel = `${label} proofs[${position}]`;
+        if (!proof || typeof proof !== 'object' || Array.isArray(proof)) {
+          fail(`${proofLabel}: expected an object`);
+          return;
+        }
+        if (proof.type === 'project') {
+          if (!isNonEmptyString(proof.id) || !projectSlugs.has(proof.id)) {
+            fail(`${proofLabel}: project "${proof.id}" does not match any project`);
+          }
+        } else if (proof.type === 'evolution') {
+          if (!isNonEmptyString(proof.id) || !evolutionIds.has(proof.id)) {
+            fail(`${proofLabel}: evolution "${proof.id}" does not match any milestone`);
+          }
+        } else {
+          fail(`${proofLabel}: "type" must be "project" or "evolution"`);
+        }
+      });
+    }
+  });
+}
+
 function main() {
   const profileRaw = readRaw('profile.json');
   const projectsRaw = readRaw('projects.json');
   const evolutionRaw = readRaw('evolution.json');
   const evidenceRaw = readRaw('evidence.json');
   const caseStudiesRaw = readRaw('case-studies.json');
+  const experienceRaw = readRaw('experience.json');
+  const skillsRaw = readRaw('skills.json');
+  const roadmapRaw = readRaw('roadmap.json');
 
   if (projectsRaw !== null) {
     const lower = projectsRaw.toLowerCase();
@@ -443,13 +642,19 @@ function main() {
   const evolution = evolutionRaw && parseJson('evolution.json', evolutionRaw);
   const evidence = evidenceRaw && parseJson('evidence.json', evidenceRaw);
   const caseStudies = caseStudiesRaw && parseJson('case-studies.json', caseStudiesRaw);
+  const experience = experienceRaw && parseJson('experience.json', experienceRaw);
+  const skills = skillsRaw && parseJson('skills.json', skillsRaw);
+  const roadmap = roadmapRaw && parseJson('roadmap.json', roadmapRaw);
 
   // projects.json is validated first: it owns the slug namespace every other
   // dataset cross-references.
   const projectSlugs = projects ? validateProjects(projects) : new Set();
 
   if (profile) validateProfile(profile);
-  if (evolution) validateEvolution(evolution, projectSlugs);
+  const evolutionIds = evolution ? validateEvolution(evolution, projectSlugs) : new Set();
+  const companyIds = experience ? validateExperience(experience) : new Set();
+  const skillNames = skills ? validateSkills(skills, companyIds, projectSlugs) : new Set();
+  if (roadmap) validateRoadmap(roadmap, skillNames, projectSlugs, evolutionIds);
   if (evidence) validateEvidence(evidence);
   if (caseStudies) validateCaseStudies(caseStudies, projectSlugs, projects ?? []);
 
@@ -463,8 +668,11 @@ function main() {
   const milestoneCount = evolution.milestones.length;
   const evidenceCount = evidence.items.length;
   const caseStudyCount = caseStudies.caseStudies.length;
+  const experienceCount = experience.companies.length;
+  const skillCount = skills.skills.length;
+  const roadmapCount = roadmap.milestones.length;
   console.log(
-    `data:validate OK — profile 1, projects ${projectCount}, milestones ${milestoneCount}, evidence items ${evidenceCount}, case studies ${caseStudyCount}`,
+    `data:validate OK — profile 1, projects ${projectCount}, milestones ${milestoneCount}, experience ${experienceCount}, skills ${skillCount}, roadmap ${roadmapCount}, evidence items ${evidenceCount}, case studies ${caseStudyCount}`,
   );
 }
 

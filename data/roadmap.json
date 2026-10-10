@@ -1,0 +1,43 @@
+{
+  "milestones": [
+    {
+      "id": "ai-engineering-evidence",
+      "goal": "Widen the public AI engineering evidence: a fixed evaluation set for the reliability contract, a provider-neutral adapter seam and reproducible run artifacts.",
+      "status": "planned",
+      "skills": ["LLM APIs", "Chat & streaming", "Contract testing", "Testing"],
+      "proofs": [
+        { "type": "project", "id": "ai-chat-app" },
+        { "type": "evolution", "id": "2026-10-09-ai-engineering-evidence-build-out" }
+      ]
+    },
+    {
+      "id": "agentic-workflow-iterations",
+      "goal": "Exercise the approval-gated workflow under replay and adversarial conditions while keeping the boundary explicit: no autonomous actions and no external service integration.",
+      "status": "planned",
+      "skills": ["State machines", "Human-in-the-loop", "Idempotency", "Audit trails"],
+      "proofs": [
+        { "type": "project", "id": "ai-automation-workflow-lab" },
+        { "type": "evolution", "id": "2026-10-09-agentic-workflow-lab-public-iterations" }
+      ]
+    },
+    {
+      "id": "product-engineering-expansion",
+      "goal": "Expand product engineering: turn the planned product surface into a public, inspectable MVP rather than a stated intention.",
+      "status": "planned",
+      "skills": ["React", "PostgreSQL", "Terraform", "Azure"],
+      "proofs": [
+        { "type": "project", "id": "saas-mvp" }
+      ]
+    },
+    {
+      "id": "portfolio-rebuild-launch",
+      "goal": "Launch the rebuilt portfolio: replace the legacy static site once the validation battery and the review gate pass.",
+      "status": "in-progress",
+      "skills": ["Astro", "TypeScript", "Accessibility"],
+      "proofs": [
+        { "type": "project", "id": "professional-evolution-portfolio" },
+        { "type": "evolution", "id": "2026-10-09-portfolio-10x-launch" }
+      ]
+    }
+  ]
+}

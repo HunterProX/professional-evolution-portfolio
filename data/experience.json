@@ -1,0 +1,60 @@
+{
+  "companies": [
+    {
+      "id": "sincosoft",
+      "company": "SINCOSOFT",
+      "role": "Full Stack",
+      "start": "2017-10",
+      "end": "2018-06",
+      "stack": ["ASP", "SQL", "Angular", "Azure Cloud"],
+      "source": "human-declared-2026-10-08"
+    },
+    {
+      "id": "itehl",
+      "company": "ITEHL",
+      "role": "Full Stack",
+      "start": "2018-06",
+      "end": "2018-09",
+      "stack": [".NET", "Angular", "Azure Cloud", "SQL", "MySQL"],
+      "source": "human-declared-2026-10-08"
+    },
+    {
+      "id": "bits-americas",
+      "company": "BITS Americas",
+      "role": "Full Stack",
+      "start": "2018-10",
+      "end": "2021-11",
+      "stack": [".NET/Java", "Angular", "Azure Cloud", "MySQL"],
+      "source": "human-declared-2026-10-08"
+    },
+    {
+      "id": "siigo",
+      "company": "Siigo",
+      "role": "Full Stack",
+      "start": "2021-11",
+      "end": "2022-12",
+      "stack": [".NET", "Angular", "Azure Cloud", "SQL"],
+      "source": "human-declared-2026-10-08"
+    },
+    {
+      "id": "talan",
+      "company": "Talan",
+      "role": "Full Stack",
+      "start": "2023-10",
+      "end": null,
+      "stack": [
+        "Azure Cloud",
+        "Java",
+        "React",
+        "Terraform",
+        "Kosmian",
+        "Node",
+        "Azure AI",
+        "Vue.js",
+        "MongoDB",
+        "PostgreSQL"
+      ],
+      "source": "human-declared-2026-10-08"
+    }
+  ]
+}

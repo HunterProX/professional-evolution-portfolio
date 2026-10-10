@@ -290,6 +290,17 @@ export interface Copy {
     githubLabel: string;
     linkedinLabel: string;
   };
+  /**
+   * Public boundary statements: what the portfolio explicitly does not assert.
+   * The employer line is human-declared and corroborated on LinkedIn; the other
+   * lines keep the original evidence-first boundaries.
+   */
+  boundaries: {
+    /** Heading above the boundary list. */
+    heading: string;
+    /** One line per boundary, in display order. */
+    items: string[];
+  };
   footer: {
     tagline: string;
     sourceRepository: string;
@@ -570,6 +581,15 @@ export const en: Copy = {
     emailLabel: 'Email',
     githubLabel: 'GitHub',
     linkedinLabel: 'LinkedIn',
+  },
+  boundaries: {
+    heading: 'What this portfolio will not pretend to know.',
+    items: [
+      'No production RAG claim is made.',
+      'Employer history is human-declared (source: verified facts, 2026-10-08) and corroborated on the public LinkedIn profile; no client names, compensation or contract details are published.',
+      'No arbitrary progress percentages or years-of-experience figures are used.',
+      'Historical LinkedIn-sync material is context, not the source of truth.',
+    ],
   },
   footer: {
     tagline: 'Evidence before confidence.',
@@ -853,6 +873,15 @@ export const es: Copy = {
     emailLabel: 'Correo electrónico',
     githubLabel: 'GitHub',
     linkedinLabel: 'LinkedIn',
+  },
+  boundaries: {
+    heading: 'Lo que este portfolio no fingirá saber.',
+    items: [
+      'No se afirma capacidad RAG en producción.',
+      'La trayectoria de empleadores es declarada por la persona (fuente: datos verificados, 2026-10-08) y corroborada en el perfil público de LinkedIn; no se publican nombres de clientes, compensación ni detalles contractuales.',
+      'No se usan porcentajes arbitrarios de progreso ni cifras de años de experiencia.',
+      'El material histórico de LinkedIn-sync es contexto, no la fuente de verdad.',
+    ],
   },
   footer: {
     tagline: 'Evidencia antes que confianza.',
