@@ -290,6 +290,10 @@ const screenshotAlt = screenshotName
     height: auto;
     aspect-ratio: 16 / 9;
     object-fit: cover;
+    /* The screenshots are full-page portrait captures (1887×2044) cropped to a
+       16:9 box, so anchoring at the top shows the page header instead of an
+       arbitrary middle band. Only cards with a screenshot are affected. */
+    object-position: top;
     border-radius: var(--radius-md);
   }
 

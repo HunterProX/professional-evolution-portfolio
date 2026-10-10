@@ -1,0 +1,211 @@
+---
+/**
+ * Notes feed — the most recent hand-written milestones, as a dated list.
+ *
+ * It is deliberately the curated subset only (`source === 'curated'`), the same
+ * rule the home evolution preview follows: an unreviewed git-derived entry is a
+ * candidate, not history, so it never reaches this feed. The feed is a plain
+ * date-desc list (newest first, stable on ties via `curatedMilestonesByDateDesc`)
+ * rather than a status-first preview — that is what makes it read as a log.
+ *
+ * Each title deep-links to the milestone on `/evolution/`. The working anchor is
+ * `${id}-title`, the id `EvolutionTimeline.astro` puts on the milestone heading
+ * (and the one `rss.xml.ts` deep-links with); no element carries a bare `${id}`
+ * on that page, so the suffix is load-bearing.
+ *
+ * The excerpt is truncated at ~160 characters on a word boundary, so a long
+ * narrative cannot turn one note into a wall of text. Nothing is invented: every
+ * field comes from `data/evolution.json`, and the copy from `i18n/copy.ts`.
+ */
+import type { Copy, Locale } from '../i18n/copy';
+import type { Milestone } from '../lib/data';
+import { curatedMilestonesByDateDesc } from '../lib/data';
+import { route } from '../lib/urls';
+
+interface Props {
+  copy: Copy;
+  locale: Locale;
+}
+
+const { copy, locale } = Astro.props;
+
+/** Six is the brief's count: enough to read as a feed, short enough for home. */
+const NOTES_LIMIT = 6;
+const notes = curatedMilestonesByDateDesc.slice(0, NOTES_LIMIT);
+
+const dateFormat = new Intl.DateTimeFormat(locale === 'es' ? 'es-ES' : 'en-GB', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+
+/** Mirrors `EvolutionTimeline.astro`, so a status keeps the same colour everywhere. */
+const statusVariant: Record<Milestone['status'], string> = {
+  shipped: 'chip--success',
+  'in-progress': 'chip--warn',
+  planned: 'chip--neutral',
+};
+
+const statusLabel: Record<Milestone['status'], string> = {
+  shipped: copy.evolution.shipped,
+  'in-progress': copy.evolution.inProgress,
+  planned: copy.evolution.planned,
+};
+
+/** Clip to `max` characters at a word boundary, with an ellipsis. */
+function excerpt(text: string, max = 160): string {
+  if (text.length <= max) return text;
+  const head = text.slice(0, max);
+  const lastSpace = head.lastIndexOf(' ');
+  return `${(lastSpace > 0 ? head.slice(0, lastSpace) : head).trimEnd()}…`;
+}
+
+/* The feed is English content; the RSS endpoint is the same on both locales, so
+   only the deployment base matters here (same pattern as the favicon href). */
+const rssHref = `${import.meta.env.BASE_URL}rss.xml`;
+---
+
+<section class="section" id="notes" aria-labelledby="notes-heading">
+  <div class="shell">
+    <header class="section__head reveal">
+      <p class="eyebrow">{copy.notes.eyebrow}</p>
+      <h2 id="notes-heading">{copy.notes.heading}</h2>
+      <p class="lead">{copy.notes.summary}</p>
+    </header>
+
+    <ol class="notes">
+      {
+        notes.map((milestone) => (
+          <li class="notes__item">
+            <article class="notes__entry">
+              <div class="notes__meta">
+                <time class="notes__date tabular" datetime={milestone.date}>
+                  {dateFormat.format(new Date(`${milestone.date}T00:00:00Z`))}
+                </time>
+                <span class={`chip ${statusVariant[milestone.status]}`}>
+                  {statusLabel[milestone.status]}
+                </span>
+              </div>
+
+              <h3 class="notes__title">
+                <a href={`${route(locale, 'evolution/')}#${milestone.id}-title`}>
+                  {milestone.title}
+                </a>
+              </h3>
+
+              <p class="notes__excerpt">{excerpt(milestone.narrative)}</p>
+            </article>
+          </li>
+        ))
+      }
+    </ol>
+
+    <p class="notes__links reveal">
+      <a class="button button--ghost" href={route(locale, 'evolution/')}>
+        {copy.notes.allNotes}
+      </a>
+      <a class="notes__rss" href={rssHref}>{copy.notes.rss}</a>
+    </p>
+  </div>
+</section>
+
+<style>
+  .section {
+    padding-block: var(--space-24);
+    scroll-margin-top: var(--header-height);
+  }
+
+  .section__head {
+    max-width: 68ch;
+    margin-bottom: var(--space-8);
+  }
+
+  .section__head h2 {
+    margin-block: var(--space-2) var(--space-3);
+  }
+
+  .notes {
+    display: grid;
+    gap: var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .notes__item {
+    max-width: none;
+  }
+
+  .notes__entry {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    height: 100%;
+    padding: var(--space-5);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .notes__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .notes__date {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+  }
+
+  .notes__title {
+    font-size: var(--text-lg);
+    line-height: var(--leading-lg);
+  }
+
+  .notes__title a {
+    color: var(--color-text);
+    text-decoration: none;
+  }
+
+  .notes__title a:hover {
+    color: var(--color-accent);
+  }
+
+  .notes__excerpt {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .notes__links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-4);
+    margin-top: var(--space-8);
+  }
+
+  .notes__rss {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+
+  @media (min-width: 768px) {
+    .notes {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .notes {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>

@@ -39,6 +39,7 @@ import CareerTimeline from '../components/CareerTimeline.astro';
 import SkillMatrix from '../components/SkillMatrix.astro';
 import EvolutionTimeline from '../components/EvolutionTimeline.astro';
 import ContactForm from '../components/ContactForm.astro';
+import NotesFeed from '../components/NotesFeed.astro';
 import SuggestionsPanel from '../components/SuggestionsPanel.astro';
 
 interface Props {
@@ -204,6 +205,13 @@ const milestoneCount = milestones.length;
     </p>
   </div>
 </section>
+
+{/* Notes: a dated feed of the most recent hand-written milestones, placed
+    after the evolution/roadmap area it continues and before the evidence
+    teaser and the closing boundary statement. It is curated-only, so the
+    unreviewed git candidates stay on `/evolution/`; `#notes` is a section
+    anchor only — the header nav does not gain a sixth item for it. */}
+<NotesFeed copy={copy} locale={locale} />
 
 <section class="section section--teaser" id="evidence" aria-labelledby="evidence-heading">
   <div class="shell evidence-teaser reveal">

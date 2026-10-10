@@ -23,6 +23,7 @@ const { copy, snapshotId } = Astro.props;
    helpers use — and links the printable profile of the current language. */
 const locale = localeFromPathname(Astro.url.pathname);
 const printHref = route(locale, 'print/');
+const buildHref = route(locale, 'build/');
 
 const SOURCE_REPO = `https://github.com/${profile.reposOwner}/professional-evolution-portfolio`;
 const year = new Date().getUTCFullYear();
@@ -35,6 +36,9 @@ const year = new Date().getUTCFullYear();
       <p class="site-footer__tagline">{copy.footer.tagline}</p>
       <p class="site-footer__print">
         <a href={printHref}>{copy.footer.printProfile}</a>
+      </p>
+      <p class="site-footer__build">
+        <a href={buildHref}>{copy.footer.buildPage}</a>
       </p>
     </div>
 
@@ -90,11 +94,13 @@ const year = new Date().getUTCFullYear();
     line-height: var(--leading-sm);
   }
 
-  .site-footer__print {
+  .site-footer__print,
+  .site-footer__build {
     margin-top: var(--space-2);
   }
 
-  .site-footer__print a {
+  .site-footer__print a,
+  .site-footer__build a {
     display: inline-flex;
     align-items: center;
     min-height: 44px;

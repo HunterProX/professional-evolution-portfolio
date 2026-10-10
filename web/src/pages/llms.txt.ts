@@ -58,6 +58,7 @@ export const GET: APIRoute = ({ site }) => {
     `- [Evolution](${abs('evolution/')}): the professional timeline and roadmap.`,
     `- [Evidence](${abs('evidence/')}): the proof links behind the claims.`,
     `- [Contact](${abs('#contact')}): how to get in touch.`,
+    `- [How this site is built](${abs('build/')}): the stack, deployment and boundaries behind this site.`,
     `- [RSS feed](${abs('rss.xml')}): evolution milestones as a feed.`,
     '',
     '## Career',

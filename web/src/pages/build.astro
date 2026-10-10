@@ -1,0 +1,24 @@
+---
+/**
+ * Build notes route (en) — "How this site is built".
+ *
+ * The composition lives in `src/views/BuildNotes.astro`, shared with `/es/`, so
+ * both locales render identical structure from one source. No `activeNav`: the
+ * page is not one of the header's five destinations, and the footer is where it
+ * is linked from.
+ */
+import type { Locale } from '../i18n/copy';
+import { getCopy } from '../i18n/copy';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import BuildNotes from '../views/BuildNotes.astro';
+
+const locale: Locale = 'en';
+const copy = getCopy(locale);
+
+const title = copy.build.title;
+const description = copy.build.summary;
+---
+
+<BaseLayout locale={locale} title={title} description={description} path="build/">
+  <BuildNotes locale={locale} copy={copy} />
+</BaseLayout>

@@ -96,6 +96,26 @@ export interface Copy {
     /** The published locales, e.g. "EN + ES". */
     locales: string;
   };
+  /**
+   * Notes feed on the home page (`components/NotesFeed.astro`).
+   *
+   * The feed renders the most recent hand-written milestones only — the same
+   * curated set the evolution preview draws from — so an unreviewed git
+   * candidate can never appear in it. Every string here is UI copy; the
+   * entries themselves come from `data/evolution.json`.
+   */
+  notes: {
+    /** Eyebrow above the feed. */
+    eyebrow: string;
+    /** Heading of the feed. */
+    heading: string;
+    /** Lead paragraph under the heading. */
+    summary: string;
+    /** CTA from the feed to the full timeline. */
+    allNotes: string;
+    /** Label of the link to the RSS feed. */
+    rss: string;
+  };
   work: {
     eyebrow: string;
     heading: string;
@@ -453,6 +473,50 @@ export interface Copy {
     buildNote: string;
     /** Link to the printable profile of the current locale. */
     printProfile: string;
+    /** Link to the "how this site is built" page of the current locale. */
+    buildPage: string;
+  };
+  /**
+   * "How this site is built" page (`/build/`, `/es/build/`).
+   *
+   * The page explains the artifact itself — stack, deployment, the assistant's
+   * honest limits and the published-data boundary — from copy only, so no claim
+   * about the build can drift from what the build actually does. The official
+   * links beside the credits are constants in the view, not copy: the targets
+   * never change with the locale.
+   */
+  build: {
+    eyebrow: string;
+    /** Page `<title>` and the visible `h1`. */
+    title: string;
+    /** Lead paragraph under the heading. */
+    summary: string;
+    /** Heading of the stack section. */
+    stackHeading: string;
+    /** One line per build fact, in display order. */
+    stackItems: string[];
+    /** Heading of the deployment section. */
+    deployHeading: string;
+    /** One line under `deployHeading`. */
+    deployNote: string;
+    /** Heading of the assistant honesty section. */
+    assistantHeading: string;
+    /** One line under `assistantHeading`. */
+    assistantNote: string;
+    /** Heading of the source section. */
+    sourceHeading: string;
+    /** One line under `sourceHeading`. */
+    sourceNote: string;
+    /** Label of the public repository link. */
+    repoLabel: string;
+    /** Label of the RSS feed link. */
+    rssLabel: string;
+    /** Heading of the published-data boundary section. */
+    boundaryHeading: string;
+    /** One line under `boundaryHeading` (the T20 boundary wording). */
+    boundaryNote: string;
+    /** Plain credits line; the official links are rendered beside it. */
+    credits: string;
   };
 }
 
@@ -505,9 +569,18 @@ export const en: Copy = {
   metrics: {
     heading: 'Verified metrics',
     companies: (count, since) => `${count} companies since ${since}`,
-    projects: (count) => (count === 1 ? '1 public project page' : `${count} public project pages`),
+    projects: (count) =>
+      count === 1 ? '1 project page published' : `${count} project pages published`,
     milestones: (count) => (count === 1 ? '1 tracked milestone' : `${count} tracked milestones`),
     locales: 'EN + ES',
+  },
+  notes: {
+    eyebrow: 'Notes',
+    heading: 'Recent notes.',
+    summary:
+      'The most recent hand-written milestones, newest first. Unreviewed git-derived candidates are not listed here; they stay on the full timeline, labelled as candidates.',
+    allNotes: 'All notes',
+    rss: 'Subscribe via RSS',
   },
   work: {
     eyebrow: 'Selected work',
@@ -806,6 +879,35 @@ export const en: Copy = {
     themeNote: 'The theme is stored in your own browser; no server controls it.',
     buildNote: 'Static site built with Astro. No tracking and no third-party scripts.',
     printProfile: 'Print profile',
+    buildPage: 'How this site is built',
+  },
+  build: {
+    eyebrow: 'How this site is built',
+    title: 'How this site is built',
+    summary:
+      'The site is an artifact in its own right: what it is built with, how it is deployed, and what it deliberately leaves out.',
+    stackHeading: 'Static, data-driven, bilingual',
+    stackItems: [
+      'A static site built with Astro 5: every page is pre-rendered at build time, with no server runtime.',
+      'Data-driven: pages render from a reviewed JSON layer under data/, so a change to the data is a change to the site.',
+      'Bilingual EN/ES: both locales render the same structure from one shared source.',
+      'No client-side analytics and no third-party scripts; the only script is the site’s own, and the theme choice stays in your browser.',
+    ],
+    deployHeading: 'Deployment',
+    deployNote:
+      'Every push to main is built and published automatically by GitHub Actions. GitHub Pages is the canonical host; a Cloudflare Workers mirror serves the same static build.',
+    assistantHeading: 'The assistant is a search, not an AI',
+    assistantNote:
+      'The floating assistant is a keyword search over the public data published on this site. It is not an AI model and makes no API call: it can only point at what is already published here, and it says so when it finds nothing.',
+    sourceHeading: 'Source',
+    sourceNote:
+      'The site and its data layer are public. The repository below is the artifact you can inspect; nothing is published from a private source.',
+    repoLabel: 'View the source repository',
+    rssLabel: 'Subscribe to the RSS feed',
+    boundaryHeading: 'What is not published',
+    boundaryNote:
+      'Only public, human-declared career facts are published; no client names, compensation or private operational data. No private data is published on this site.',
+    credits: 'Built with Astro, hosted on GitHub Pages + Cloudflare Workers.',
   },
 };
 
@@ -859,9 +961,17 @@ export const es: Copy = {
     heading: 'Cifras verificadas',
     companies: (count, since) => `${count} empresas desde ${since}`,
     projects: (count) =>
-      count === 1 ? '1 página de proyectos públicos' : `${count} páginas de proyectos públicos`,
+      count === 1 ? '1 página de proyecto documentado' : `${count} páginas de proyectos documentados`,
     milestones: (count) => (count === 1 ? '1 hito registrado' : `${count} hitos registrados`),
     locales: 'EN + ES',
+  },
+  notes: {
+    eyebrow: 'Notas',
+    heading: 'Notas recientes.',
+    summary:
+      'Los hitos escritos a mano más recientes, del más nuevo al más antiguo. Los candidatos derivados de git sin revisar no se listan aquí; permanecen en la línea de tiempo completa, etiquetados como candidatos.',
+    allNotes: 'Todas las notas',
+    rss: 'Suscribirse por RSS',
   },
   work: {
     eyebrow: 'Trabajo seleccionado',
@@ -1163,6 +1273,35 @@ export const es: Copy = {
     themeNote: 'El tema se guarda en tu propio navegador; ningún servidor lo controla.',
     buildNote: 'Sitio estático construido con Astro. Sin rastreo y sin scripts de terceros.',
     printProfile: 'Perfil imprimible',
+    buildPage: 'Cómo está construido este sitio',
+  },
+  build: {
+    eyebrow: 'Cómo está construido este sitio',
+    title: 'Cómo está construido este sitio',
+    summary:
+      'El sitio es un artefacto en sí mismo: con qué está construido, cómo se despliega y qué deja fuera deliberadamente.',
+    stackHeading: 'Estático, dirigido por datos y bilingüe',
+    stackItems: [
+      'Un sitio estático construido con Astro 5: cada página se pre-renderiza en tiempo de compilación, sin servidor en tiempo de ejecución.',
+      'Dirigido por datos: las páginas se renderizan desde una capa JSON revisada en data/, así que un cambio en los datos es un cambio en el sitio.',
+      'Bilingüe EN/ES: ambos locales renderizan la misma estructura desde una sola fuente compartida.',
+      'Sin analítica en el cliente y sin scripts de terceros; el único script es el del propio sitio, y la elección de tema se queda en tu navegador.',
+    ],
+    deployHeading: 'Despliegue',
+    deployNote:
+      'Cada push a main se compila y publica automáticamente mediante GitHub Actions. GitHub Pages es el host canónico; un espejo en Cloudflare Workers sirve la misma compilación estática.',
+    assistantHeading: 'El asistente es una búsqueda, no una IA',
+    assistantNote:
+      'El asistente flotante es una búsqueda por palabras clave sobre los datos públicos publicados en este sitio. No es un modelo de IA y no realiza ninguna llamada a una API: solo puede señalar lo que ya está publicado aquí, y lo dice cuando no encuentra nada.',
+    sourceHeading: 'Código fuente',
+    sourceNote:
+      'El sitio y su capa de datos son públicos. El repositorio de abajo es el artefacto que puedes inspeccionar; nada se publica desde una fuente privada.',
+    repoLabel: 'Ver el repositorio fuente',
+    rssLabel: 'Suscribirse al canal RSS',
+    boundaryHeading: 'Qué no se publica',
+    boundaryNote:
+      'Solo se publican hechos profesionales públicos y declarados por la persona; no se publican nombres de clientes, compensación ni datos operativos privados. No se publica ningún dato privado en este sitio.',
+    credits: 'Construido con Astro, alojado en GitHub Pages + Cloudflare Workers.',
   },
 };
 
