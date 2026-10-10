@@ -37,8 +37,6 @@ jobs:
       - name: Lighthouse CI
         uses: treosh/lighthouse-ci-action@v2
         with:
-          staticDistDir: web/dist
           configPath: .github/lighthouserc.json
-          budgetPath: lighthouse-budget.json
           uploadArtifacts: true
           temporaryPublicStorage: true
