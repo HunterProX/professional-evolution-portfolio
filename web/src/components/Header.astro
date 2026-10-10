@@ -97,9 +97,9 @@ const links: { id: NonNullable<Props['active']>; href: string; label: string }[]
           aria-haspopup="dialog"
           aria-expanded="false"
           aria-controls="pep-palette-dialog"
-          aria-label={copy.palette.open}
         >
-          <kbd class="site-header__palette-keys" aria-hidden="true">⌘K</kbd>
+          <span class="visually-hidden">{copy.palette.open}</span>
+          <kbd class="site-header__palette-keys">⌘K</kbd>
         </button>
         <LangSwitch copy={copy} locale={locale} />
         <ThemeToggle copy={copy} />
