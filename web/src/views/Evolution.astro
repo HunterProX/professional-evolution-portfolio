@@ -2,22 +2,33 @@
 /**
  * Evolution composition — roadmap, source legend, and the complete timeline.
  *
- * The roadmap table is derived from the milestones themselves
- * (`roadmapRows` in `lib/data.ts`), not from a hand-written list: a phase only
- * appears if at least one milestone declares it, and its "supporting projects"
- * are the union of the projects those milestones link to. Editing the data
- * changes the roadmap; editing this file never would.
+ * The roadmap area is two blocks, in this order:
+ *
+ *   1. **Goal → skill → proof** (`components/RoadmapTable.astro`), from
+ *      `data/roadmap.json`. This is the primary roadmap content: each declared
+ *      goal, the skills it exercises and the artifacts that would prove it. It
+ *      carries the `#roadmap` anchor the home page links to.
+ *   2. **Roadmap by phase**, derived from the milestones themselves
+ *      (`roadmapRows` in `lib/data.ts`): a phase only appears if at least one
+ *      milestone declares it, and its "supporting projects" are the union of the
+ *      projects those milestones link to. It is kept because it answers a
+ *      different question — what each phase (foundation / transition /
+ *      frontier) covered — but it is now subordinate: an `h3` under the goal
+ *      table's `h2`, behind a hairline.
+ *
+ * Editing the data changes either roadmap; editing this file never would.
  *
  * The legend is not decoration: it explains the three badges a milestone can
  * carry (curated, derived from git, snapshot), so a visitor knows that a
  * git-derived entry is an unreviewed candidate rather than curated history.
  * All strings come from the catalog, in both locales.
  *
- * Heading order: h1 (page) → h2 (roadmap, source legend, timeline) →
- * h3 (roadmap phase, timeline section) → h4 (milestone), so no level is skipped.
+ * Heading order: h1 (page) → h2 (goal roadmap, source legend, timeline) →
+ * h3 (phases, timeline section) → h4 (phase, milestone), so no level is skipped.
  */
 import type { Copy, Locale } from '../i18n/copy';
 import EvolutionTimeline from '../components/EvolutionTimeline.astro';
+import RoadmapTable from '../components/RoadmapTable.astro';
 import { roadmapRows } from '../lib/data';
 import { route } from '../lib/urls';
 
@@ -41,19 +52,30 @@ const roadmap = roadmapRows();
       <p class="lead">{copy.evolution.summary}</p>
     </header>
 
+    {/* Primary roadmap content. `id="roadmap"` is the anchor the home page CTA
+        points at, so the goal table is reachable from `/` without scrolling. */}
+    <section class="roadmap-goals reveal" id="roadmap" aria-labelledby="roadmap-heading">
+      <header class="roadmap-goals__head">
+        <h2 id="roadmap-heading">{copy.evolution.roadmapTable.heading}</h2>
+        <p class="roadmap-goals__note">{copy.evolution.roadmapTable.note}</p>
+      </header>
+
+      <RoadmapTable copy={copy} locale={locale} />
+    </section>
+
     {
       roadmap.length > 0 && (
-        <section class="roadmap reveal" aria-labelledby="roadmap-heading">
-          <header class="roadmap__head">
-            <h2 id="roadmap-heading">{copy.evolution.roadmapHeading}</h2>
-            <p class="roadmap__note">{copy.evolution.roadmapNote}</p>
+        <section class="roadmap-phases reveal" aria-labelledby="roadmap-phases-heading">
+          <header class="roadmap-phases__head">
+            <h3 id="roadmap-phases-heading">{copy.evolution.roadmapHeading}</h3>
+            <p class="roadmap-phases__note">{copy.evolution.roadmapNote}</p>
           </header>
 
           <ol class="roadmap__rows">
             {roadmap.map((row) => (
               <li class="roadmap__row" data-phase={row.phase}>
                 <div class="roadmap__phase">
-                  <h3 class="roadmap__phase-name">{copy.evolution.phaseLabel[row.phase]}</h3>
+                  <h4 class="roadmap__phase-name">{copy.evolution.phaseLabel[row.phase]}</h4>
                   <p class="roadmap__phase-count tabular">
                     {copy.evolution.roadmapMilestones(row.milestones.length)}
                   </p>
@@ -120,23 +142,53 @@ const roadmap = roadmapRows();
     margin-block: var(--space-2) var(--space-3);
   }
 
-  /* --- Roadmap --------------------------------------------------------------
-   * Rows rather than a `<table>`: the three columns are prose and links, not
-   * numbers to compare, and a stacked row survives a narrow viewport without
-   * horizontal scrolling.
+  /* --- Roadmap -------------------------------------------------------------
+   * Two blocks in one area: the goal table (primary, `#roadmap`) and the phase
+   * rows summarised from the milestones (subordinate). Neither is a `<table>`:
+   * the columns are prose and links, not numbers to compare, and a stacked row
+   * survives a narrow viewport without horizontal scrolling.
    * --------------------------------------------------------------------- */
   /* The rows span the shell (a three-column grid at 68ch would wrap every
      project name); the prose is what gets the measure cap. */
-  .roadmap {
-    margin-bottom: var(--space-10);
+  .roadmap-goals {
+    margin-bottom: var(--space-12);
+    /* `:target` is styled globally; this offset keeps the sticky header from
+       covering the anchor when the home CTA lands on it. */
+    scroll-margin-top: calc(var(--header-height) + var(--space-6));
   }
 
-  .roadmap__head h2 {
+  .roadmap-goals__head h2 {
     font-size: var(--text-xl);
     line-height: var(--leading-xl);
   }
 
-  .roadmap__note {
+  .roadmap-goals__note {
+    max-width: var(--measure);
+    margin-top: var(--space-2);
+    margin-bottom: var(--space-6);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  /* Subordinate by construction: a hairline above the head and a smaller
+     heading, so the phase rows read as the derivation of the table above them
+     rather than as a second roadmap. */
+  .roadmap-phases {
+    margin-bottom: var(--space-10);
+  }
+
+  .roadmap-phases__head {
+    padding-top: var(--space-8);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .roadmap-phases__head h3 {
+    font-size: var(--text-lg);
+    line-height: var(--leading-lg);
+  }
+
+  .roadmap-phases__note {
     max-width: var(--measure);
     margin-top: var(--space-2);
     color: var(--color-text-muted);

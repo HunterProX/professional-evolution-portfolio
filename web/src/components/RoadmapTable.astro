@@ -1,0 +1,326 @@
+---
+/**
+ * Roadmap table — one row per declared roadmap milestone: goal, skills, proof.
+ *
+ * The dataset is `data/roadmap.json` (canonical, gated by
+ * `scripts/data-validate.mjs`), imported directly exactly as `SkillMatrix`
+ * imports `skills.json`: re-exporting it from `lib/data.ts` would be the tidier
+ * home, and that module is outside this task's file scope. The component never
+ * re-orders the data — a roadmap's order *is* its narrative, so sorting it here
+ * would be a data edit disguised as a view edit. The status chip on every row is
+ * what keeps a planned intention from reading as a result.
+ *
+ * Why rows and not a `<table>`: the same call `Evolution.astro` documents for
+ * the phase roadmap. The three columns hold prose and links, not numbers to
+ * compare, and a stacked row survives a 360px viewport without horizontal
+ * scrolling. Every cell carries its own visible label (Goal / Skills / Proof),
+ * so the stacked mobile layout keeps the column identity a real `<table>` would
+ * otherwise only express in a header row rendered once at the top.
+ *
+ * Nothing is invented:
+ *   - a skill chip links to `/career/#skills`, the only anchor the skill matrix
+ *     publishes; its tooltip names the category the skill is filed under in
+ *     `skills.json`. A name that no longer resolves keeps its chip (the link
+ *     target does not depend on the resolution) and carries no tooltip, rather
+ *     than a wrong one.
+ *   - a project proof links to that project's card on `/work/#<slug>` — every
+ *     `ProjectCard` carries `id="<slug>"` — and is labelled with the project's
+ *     published name.
+ *   - an evolution proof links to the milestone entry on `/evolution/` and is
+ *     labelled with the milestone's published title. The anchor is `<id>-title`,
+ *     not `<id>`: that is the id the timeline renders on the milestone heading
+ *     (`EvolutionTimeline.astro`) and the one `rss.xml.ts` deep-links with, so a
+ *     `#<id>` fragment would resolve to nothing. `EvolutionTimeline.astro` is
+ *     outside this task's file scope, so the link follows the anchor that
+ *     exists.
+ *   - an id that no longer resolves to a published project or milestone is
+ *     dropped rather than rendered as a dead link — the rule
+ *     `EvolutionTimeline` and `SkillMatrix` already follow.
+ *   - a row whose proofs are empty or all unresolvable renders the honest empty
+ *     state from copy ("Proof: planned — none published") instead of a blank
+ *     cell. `data-validate.mjs` requires `proofs` to be a non-empty array, so
+ *     that branch is defensive rather than reachable with today's data.
+ *
+ * Status chips reuse the milestone vocabulary already on the page: the label
+ * comes from `copy.evolution.{shipped,inProgress,planned}` and the colour from
+ * the same `chip--*` classes `EvolutionTimeline` maps them to, so a planned row
+ * cannot be coloured like a delivered one. The planned row also carries the
+ * "promised, not drawn" dashed treatment the frontier rows use.
+ */
+import type { Copy, Locale, SkillCategory } from '../i18n/copy';
+import type { MilestoneStatus } from '../lib/data';
+import { milestones, projects } from '../lib/data';
+import { route } from '../lib/urls';
+/* Imported directly rather than through `lib/data.ts`, matching
+   `SkillMatrix.astro`: the roadmap dataset has no data-layer export yet, and
+   `lib/data.ts` is outside this task's file scope. */
+import roadmapJson from '../../../data/roadmap.json';
+import skillsJson from '../../../data/skills.json';
+
+interface RoadmapProof {
+  type: 'project' | 'evolution';
+  id: string;
+}
+
+interface RoadmapMilestone {
+  id: string;
+  goal: string;
+  status: MilestoneStatus;
+  skills: string[];
+  proofs: RoadmapProof[];
+}
+
+/** One proof, resolved to the artifact it points at. */
+interface ResolvedProof {
+  /** Type label from copy ("Project" / "Milestone"). */
+  type: string;
+  /** Name of the target artifact, or the type label when it does not resolve. */
+  name: string;
+  href: string;
+}
+
+interface Props {
+  copy: Copy;
+  locale: Locale;
+}
+
+const { copy, locale } = Astro.props;
+
+/** Bridge between the widened JSON strings and the canonical unions. */
+const entries = roadmapJson.milestones as RoadmapMilestone[];
+
+/** Project slug → published project, so a removed project cannot leave a dead link. */
+const projectBySlug = new Map(projects.map((project) => [project.slug, project]));
+
+/** Milestone id → published milestone, used as the label of an evolution proof. */
+const milestoneById = new Map(milestones.map((milestone) => [milestone.id, milestone]));
+
+/**
+ * Skill name → the category `skills.json` files it under. Only names whose
+ * category is one the copy catalog labels are kept, so the lookup can never
+ * produce an undefined label.
+ */
+const categoryByName = new Map<string, SkillCategory>(
+  (skillsJson.skills as { name: string; category: string }[])
+    .filter((skill) => skill.category in copy.skills.categoryLabel)
+    .map((skill) => [skill.name, skill.category as SkillCategory]),
+);
+
+/** Status chip colour per roadmap status — mirrors `EvolutionTimeline.astro`. */
+const statusVariant: Record<MilestoneStatus, string> = {
+  shipped: 'chip--success',
+  'in-progress': 'chip--warn',
+  planned: 'chip--neutral',
+};
+
+const statusLabel: Record<MilestoneStatus, string> = {
+  shipped: copy.evolution.shipped,
+  'in-progress': copy.evolution.inProgress,
+  planned: copy.evolution.planned,
+};
+
+const proofTypeLabel: Record<RoadmapProof['type'], string> = {
+  project: copy.evolution.roadmapTable.proofProject,
+  evolution: copy.evolution.roadmapTable.proofEvolution,
+};
+
+/** Resolve one proof, or `null` when it points at nothing the site publishes. */
+function resolveProof(proof: RoadmapProof): ResolvedProof | null {
+  if (proof.type === 'project') {
+    const project = projectBySlug.get(proof.id);
+    if (!project) return null;
+    return {
+      type: proofTypeLabel.project,
+      name: project.name,
+      href: `${route(locale, 'work/')}#${proof.id}`,
+    };
+  }
+
+  const milestone = milestoneById.get(proof.id);
+  if (!milestone) return null;
+  return {
+    type: proofTypeLabel.evolution,
+    name: milestone.title,
+    href: `${route(locale, 'evolution/')}#${proof.id}-title`,
+  };
+}
+
+const rows = entries.map((entry) => ({
+  entry,
+  proofs: entry.proofs
+    .map(resolveProof)
+    .filter((proof): proof is ResolvedProof => proof !== null),
+}));
+---
+
+<ul class="goal-table">
+  {
+    rows.map((row) => (
+      <li class="goal-table__row" data-status={row.entry.status}>
+        <div class="goal-table__cell goal-table__cell--goal">
+          <p class="goal-table__label">{copy.evolution.roadmapTable.goalLabel}</p>
+          <span class={`chip ${statusVariant[row.entry.status]}`}>
+            {statusLabel[row.entry.status]}
+          </span>
+          <p class="goal-table__goal">{row.entry.goal}</p>
+        </div>
+
+        <div class="goal-table__cell goal-table__cell--skills">
+          <p class="goal-table__label">{copy.evolution.roadmapTable.skillsLabel}</p>
+          <ul class="goal-table__skills">
+            {row.entry.skills.map((skill) => {
+              const category = categoryByName.get(skill);
+              return (
+                <li class="goal-table__skill">
+                  <a
+                    class="chip chip--neutral goal-table__skill-link"
+                    href={`${route(locale, 'career/')}#skills`}
+                    title={category ? copy.skills.categoryLabel[category] : undefined}
+                  >
+                    {skill}
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+
+        <div class="goal-table__cell goal-table__cell--proof">
+          <p class="goal-table__label">{copy.evolution.roadmapTable.proofLabel}</p>
+          {row.proofs.length > 0 ? (
+            <ul class="goal-table__proofs">
+              {row.proofs.map((proof) => (
+                <li class="goal-table__proof">
+                  <span class="goal-table__proof-type">{proof.type}</span>
+                  <a class="goal-table__proof-link" href={proof.href}>
+                    {proof.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p class="goal-table__proof-empty">{copy.evolution.roadmapTable.noProofs}</p>
+          )}
+        </div>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .goal-table {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Stacked below 768px: the label travels with its cell, so the order
+     Goal → Skills → Proof is preserved without a header row. */
+  .goal-table__row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    /* Overrides the global `li { max-width: var(--measure) }` readability cap:
+       this `<li>` is a layout row, not prose. The prose inside it keeps the cap
+       through `.goal-table__goal`. */
+    max-width: none;
+    padding: var(--space-5);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  /* "Promised, not drawn": a planned row is an intention, so it reads like the
+     dashed frontier rows on the timeline rather than like delivered work. */
+  .goal-table__row[data-status='planned'] {
+    background-color: transparent;
+    border-style: dashed;
+  }
+
+  .goal-table__cell--goal,
+  .goal-table__cell--skills,
+  .goal-table__cell--proof {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    align-items: flex-start;
+  }
+
+  .goal-table__label {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: var(--tracking-eyebrow);
+    line-height: var(--leading-xs);
+    text-transform: uppercase;
+  }
+
+  .goal-table__goal {
+    max-width: var(--measure);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .goal-table__skills,
+  .goal-table__proofs {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .goal-table__skill,
+  .goal-table__proof {
+    max-width: none;
+  }
+
+  /* A chip that is a link must look like one; `chip` only paints the shape. */
+  .goal-table__skill-link {
+    min-height: 44px;
+    text-decoration: none;
+  }
+
+  .goal-table__skill-link:hover {
+    text-decoration: underline;
+  }
+
+  .goal-table__proof {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .goal-table__proof-type {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+  }
+
+  .goal-table__proof-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+
+  .goal-table__proof-empty {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  @media (min-width: 768px) {
+    .goal-table__row {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1.3fr);
+      gap: var(--space-3) var(--space-6);
+      align-items: start;
+    }
+  }
+</style>

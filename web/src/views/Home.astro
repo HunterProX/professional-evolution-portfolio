@@ -13,6 +13,10 @@
  * pointing at a route). The reveal observer itself lives in BaseLayout, so it
  * is not repeated here.
  *
+ * The evolution section ends with a link to `/evolution/#roadmap` rather than a
+ * preview of the goal → skill → proof table: a three-column table is not a
+ * teaser, and three of its rows would read as the whole plan.
+ *
  * Two blocks exist to make a claim inspectable rather than to sell it: the
  * career timeline (declared periods, with the provenance badge on every entry)
  * and the boundaries list (what this portfolio refuses to assert). Both come
@@ -142,6 +146,17 @@ const evolutionPreview = [...curatedMilestonesByDateDesc]
       limit={3}
       previewNote={copy.evolution.curatedPreviewNote}
     />
+
+    {/* The roadmap itself is not previewed here. A three-column goal table is
+        not a teaser: rendering three of its rows would read as the whole plan,
+        and the phases column carries no meaning once the rows are cut. The home
+        page links to the roadmap instead, at the anchor `/evolution/#roadmap`
+        that page gives it. */}
+    <p class="section__more reveal">
+      <a class="button button--ghost" href={`${route(locale, 'evolution/')}#roadmap`}>
+        {copy.evolution.roadmapTable.viewAll}
+      </a>
+    </p>
   </div>
 </section>
 

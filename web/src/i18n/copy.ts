@@ -157,6 +157,36 @@ export interface Copy {
     phaseFocus: Record<'foundation' | 'transition' | 'frontier', string>;
     /** Milestone count inside one roadmap row. */
     roadmapMilestones: (count: number) => string;
+    /**
+     * The goal → skill → proof roadmap table (`components/RoadmapTable.astro`),
+     * built from `data/roadmap.json`.
+     *
+     * This is the forward-looking half of the roadmap area: the phase rows above
+     * describe what each phase covered, and this table states, per declared
+     * goal, the skills it exercises and the artifact that would prove it. The
+     * copy therefore may not sound like a result: `noProofs` is the honest empty
+     * state for a row with nothing published yet.
+     */
+    roadmapTable: {
+      /** Heading of the table on the evolution page; `#roadmap` is its anchor. */
+      heading: string;
+      /** One line under the heading: what the table claims, and what it does not. */
+      note: string;
+      /** Column label of the goal cell. */
+      goalLabel: string;
+      /** Column label of the skills cell. */
+      skillsLabel: string;
+      /** Column label of the proof cell. */
+      proofLabel: string;
+      /** Type label of a proof that points at a project. */
+      proofProject: string;
+      /** Type label of a proof that points at an evolution milestone. */
+      proofEvolution: string;
+      /** Honest empty state for a roadmap row with no published proof. */
+      noProofs: string;
+      /** CTA from the home page to the roadmap section of `/evolution/`. */
+      viewAll: string;
+    };
   };
   /**
    * Career history (`data/experience.json`): the employer line rendered by
@@ -537,6 +567,18 @@ export const en: Copy = {
         'Intended, not started. Each row points at the repositories the next work would extend; none of it is built yet.',
     },
     roadmapMilestones: (count) => (count === 1 ? '1 milestone' : `${count} milestones`),
+    roadmapTable: {
+      heading: 'Roadmap: goal, skill, proof',
+      note:
+        'One row per declared goal: the skills it exercises and the artifacts that prove it. A planned row is an intention, not a result — its proofs name the work it would extend, and no artifact exists until it ships.',
+      goalLabel: 'Goal',
+      skillsLabel: 'Skills',
+      proofLabel: 'Proof',
+      proofProject: 'Project',
+      proofEvolution: 'Milestone',
+      noProofs: 'Proof: planned — none published',
+      viewAll: 'View the roadmap',
+    },
   },
   career: {
     eyebrow: 'Career',
@@ -867,6 +909,18 @@ export const es: Copy = {
         'Intencionado, no iniciado. Cada fila apunta a los repositorios que el próximo trabajo ampliaría; nada de eso está construido todavía.',
     },
     roadmapMilestones: (count) => (count === 1 ? '1 hito' : `${count} hitos`),
+    roadmapTable: {
+      heading: 'Hoja de ruta: objetivo, habilidad, prueba',
+      note:
+        'Una fila por cada objetivo declarado: las habilidades que ejerce y los artefactos que lo prueban. Una fila planificada es una intención, no un resultado: sus pruebas nombran el trabajo que ampliaría, y ningún artefacto existe hasta que se entregue.',
+      goalLabel: 'Objetivo',
+      skillsLabel: 'Habilidades',
+      proofLabel: 'Prueba',
+      proofProject: 'Proyecto',
+      proofEvolution: 'Hito',
+      noProofs: 'Prueba: prevista — nada publicado todavía',
+      viewAll: 'Ver la hoja de ruta',
+    },
   },
   career: {
     eyebrow: 'Trayectoria',
