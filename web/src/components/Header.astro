@@ -19,7 +19,8 @@
  *
  * On the home page a tiny scroll-spy marks the nav link of the section in view
  * with `aria-current="true"`; every other route keeps the static
- * `aria-current="page"` the `active` prop sets.
+ * `aria-current="page"` the `active` prop sets, or — for the career route,
+ * which has no `activeNav` marker — the one the pathname check below derives.
  */
 import type { Copy, Locale } from '../i18n/copy';
 import { profile } from '../lib/data';
@@ -39,16 +40,28 @@ const { copy, locale, active } = Astro.props;
 const pathname = Astro.url.pathname;
 const root = localeRoot(locale);
 
-/* Work, Evolution and Evidence are routes and stay absolute from every page;
-   Contact is a home section, so it is a plain fragment on the home page
+/** Nav ids. `career` is a route like the others, and it also names a home
+    section, so it joins the scroll-spy list. */
+type NavId = NonNullable<Props['active']> | 'career';
+
+/* Work, Career, Evolution and Evidence are routes and stay absolute from every
+   page; Contact is a home section, so it is a plain fragment on the home page
    itself and points at the same-language home section everywhere else.
-   Section ids keep the preserved anchors: #projects, #contact. */
-const links: { id: NonNullable<Props['active']>; href: string; label: string }[] = [
+   Section ids keep the preserved anchors: #projects, #career, #contact. */
+const links: { id: NavId; href: string; label: string }[] = [
   { id: 'projects', href: route(locale, 'work/'), label: copy.nav.work },
+  { id: 'career', href: route(locale, 'career/'), label: copy.nav.career },
   { id: 'evolution', href: route(locale, 'evolution/'), label: copy.nav.evolution },
   { id: 'evidence', href: route(locale, 'evidence/'), label: copy.nav.evidence },
   { id: 'contact', href: sectionHref(locale, 'contact', pathname), label: copy.nav.contact },
 ];
+
+/* The career route resolves its own `aria-current` from the pathname, the same
+   signal `sectionHref` already uses: `BaseLayout`'s `activeNav` union is
+   unchanged by this task, so there is no prop to pass. Every other link keeps
+   the behaviour the `active` prop drives. */
+const isCurrent = (id: NavId): boolean =>
+  active === id || (id === 'career' && pathname === route(locale, 'career/'));
 ---
 
 <header class="site-header">
@@ -79,7 +92,7 @@ const links: { id: NonNullable<Props['active']>; href: string; label: string }[]
                   class="site-nav__link"
                   href={link.href}
                   data-nav-section={link.id}
-                  aria-current={active === link.id ? 'page' : undefined}
+                  aria-current={isCurrent(link.id) ? 'page' : undefined}
                 >
                   {link.label}
                 </a>
@@ -129,11 +142,13 @@ const links: { id: NonNullable<Props['active']>; href: string; label: string }[]
   // Scroll-spy (home only): keep `aria-current` on the nav link of the home
   // section currently in view. It only runs when those sections exist, so
   // every other page keeps the static `aria-current` set by the `active` prop
-  // and a no-JS visit is unchanged. Nothing animates, so reduced motion is
-  // irrelevant. A link that is not current has only our own `true` value
-  // cleared; the route-level `page` value is never touched.
+  // (or, for the career route, by the pathname check above) and a no-JS visit
+  // is unchanged. The ids are in document order, so the first visible one wins
+  // when two sections overlap at a section boundary. Nothing animates, so
+  // reduced motion is irrelevant. A link that is not current has only our own
+  // `true` value cleared; the route-level `page` value is never touched.
   const navLinks = Array.from(document.querySelectorAll<HTMLElement>('[data-nav-section]'));
-  const sections = ['projects', 'evolution', 'evidence', 'contact']
+  const sections = ['projects', 'career', 'evolution', 'evidence', 'contact']
     .map((id) => document.getElementById(id))
     .filter((el): el is HTMLElement => el !== null);
   if (navLinks.length > 0 && sections.length > 0 && 'IntersectionObserver' in window) {

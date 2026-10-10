@@ -1,0 +1,24 @@
+---
+/**
+ * Career route (en) — the employer history with the skill matrix slot below it.
+ *
+ * The composition lives in `src/views/Career.astro`, shared with `/es/`, so the
+ * two locales render identical structure from one source. No `activeNav`: the
+ * header marks this route from its own pathname, because `BaseLayout`'s
+ * `activeNav` union is unchanged by this task.
+ */
+import type { Locale } from '../i18n/copy';
+import { getCopy } from '../i18n/copy';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Career from '../views/Career.astro';
+
+const locale: Locale = 'en';
+const copy = getCopy(locale);
+
+const title = copy.nav.career;
+const description = copy.career.summary;
+---
+
+<BaseLayout locale={locale} title={title} description={description} path="career/">
+  <Career locale={locale} copy={copy} />
+</BaseLayout>

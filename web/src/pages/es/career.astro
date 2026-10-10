@@ -1,0 +1,25 @@
+---
+/**
+ * Ruta de trayectoria (es) — el historial de empleadores con el espacio
+ * reservado para la matriz de habilidades debajo.
+ *
+ * La composición vive en `src/views/Career.astro`, compartida con `/career/`,
+ * así que ambos locales renderizan la misma estructura desde una sola fuente.
+ * Sin `activeNav`: la cabecera marca esta ruta por su propio pathname, porque
+ * la unión `activeNav` de `BaseLayout` no cambia en esta tarea.
+ */
+import type { Locale } from '../../i18n/copy';
+import { getCopy } from '../../i18n/copy';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Career from '../../views/Career.astro';
+
+const locale: Locale = 'es';
+const copy = getCopy(locale);
+
+const title = copy.nav.career;
+const description = copy.career.summary;
+---
+
+<BaseLayout locale={locale} lang="es" title={title} description={description} path="career/">
+  <Career locale={locale} copy={copy} />
+</BaseLayout>

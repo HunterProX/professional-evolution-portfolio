@@ -36,6 +36,7 @@ export interface Copy {
   };
   nav: {
     work: string;
+    career: string;
     evolution: string;
     evidence: string;
     contact: string;
@@ -142,6 +143,33 @@ export interface Copy {
     phaseFocus: Record<'foundation' | 'transition' | 'frontier', string>;
     /** Milestone count inside one roadmap row. */
     roadmapMilestones: (count: number) => string;
+  };
+  /**
+   * Career history (`data/experience.json`): the employer line rendered by
+   * `components/CareerTimeline.astro` on the home page and `/career/`.
+   *
+   * Every entry carries the same source badge in both places, because the
+   * provenance does not change with the page it is rendered on: the periods,
+   * roles and stacks are human-declared and corroborated on the public
+   * LinkedIn profile, not derived from a repository.
+   */
+  career: {
+    /** Eyebrow above the home section. */
+    eyebrow: string;
+    /** Section heading on home and page title on `/career/`. */
+    heading: string;
+    /** Lead paragraph under the heading. */
+    summary: string;
+    /** Heading above the full timeline on `/career/`. */
+    timelineHeading: string;
+    /** End label of an ongoing role, instead of a month. */
+    present: string;
+    /** Text of the source badge, which links to the public LinkedIn profile. */
+    sourceLabel: string;
+    /** Accessible name of the per-role stack chip list. */
+    stackLabel: string;
+    /** CTA from the compact home timeline to the full career page. */
+    viewAll: string;
   };
   evidence: {
     eyebrow: string;
@@ -296,6 +324,8 @@ export interface Copy {
    * lines keep the original evidence-first boundaries.
    */
   boundaries: {
+    /** Eyebrow above the boundary list (the legacy "The boundary" label). */
+    eyebrow: string;
     /** Heading above the boundary list. */
     heading: string;
     /** One line per boundary, in display order. */
@@ -329,6 +359,7 @@ export const en: Copy = {
   },
   nav: {
     work: 'Work',
+    career: 'Career',
     evolution: 'Evolution',
     evidence: 'Evidence',
     contact: 'Contact',
@@ -450,6 +481,17 @@ export const en: Copy = {
         'Intended, not started. Each row points at the repositories the next work would extend; none of it is built yet.',
     },
     roadmapMilestones: (count) => (count === 1 ? '1 milestone' : `${count} milestones`),
+  },
+  career: {
+    eyebrow: 'Career',
+    heading: 'Where the work happened, and on what.',
+    summary:
+      'Five employers, human-declared (verified facts, 2026-10-08) and corroborated on the public LinkedIn profile. Periods, roles and stacks are reproduced as declared; nothing here is inferred from a repository.',
+    timelineHeading: 'Employer history',
+    present: 'Present',
+    sourceLabel: 'Human-declared · corroborated on LinkedIn',
+    stackLabel: 'Declared stack',
+    viewAll: 'View the full career',
   },
   evidence: {
     eyebrow: 'Evidence',
@@ -583,6 +625,7 @@ export const en: Copy = {
     linkedinLabel: 'LinkedIn',
   },
   boundaries: {
+    eyebrow: 'The boundary',
     heading: 'What this portfolio will not pretend to know.',
     items: [
       'No production RAG claim is made.',
@@ -618,6 +661,7 @@ export const es: Copy = {
   },
   nav: {
     work: 'Trabajo',
+    career: 'Trayectoria',
     evolution: 'Evolución',
     evidence: 'Evidencia',
     contact: 'Contacto',
@@ -740,6 +784,17 @@ export const es: Copy = {
         'Intencionado, no iniciado. Cada fila apunta a los repositorios que el próximo trabajo ampliaría; nada de eso está construido todavía.',
     },
     roadmapMilestones: (count) => (count === 1 ? '1 hito' : `${count} hitos`),
+  },
+  career: {
+    eyebrow: 'Trayectoria',
+    heading: 'Dónde ocurrió el trabajo, y sobre qué.',
+    summary:
+      'Cinco empleadores, declarados por la persona (datos verificados, 2026-10-08) y corroborados en el perfil público de LinkedIn. Los periodos, roles y stacks se reproducen tal como se declararon; nada aquí se infiere de un repositorio.',
+    timelineHeading: 'Historial de empleadores',
+    present: 'Actualidad',
+    sourceLabel: 'Declarado por la persona · corroborado en LinkedIn',
+    stackLabel: 'Stack declarado',
+    viewAll: 'Ver la trayectoria completa',
   },
   evidence: {
     eyebrow: 'Evidencia',
@@ -875,6 +930,7 @@ export const es: Copy = {
     linkedinLabel: 'LinkedIn',
   },
   boundaries: {
+    eyebrow: 'El límite',
     heading: 'Lo que este portfolio no fingirá saber.',
     items: [
       'No se afirma capacidad RAG en producción.',

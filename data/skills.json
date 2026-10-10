@@ -166,14 +166,16 @@
       "category": "ai",
       "aliases": [],
       "employedAt": [],
-      "projects": ["ai-chat-app"]
+      "projects": [],
+      "facts": "verified-facts-2026-10-08"
     },
     {
       "name": "Chat & streaming",
       "category": "ai",
       "aliases": [],
       "employedAt": [],
-      "projects": ["ai-chat-app"]
+      "projects": [],
+      "facts": "verified-facts-2026-10-08"
     },
     {
       "name": "Human-in-the-loop",

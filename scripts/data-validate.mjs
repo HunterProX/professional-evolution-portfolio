@@ -22,9 +22,23 @@
  *   - evolution `projects` slugs resolve to declared projects
  *   - experience.json: ISO month periods (end >= start), unique company ids
  *   - skills.json: category enum, employedAt ⊆ experience ids,
- *     projects ⊆ projects.json slugs, and at least one evidence badge per skill
+ *     projects ⊆ projects.json slugs, the declared `facts` provenance when
+ *     present, and at least one evidence badge per skill
  *   - roadmap.json: skills exist in skills.json, proofs resolve to a project
  *     slug or an evolution milestone id
+ *
+ * Skill evidence badges — what a renderer is allowed to draw:
+ *   - `employedAt` — a company id. Renders as a link to that company on
+ *     `/career/`; the claim is "declared at this employer".
+ *   - `projects` — a project slug. Renders as a link to the case study; the
+ *     claim is "inspectable in this public repository".
+ *   - `facts` — the human-declared career facts (`verified-facts-2026-10-08`),
+ *     for a skill whose only provenance is the declaration itself. It is NOT a
+ *     link: there is no public artifact behind it, so the SkillMatrix renderer
+ *     must show it as a third, unlinked badge ("Verified career fact") rather
+ *     than borrowing a project's credibility.
+ *   A skill with none of the three is an unsupported claim, so the gate rejects
+ *   zero-badge entries rather than letting a bare skill name through.
  *
  * Exits non-zero, one line per problem, on failure.
  */
@@ -62,6 +76,13 @@ const SKILL_CATEGORIES = new Set(['languages', 'frontend', 'backend', 'cloud', '
 const ROADMAP_STATUSES = new Set(['planned', 'in-progress', 'shipped']);
 /** The only declared provenance accepted for a career entry. */
 const EXPERIENCE_SOURCE = 'human-declared-2026-10-08';
+/**
+ * The only accepted value of a skill's optional `facts` field: the human
+ * declaration the verified career facts were transcribed from. A skill that
+ * cites a provenance string the gate does not recognise is claiming support it
+ * cannot name, so the value is pinned rather than free text.
+ */
+const SKILL_FACTS_SOURCE = 'verified-facts-2026-10-08';
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const ISO_MONTH = /^\d{4}-\d{2}$/;
@@ -494,7 +515,8 @@ function validateExperience(data) {
 
 /**
  * `data/skills.json`. Every `employedAt` id must resolve to a company and every
- * `projects` slug to a declared project; a skill with neither badge would be an
+ * `projects` slug to a declared project; `facts`, when present, must name the
+ * one accepted declaration. A skill with none of the three badges would be an
  * unsupported claim, so it is rejected too.
  */
 function validateSkills(data, companyIds, projectSlugs) {
@@ -544,10 +566,25 @@ function validateSkills(data, companyIds, projectSlugs) {
         }
       }
     }
+    // `facts` is optional: a skill backed by an employer or a repository does
+    // not need it. When it IS declared it must name the accepted provenance, so
+    // a badge can never point at a source the site does not hold.
+    if (skill.facts !== undefined && skill.facts !== null) {
+      if (!isNonEmptyString(skill.facts)) {
+        fail(`${label}: "facts" must be a non-empty string when present`);
+      } else if (skill.facts !== SKILL_FACTS_SOURCE) {
+        fail(`${label}: "facts" must be "${SKILL_FACTS_SOURCE}"`);
+      }
+    }
+    // The badge rule: at least one of the three provenances, never zero. A skill
+    // with none of them is a claim with nothing behind it.
     const hasEmployment = Array.isArray(skill.employedAt) && skill.employedAt.length > 0;
     const hasProject = Array.isArray(skill.projects) && skill.projects.length > 0;
-    if (!hasEmployment && !hasProject) {
-      fail(`${label}: must have at least one "employedAt" company or "projects" slug`);
+    const hasFacts = isNonEmptyString(skill.facts);
+    if (!hasEmployment && !hasProject && !hasFacts) {
+      fail(
+        `${label}: must have at least one "employedAt" company, "projects" slug or "facts" provenance`,
+      );
     }
   });
   return names;

@@ -1,0 +1,324 @@
+---
+/**
+ * Career timeline — the declared employer history, newest first.
+ *
+ * Structure, and why:
+ *
+ *   - **Newest first.** A reader opens a career page asking "what is this person
+ *     doing now", so the present role leads and the list descends. The sort is
+ *     on a copy: `data/experience.json` keeps its declared (chronological)
+ *     order and is never mutated by a view.
+ *   - **A proportional bar, not a chart.** Each entry's width is its duration in
+ *     months relative to the longest entry in the *rendered* set. It is
+ *     decorative (`aria-hidden`): the period text next to it already states the
+ *     same information in words, so nothing is only available as a length.
+ *   - **The source badge is on every entry.** The provenance does not change
+ *     with the page, so the compact home timeline and the full `/career/` page
+ *     carry the same "Human-declared · corroborated on LinkedIn" line, linking
+ *     to the public profile. No client names, compensation or contract details
+ *     are rendered — the dataset does not carry them.
+ *   - **Month names are a twelve-item map, not a date library.** The data is
+ *     month-precision ISO (`YYYY-MM`), so `Intl` would add a formatter per
+ *     entry for two words it already knows. No dependency, no timezone.
+ *   - **The draw animation is CSS only**, matching `EvolutionTimeline`: the bar
+ *     scales from `scaleX(0)` once the reveal observer in BaseLayout flips
+ *     `.is-visible`. Without JavaScript the bars render at full length, and
+ *     reduced motion collapses the transition duration to 1ms (tokens.css), so
+ *     no information depends on the motion.
+ *
+ * Heading order: the company name is an `h3`, which is correct in both callers —
+ * home renders the section header as `h2` and `/career/` renders the page title
+ * as `h1` with an `h2` timeline heading above this component.
+ */
+import type { Copy, Locale } from '../i18n/copy';
+import { profile } from '../lib/data';
+import { route } from '../lib/urls';
+/* Imported directly rather than through `lib/data.ts`: the career data layer is
+   re-exported from there in a later task, and duplicating one JSON import here
+   keeps the component consumable today without editing a shared module. */
+import experienceJson from '../../../data/experience.json';
+
+interface Company {
+  id: string;
+  company: string;
+  role: string;
+  /** ISO month (`YYYY-MM`) the role started. */
+  start: string;
+  /** ISO month the role ended, or `null` while it is ongoing. */
+  end: string | null;
+  stack: string[];
+  source: string;
+}
+
+interface Props {
+  copy: Copy;
+  locale: Locale;
+  /**
+   * Compact variant for the home page: the three most recent entries plus a
+   * link to the full page. Everything else — period, bar, stack and source
+   * badge — is identical, so the preview never shows a weaker claim than the
+   * page it points at.
+   */
+  compact?: boolean;
+}
+
+const { copy, locale, compact = false } = Astro.props;
+
+/** Entries the compact preview keeps. */
+const COMPACT_LIMIT = 3;
+
+const companies = experienceJson.companies as Company[];
+
+/**
+ * Locale-aware short month names. Spanish follows the usual no-period, lowercase
+ * short form (ene, abr, ago, dic) that Spanish typography uses for dates.
+ */
+const MONTHS: Record<Locale, readonly string[]> = {
+  en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  es: ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'],
+};
+
+/** `2023-10` → `Oct 2023` (or `oct 2023`). No `Date`: the data is month-precision. */
+function formatMonth(isoMonth: string): string {
+  const [year, month] = isoMonth.split('-');
+  return `${MONTHS[locale][Number(month) - 1]} ${year}`;
+}
+
+/** `2023-10` → 2023*12 + 10, the month index every duration is measured in. */
+function monthIndex(isoMonth: string): number {
+  return Number(isoMonth.slice(0, 4)) * 12 + Number(isoMonth.slice(5, 7));
+}
+
+/**
+ * Months an entry covers, counting both ends. An ongoing role is measured to
+ * the month of the build — "Present" is exactly that claim, so the bar cannot
+ * pretend the role ended. It therefore grows as the site is rebuilt, which is
+ * the honest reading rather than a frozen number.
+ */
+function durationMonths(company: Company, present: string): number {
+  const end = company.end ?? present;
+  return monthIndex(end) - monthIndex(company.start) + 1;
+}
+
+const buildDate = new Date();
+const presentMonth = `${buildDate.getUTCFullYear()}-${String(buildDate.getUTCMonth() + 1).padStart(2, '0')}`;
+
+const ordered = [...companies].sort((a, b) =>
+  a.start === b.start ? a.id.localeCompare(b.id) : a.start < b.start ? 1 : -1,
+);
+
+const visible = compact ? ordered.slice(0, COMPACT_LIMIT) : ordered;
+
+const longest = Math.max(...visible.map((company) => durationMonths(company, presentMonth)), 1);
+
+const entries = visible.map((company, index) => {
+  const months = durationMonths(company, presentMonth);
+  const ongoing = company.end === null;
+  return {
+    company,
+    index,
+    ongoing,
+    // Relative width of the duration bar. A floor keeps a three-month role
+    // visible instead of collapsing it to a hairline.
+    share: Math.max(6, Math.round((months / longest) * 100)),
+    // Both halves of the period are resolved here so the template never has to
+    // cast: an ongoing role has no end month to put in a `datetime` attribute.
+    startLabel: formatMonth(company.start),
+    endLabel: ongoing ? copy.career.present : formatMonth(company.end ?? company.start),
+    endDatetime: company.end,
+  };
+});
+---
+
+<div class="career">
+  <ol class="career__list reveal">
+    {
+      entries.map((entry) => (
+        <li class="career__item">
+          <article class="career__entry" aria-labelledby={`career-${entry.company.id}-title`}>
+            <div class="career__head">
+              <h3 class="career__company" id={`career-${entry.company.id}-title`}>
+                {entry.company.company}
+              </h3>
+              <p class="career__role">{entry.company.role}</p>
+            </div>
+
+            <p class="career__period tabular">
+              <time datetime={entry.company.start}>{entry.startLabel}</time>
+              {' — '}
+              {entry.ongoing ? (
+                <span class="career__period-present">{entry.endLabel}</span>
+              ) : (
+                <time datetime={entry.endDatetime ?? entry.company.start}>{entry.endLabel}</time>
+              )}
+            </p>
+
+            {/* Decorative: the period above already states the duration in words. */}
+            <div class="career__bar" aria-hidden="true">
+              <span
+                class="career__bar-fill"
+                style={`width: ${entry.share}%; --career-index: ${entry.index};`}
+              />
+            </div>
+
+            <ul class="career__stack" aria-label={copy.career.stackLabel}>
+              {entry.company.stack.map((technology) => (
+                <li>
+                  <span class="chip chip--neutral">{technology}</span>
+                </li>
+              ))}
+            </ul>
+
+            <p class="career__source">
+              <a
+                class="career__source-link"
+                href={profile.socials.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {copy.career.sourceLabel}
+                <span class="visually-hidden"> ({copy.a11y.opensInNewTab})</span>
+              </a>
+            </p>
+          </article>
+        </li>
+      ))
+    }
+  </ol>
+
+  {
+    compact && (
+      <p class="career__cta reveal">
+        <a class="button button--ghost" href={route(locale, 'career/')}>
+          {copy.career.viewAll}
+        </a>
+      </p>
+    )
+  }
+</div>
+
+<style>
+  .career {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+  }
+
+  .career__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* The `<li>` is a layout row, not prose: it overrides the global
+     `li { max-width: var(--measure) }` readability cap. The prose inside keeps
+     the cap through the inherited `p` rule. */
+  .career__item {
+    max-width: none;
+  }
+
+  .career__entry {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-5);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .career__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-2) var(--space-3);
+  }
+
+  .career__company {
+    font-size: var(--text-lg);
+    line-height: var(--leading-lg);
+  }
+
+  .career__role {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .career__period {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-sm);
+  }
+
+  .career__period-present {
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+
+  /* --- Duration bar --------------------------------------------------------
+   * Width is the inline style computed from the entry's months; the default
+   * state is the final state so a no-JS visit (and a crawler) sees real bars.
+   * Only `.js` narrows them to zero, and `.is-visible` — added by the reveal
+   * observer in BaseLayout — releases them.
+   * --------------------------------------------------------------------- */
+  .career__bar {
+    height: 6px;
+    background-color: var(--color-surface-raised);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+  }
+
+  .career__bar-fill {
+    display: block;
+    height: 100%;
+    background-color: var(--color-accent);
+    border-radius: inherit;
+    transform-origin: left center;
+  }
+
+  :global(.js) .career__list:not(.is-visible) .career__bar-fill {
+    transform: scaleX(0);
+  }
+
+  .career__list.is-visible .career__bar-fill {
+    transform: scaleX(1);
+    transition: transform var(--duration-slow) var(--ease-in-out);
+    /* Same stagger token the reveal animation uses, so the bars draw in step
+       with the list instead of arriving all at once. */
+    transition-delay: calc(var(--career-index, 0) * var(--reveal-stagger));
+  }
+
+  .career__stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Chips are short labels, so the prose measure cap does not apply to the
+     `<li>` that wraps each of them. */
+  .career__stack li {
+    max-width: none;
+  }
+
+  .career__source {
+    font-size: var(--text-xs);
+    line-height: var(--leading-xs);
+  }
+
+  .career__source-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  .career__cta {
+    margin-top: var(--space-2);
+  }
+</style>
