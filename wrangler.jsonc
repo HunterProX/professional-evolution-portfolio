@@ -3,6 +3,7 @@
   "name": "professional-evolution-portfolio",
   "compatibility_date": "2026-10-03",
   "assets": {
-    "directory": "./dist"
+    "directory": "./dist",
+    "not_found_handling": "404.html"
   }
 }

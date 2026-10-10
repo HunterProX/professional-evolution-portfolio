@@ -32,8 +32,29 @@ const nf = copy.notFound;
         <a class="button button--ghost" href={route(locale, 'work/')}>{nf.work}</a>
         <a class="button button--ghost" href={route(locale, 'evidence/')}>{nf.evidence}</a>
       </div>
+      <p class="notfound__from" hidden>{nf.returnedFrom}</p>
     </div>
   </section>
+
+  <script is:inline>
+    // Localized 404 (en). GitHub Pages serves this English page for misses
+    // under `/es/` too, so a Spanish path would land here in the wrong
+    // language. Redirect once to the real Spanish 404, preserving the
+    // requested path in `from`; the target is a real page, so there is no loop.
+    (() => {
+      const path = location.pathname;
+      const base = path.startsWith('/professional-evolution-portfolio/')
+        ? '/professional-evolution-portfolio/'
+        : '/';
+      if (path.slice(base.length).startsWith('es/') && !path.endsWith('/es/404/')) {
+        location.replace(`${base}es/404/?from=${encodeURIComponent(path + location.search)}`);
+        return;
+      }
+      if (new URLSearchParams(location.search).has('from')) {
+        document.querySelector('.notfound__from')?.removeAttribute('hidden');
+      }
+    })();
+  </script>
 </BaseLayout>
 
 <style>
@@ -64,5 +85,11 @@ const nf = copy.notFound;
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-3);
+  }
+
+  .notfound__from {
+    margin-block-start: var(--space-6);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
   }
 </style>

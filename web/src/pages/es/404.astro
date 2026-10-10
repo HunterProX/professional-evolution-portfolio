@@ -32,8 +32,29 @@ const nf = copy.notFound;
         <a class="button button--ghost" href={route(locale, 'work/')}>{nf.work}</a>
         <a class="button button--ghost" href={route(locale, 'evidence/')}>{nf.evidence}</a>
       </div>
+      <p class="notfound__from" hidden>{nf.returnedFrom}</p>
     </div>
   </section>
+
+  <script is:inline>
+    // Mirror guard (es). This page is reached at `<base>es/404/`; if it is ever
+    // served for a non-Spanish path (e.g. as a root fallback), send the visitor
+    // to the English 404 instead, preserving the requested path. The `/404`
+    // guard makes the two 404 pages mutually exclusive, so neither loops.
+    (() => {
+      const path = location.pathname;
+      const base = path.startsWith('/professional-evolution-portfolio/')
+        ? '/professional-evolution-portfolio/'
+        : '/';
+      if (!path.slice(base.length).startsWith('es/') && !path.includes('/404')) {
+        location.replace(`${base}404.html?from=${encodeURIComponent(path + location.search)}`);
+        return;
+      }
+      if (new URLSearchParams(location.search).has('from')) {
+        document.querySelector('.notfound__from')?.removeAttribute('hidden');
+      }
+    })();
+  </script>
 </BaseLayout>
 
 <style>
@@ -64,5 +85,11 @@ const nf = copy.notFound;
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-3);
+  }
+
+  .notfound__from {
+    margin-block-start: var(--space-6);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
   }
 </style>

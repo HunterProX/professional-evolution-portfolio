@@ -262,6 +262,8 @@ export interface Copy {
     home: string;
     work: string;
     evidence: string;
+    /** Shown only when `?from=` is present, i.e. after a localized redirect. */
+    returnedFrom: string;
   };
   /** Printable profile (`/print/` and `/es/print/`). */
   print: {
@@ -548,6 +550,8 @@ export const en: Copy = {
     home: 'Go to the home page',
     work: 'See the work',
     evidence: 'Inspect the evidence',
+    returnedFrom:
+      'We could not find the address you requested, so we showed the not-found page in your language.',
   },
   print: {
     eyebrow: 'Generated view',
@@ -829,6 +833,8 @@ export const es: Copy = {
     home: 'Ir a la página de inicio',
     work: 'Ver el trabajo',
     evidence: 'Inspeccionar la evidencia',
+    returnedFrom:
+      'No hemos encontrado la dirección que pediste, así que te mostramos la página de no encontrado en tu idioma.',
   },
   print: {
     eyebrow: 'Vista generada',
